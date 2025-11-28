@@ -5,11 +5,11 @@ import { Loader2, Utensils, LogOut, Home, Plus, Calendar } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { getLogs, getUserSettings, updateUserSettings, updateLog } from '@/lib/api';
 import Sidebar from '@/components/Sidebar';
-import AuthScreen from '@/components/AuthScreen';
 import Dashboard from '@/components/Dashboard';
 import AddFood from '@/components/AddFood';
 import HistoryView from '@/components/HistoryView';
 import EditFoodModal from '@/components/EditFoodModal';
+import LandingPage from '@/components/LandingPage';
 
 const NavButton = ({ active, onClick, icon: Icon, label }) => (
   <button 
@@ -144,7 +144,7 @@ export default function App() {
   }
 
   if (!user) {
-    return <AuthScreen />;
+    return <LandingPage />;
   }
 
   return (
