@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { prompts } from '@/lib/prompts';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const MAX_DAILY_SCANS = 5;
 
 async function fetchWithBackoff(url, options, retries = 3, backoff = 1000) {
   try {
@@ -44,8 +45,8 @@ export async function POST(request) {
     .eq('date', today)
     .single();
 
-  if (stats && stats.scan_count >= 3) {
-    return NextResponse.json({ error: 'Daily scan limit reached (3/3)' }, { status: 429 });
+  if (stats && stats.scan_count >= MAX_DAILY_SCANS) {
+    return NextResponse.json({ error: `Daily scan limit reached (${MAX_DAILY_SCANS}/${MAX_DAILY_SCANS})` }, { status: 429 });
   }
 
   try {

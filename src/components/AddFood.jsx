@@ -4,6 +4,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { X, Camera, Loader2, Check, Upload } from 'lucide-react';
 import { analyzeImageWithGemini, addLog, getDailyStats } from '@/lib/api';
 
+const MAX_DAILY_SCANS = 5;
+
 const formatBase64 = (file) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -255,7 +257,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                     : 'text-slate-500 hover:text-slate-700'
               }`}
             >
-              {scanCount >= 3 ? 'Scan Limit (3/3)' : `AI Scan (${3 - scanCount} left)`}
+              {scanCount >= MAX_DAILY_SCANS ? `Scan Limit (${MAX_DAILY_SCANS}/${MAX_DAILY_SCANS})` : `AI Scan (${MAX_DAILY_SCANS - scanCount} left)`}
             </button>
             <button 
               onClick={() => { 
@@ -317,7 +319,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                       }`}
                     >
                       <Camera className="w-6 h-6" />
-                      {scanCount >= 3 ? 'Daily Limit Reached' : `Use Camera (${3 - scanCount} left)`}
+                      {scanCount >= MAX_DAILY_SCANS ? 'Daily Limit Reached' : `Use Camera (${MAX_DAILY_SCANS - scanCount} left)`}
                     </button>
                     <div className="relative flex py-1 items-center">
                       <div className="grow border-t border-indigo-200"></div>
