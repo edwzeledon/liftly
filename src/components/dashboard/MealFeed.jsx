@@ -38,64 +38,51 @@ export default function MealFeed({ logs, onEditLog, onDeleteLog, onAnalyzeDay, o
           <p className="text-slate-400 text-sm">No meals logged today yet.</p>
         </div>
       ) : (
-        <div className="divide-y divide-slate-100">
+        <div className="space-y-1">
           {logs.map((log, index) => {
             const isMenuOpen = openMenuId === log.id;
             
             return (
               <div 
                 key={log.id} 
-                className={`py-4 flex items-center gap-4 hover:bg-slate-50 -mx-3 px-3 rounded-xl transition-colors ${index === 0 ? 'pt-0' : ''} ${index === logs.length - 1 ? 'pb-0 border-b-0' : ''}`}
+                className={`p-4 flex items-center justify-between group hover:bg-slate-50 rounded-xl transition-colors ${index !== logs.length - 1 ? 'border-b border-slate-50' : ''}`}
               >
-                {/* Visual (Emoji Avatar) */}
-                <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 overflow-hidden">
-                  {log.image_url ? (
-                      <img src={log.image_url} alt={log.food_item} className="w-full h-full object-cover" />
-                  ) : (
-                      <span className="text-2xl">🍽️</span>
-                  )}
-                </div>
-
-                {/* Details */}
-                <div className="flex-1 min-w-0">
-                  {/* Food Title */}
-                  <h4 className="font-semibold text-slate-800 text-base truncate">
-                    {toTitleCase(log.food_item)}
-                  </h4>
-                  
-                  {/* Time & Meal Type */}
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    {new Date(log.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                    {log.meal_type && <span className="capitalize"> • {log.meal_type}</span>}
-                  </p>
-                  
-                  {/* Macros (Dot System) */}
-                  {(log.protein > 0 || log.carbs > 0 || log.fats > 0) && (
-                    <div className="flex items-center gap-3 mt-1.5 text-xs font-medium">
-                      {log.protein > 0 && (
-                        <span className="flex items-center gap-1 text-blue-600">
-                          <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                          {log.protein}g Protein
-                        </span>
-                      )}
-                      {log.carbs > 0 && (
-                        <span className="flex items-center gap-1 text-amber-600">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                          {log.carbs}g Carbs
-                        </span>
-                      )}
-                      {log.fats > 0 && (
-                        <span className="flex items-center gap-1 text-rose-600">
-                          <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-                          {log.fats}g Fat
-                        </span>
+                <div className="flex items-center gap-3">
+                    {/* Visual (Emoji Avatar) */}
+                    <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 overflow-hidden">
+                      {log.image_url ? (
+                          <img src={log.image_url} alt={log.food_item} className="w-full h-full object-cover" />
+                      ) : (
+                          <span className="text-2xl">🍽️</span>
                       )}
                     </div>
-                  )}
+
+                    {/* Details */}
+                    <div>
+                      {/* Food Title */}
+                      <h4 className="font-semibold text-slate-800 text-base leading-tight">
+                        {toTitleCase(log.food_item)}
+                      </h4>
+                      
+                      {/* Time & Meal Type */}
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        {new Date(log.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                        {log.meal_type && <span className="capitalize"> • {log.meal_type}</span>}
+                      </p>
+                      
+                      {/* Macros (Compact) */}
+                      {(log.protein > 0 || log.carbs > 0 || log.fats > 0) && (
+                        <div className="flex items-center gap-2 mt-1 text-xs font-medium">
+                          {log.protein > 0 && <span className="text-blue-600">P:{log.protein}</span>}
+                          {log.carbs > 0 && <span className="text-amber-600">C:{log.carbs}</span>}
+                          {log.fats > 0 && <span className="text-rose-600">F:{log.fats}</span>}
+                        </div>
+                      )}
+                    </div>
                 </div>
 
                 {/* Calories */}
-                <div className="flex items-center gap-3 shrink-0">
+                <div className="flex items-center gap-3 shrink-0 pl-2">
                   <span className="font-bold text-purple-600 text-base whitespace-nowrap">{log.calories} kcal</span>
                   
                   {/* Menu */}

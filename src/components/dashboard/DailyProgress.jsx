@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Flame, Sparkles, Check, X, Beef, Wheat, Droplet, Brain } from 'lucide-react';
 
 const CircleChart = ({ value, max, color, label, icon: Icon, onClick }) => {
@@ -75,6 +75,18 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
     setTempGoalValue(value.toString());
   };
 
+  // Lock body scroll when editing
+  useEffect(() => {
+    if (editingGoal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [editingGoal]);
+
   const handleSaveGoal = () => {
     if (editingGoal === 'calories') {
       onUpdateGoal({ dailyGoal: parseInt(tempGoalValue) });
@@ -94,24 +106,6 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
             <h2 className="text-2xl font-bold text-slate-800">Daily Progress</h2>
             <p className="text-slate-500 text-sm">Tap any ring to edit your goal</p>
           </div>
-          {editingGoal && (
-            <div className="flex items-center gap-2 bg-white shadow-lg border border-indigo-100 p-2 rounded-xl animate-in slide-in-from-right-4">
-              <span className="text-xs font-bold text-indigo-600 uppercase">{editingGoal} Goal:</span>
-              <input 
-                type="number" 
-                value={tempGoalValue}
-                onChange={e => setTempGoalValue(e.target.value)}
-                className="w-20 px-2 py-1 rounded border border-indigo-200 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                autoFocus
-              />
-              <button onClick={handleSaveGoal} className="bg-indigo-600 text-white p-1.5 rounded-lg hover:bg-indigo-700 transition-colors">
-                <Check className="w-3 h-3" />
-              </button>
-              <button onClick={() => setEditingGoal(null)} className="text-slate-400 hover:text-slate-600 p-1.5">
-                <X className="w-3 h-3" />
-              </button>
-            </div>
-          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 justify-items-center">
@@ -149,6 +143,36 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
           />
         </div>
       </div>
+
+      {/* Edit Goal Overlay */}
+      {editingGoal && (
+        <div className="fixed inset-0 z-100 bg-white/95 backdrop-blur-sm flex items-center justify-center p-6 animate-in fade-in duration-200">
+            <div className="w-full max-w-sm">
+                <h3 className="text-xl font-bold text-slate-800 mb-2 text-center capitalize">Update {editingGoal} Goal</h3>
+                <p className="text-slate-400 text-sm text-center mb-6">Enter your new daily target</p>
+                
+                <div className="flex gap-3">
+                    <input 
+                        type="number" 
+                        value={tempGoalValue}
+                        onChange={e => setTempGoalValue(e.target.value)}
+                        className="flex-1 px-4 py-3 rounded-2xl border-2 border-indigo-100 text-2xl font-bold text-center text-slate-800 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 outline-none transition-all"
+                        autoFocus
+                        placeholder="0"
+                        onKeyDown={(e) => e.key === 'Enter' && handleSaveGoal()}
+                    />
+                </div>
+                <div className="flex gap-3 mt-4">
+                    <button onClick={() => setEditingGoal(null)} className="flex-1 py-3 bg-slate-100 text-slate-500 font-bold rounded-xl hover:bg-slate-200 transition-colors">
+                        Cancel
+                    </button>
+                    <button onClick={handleSaveGoal} className="flex-1 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200">
+                        Save
+                    </button>
+                </div>
+            </div>
+        </div>
+      )}
 
       {/* AI Suggestion Buttons */}
       <div className="mt-2 pt-4 border-t border-slate-50 flex gap-3">

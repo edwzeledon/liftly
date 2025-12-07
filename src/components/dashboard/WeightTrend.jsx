@@ -209,7 +209,7 @@ export default function WeightTrend({ user }) {
       </div>
 
       {/* Chart */}
-      <div className="h-72 w-full relative">
+      <div className="h-72 w-full relative min-w-0">
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center bg-white/50 backdrop-blur-sm z-10">
             <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
