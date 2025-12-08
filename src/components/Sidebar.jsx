@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Utensils, Home, Plus, Calendar, LogOut } from 'lucide-react';
+import { Utensils, Home, Plus, Calendar, LogOut, Settings } from 'lucide-react';
 
 export default function Sidebar({ activeTab, setActiveTab, onLogout }) {
   return (
@@ -44,6 +44,16 @@ export default function Sidebar({ activeTab, setActiveTab, onLogout }) {
         >
           <Calendar className="w-5 h-5" />
           <span>History</span>
+        </button>
+
+        <button 
+          onClick={() => setActiveTab('settings')}
+          className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
+            activeTab === 'settings' ? 'bg-indigo-50 text-indigo-600 font-medium' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+          }`}
+        >
+          <Settings className="w-5 h-5" />
+          <span>Settings</span>
         </button>
       </nav>
 

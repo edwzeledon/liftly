@@ -17,15 +17,34 @@ export default function HistoryView({ logs, user, onLogDeleted, onEditLog }) {
     }
   };
 
-  // Group by date
+  // Group by date and sort descending
   const groupedLogs = useMemo(() => {
     const groups = {};
     logs.forEach(log => {
-      const dateKey = new Date(log.date).toLocaleDateString();
-      if (!groups[dateKey]) groups[dateKey] = [];
-      groups[dateKey].push(log);
+      const dateObj = new Date(log.date);
+      const dateKey = dateObj.toLocaleDateString();
+      
+      if (!groups[dateKey]) {
+        groups[dateKey] = {
+          date: dateObj,
+          logs: []
+        };
+      }
+      groups[dateKey].logs.push(log);
     });
-    return groups;
+
+    return Object.values(groups)
+      .sort((a, b) => b.date - a.date)
+      .map(group => {
+        const isToday = new Date().toLocaleDateString() === group.date.toLocaleDateString();
+        const label = isToday ? 'Today' : group.date.toLocaleDateString(undefined, { 
+          weekday: 'long', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        });
+        return { label, logs: group.logs };
+      });
   }, [logs]);
 
   return (
@@ -39,10 +58,10 @@ export default function HistoryView({ logs, user, onLogDeleted, onEditLog }) {
          </div>
       ) : (
         <div className="space-y-6">
-          {Object.entries(groupedLogs).map(([date, dayLogs]) => (
-            <div key={date}>
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 sticky top-0 bg-slate-50 py-2">
-                {date === new Date().toLocaleDateString() ? 'Today' : date}
+          {groupedLogs.map(({ label, logs: dayLogs }) => (
+            <div key={label}>
+              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 sticky top-0 bg-slate-50 py-2 z-10 backdrop-blur-sm">
+                {label}
               </h3>
               <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                 {dayLogs.map((log, idx) => (

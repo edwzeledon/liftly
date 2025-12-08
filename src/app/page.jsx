@@ -1,15 +1,16 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Loader2, Utensils, LogOut, Home, Plus, Calendar } from 'lucide-react';
+import { Loader2, Utensils, LogOut, Home, Plus, Calendar, Settings } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
-import { getLogs, getUserSettings, updateUserSettings, updateLog, getDailyStats } from '@/lib/api';
+import { getLogs, getUserSettings, updateUserSettings, updateLog, getDailyStats, updateDailyStats } from '@/lib/api';
 import Sidebar from '@/components/Sidebar';
 import Dashboard from '@/components/Dashboard';
 import AddFood from '@/components/AddFood';
 import HistoryView from '@/components/HistoryView';
 import EditFoodModal from '@/components/EditFoodModal';
 import LandingPage from '@/components/landing-page/LandingPage';
+import OnboardingForm from '@/components/OnboardingForm';
 
 const NavButton = ({ active, onClick, icon: Icon, label }) => (
   <button 
@@ -32,6 +33,7 @@ export default function App() {
   const [macroGoals, setMacroGoals] = useState({ protein: 150, carbs: 200, fats: 65 });
   const [editingLog, setEditingLog] = useState(null);
   const [scanCount, setScanCount] = useState(0);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   // --- Auth & Data Fetching ---
   useEffect(() => {
@@ -59,6 +61,9 @@ export default function App() {
       ]);
       setLogs(fetchedLogs);
       if (settings) {
+        if (settings.is_new_user) {
+          setShowOnboarding(true);
+        }
         if (settings.daily_goal) setDailyGoal(settings.daily_goal);
         setMacroGoals({
           protein: settings.protein_goal || Math.round((settings.daily_goal * 0.3) / 4),
@@ -86,7 +91,10 @@ export default function App() {
   const handleUpdateGoal = async (updates) => {
     if (!user) return;
     
-    // Update local state
+    // If updates contain profile data, we can't update local state immediately with goals
+    // because the server calculates them. We should refetch after update.
+    
+    // If manual updates (dailyGoal etc), update local state optimistically
     if (updates.dailyGoal) setDailyGoal(updates.dailyGoal);
     if (updates.proteinGoal || updates.carbsGoal || updates.fatsGoal) {
       setMacroGoals(prev => ({
@@ -97,12 +105,11 @@ export default function App() {
     }
 
     try {
-      await updateUserSettings(user.id, { 
-        dailyGoal: updates.dailyGoal || dailyGoal,
-        proteinGoal: updates.proteinGoal || macroGoals.protein,
-        carbsGoal: updates.carbsGoal || macroGoals.carbs,
-        fatsGoal: updates.fatsGoal || macroGoals.fats
-      });
+      await updateUserSettings(user.id, updates);
+      // If it was a profile update (no explicit goals), refetch to get calculated goals
+      if (!updates.dailyGoal) {
+        fetchData();
+      }
     } catch (e) {
       console.error("Error saving goal", e);
     }
@@ -117,6 +124,25 @@ export default function App() {
       console.error("Error updating log", e);
       alert("Failed to update log.");
     }
+  };
+
+  const handleOnboardingComplete = async (data) => {
+    // 1. Send profile data to settings API to calculate and save goals
+    await handleUpdateGoal(data);
+    
+    // 2. Log initial weight to daily stats
+    if (data.originalWeight) {
+        try {
+            await updateDailyStats({
+                date: new Date().toISOString().split('T')[0],
+                weight: data.originalWeight
+            });
+        } catch (e) {
+            console.error("Error logging initial weight", e);
+        }
+    }
+    
+    setShowOnboarding(false);
   };
 
   const handleLogout = async () => {
@@ -237,16 +263,32 @@ export default function App() {
                 onEditLog={setEditingLog}
               />
             )}
+            {activeTab === 'settings' && (
+              <OnboardingForm 
+                isEditing={true}
+                onComplete={(data) => {
+                  handleOnboardingComplete(data);
+                  setActiveTab('home');
+                }}
+                onCancel={() => setActiveTab('home')}
+              />
+            )}
           </div>
         </main>
 
         {/* Mobile Bottom Navigation (Hidden on Desktop) */}
-        <nav className="md:hidden absolute bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-12 py-2 flex justify-between items-center z-20 pb-safe">
+        <nav className="md:hidden absolute bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-4 py-2 flex justify-between items-center z-20 pb-safe">
           <NavButton 
             active={activeTab === 'home'} 
             onClick={() => setActiveTab('home')} 
             icon={Home} 
             label="Home" 
+          />
+          <NavButton 
+            active={activeTab === 'history'} 
+            onClick={() => setActiveTab('history')} 
+            icon={Calendar} 
+            label="History" 
           />
           
           <div className="-mt-12">
@@ -263,10 +305,16 @@ export default function App() {
           </div>
 
           <NavButton 
-            active={activeTab === 'history'} 
-            onClick={() => setActiveTab('history')} 
-            icon={Calendar} 
-            label="History" 
+            active={activeTab === 'settings'} 
+            onClick={() => setActiveTab('settings')} 
+            icon={Settings} 
+            label="Settings" 
+          />
+          <NavButton 
+            active={false} 
+            onClick={handleLogout} 
+            icon={LogOut} 
+            label="Logout" 
           />
         </nav>
         
@@ -277,6 +325,11 @@ export default function App() {
             onClose={() => setEditingLog(null)} 
             onUpdate={handleUpdateLog}
           />
+        )}
+
+        {/* Onboarding Modal */}
+        {showOnboarding && (
+          <OnboardingForm onComplete={handleOnboardingComplete} />
         )}
 
       </div>
