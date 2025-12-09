@@ -11,7 +11,7 @@ import MealFeed from './dashboard/MealFeed';
 import QuickAdd from './dashboard/QuickAdd';
 import WeightTrend from './dashboard/WeightTrend';
 
-export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percentComplete, weeklyData, todaysLogs, user, onLogDeleted, onUpdateGoal, onEditLog, onLogAdded, onAddMeal }) {
+export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percentComplete, weeklyData, todaysLogs, user, onLogDeleted, onUpdateGoal, onEditLog, onLogAdded, onAddMeal, streak, streakStatus }) {
   const remaining = dailyGoal - caloriesToday;
   const [aiModal, setAiModal] = useState({ open: false, type: '', step: 'confirm', content: '', loading: false });
   
@@ -163,6 +163,8 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percen
                 onAnalyzeDay={handleAnalyzeDay}
                 suggestionCount={dailyStats.suggestion_count || 0}
                 overviewCount={dailyStats.overview_count || 0}
+                streak={streak}
+                streakStatus={streakStatus}
             />
         </div>
         <div className="flex flex-col gap-6 h-full">

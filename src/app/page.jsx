@@ -38,6 +38,8 @@ export default function App() {
   const [macroGoals, setMacroGoals] = useState({ protein: 150, carbs: 200, fats: 65 });
   const [editingLog, setEditingLog] = useState(null);
   const [scanCount, setScanCount] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const [streakStatus, setStreakStatus] = useState('broken'); // 'safe', 'at_risk', 'broken'
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isRetakingAssessment, setIsRetakingAssessment] = useState(false);
 
@@ -75,6 +77,35 @@ export default function App() {
           setShowOnboarding(true);
         }
         if (settings.daily_goal) setDailyGoal(settings.daily_goal);
+        
+        // Streak Calculation
+        const today = new Date().toISOString().split('T')[0];
+        const lastLog = settings.last_log_date;
+        let currentStreak = settings.current_streak || 0;
+        let status = 'broken';
+
+        if (lastLog === today) {
+            status = 'safe';
+        } else if (lastLog) {
+            const lastLogDate = new Date(lastLog);
+            const todayDate = new Date(today);
+            const diffTime = todayDate - lastLogDate;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 1) {
+                status = 'at_risk';
+            } else {
+                currentStreak = 0;
+                status = 'broken';
+            }
+        } else {
+            currentStreak = 0;
+            status = 'broken';
+        }
+
+        setStreak(currentStreak);
+        setStreakStatus(status);
+
         setMacroGoals({
           protein: settings.protein_goal || Math.round((settings.daily_goal * 0.3) / 4),
           carbs: settings.carbs_goal || Math.round((settings.daily_goal * 0.4) / 4),
@@ -241,12 +272,14 @@ export default function App() {
             {activeTab === 'home' && (
               <Dashboard 
                 caloriesToday={caloriesToday} 
-                dailyGoal={dailyGoal}
+                dailyGoal={dailyGoal} 
                 macroGoals={macroGoals}
                 percentComplete={percentComplete}
                 weeklyData={weeklyData}
                 todaysLogs={todaysLogs}
                 user={user}
+                streak={streak}
+                streakStatus={streakStatus}
                 onLogDeleted={fetchData}
                 onUpdateGoal={handleUpdateGoal}
                 onEditLog={setEditingLog}

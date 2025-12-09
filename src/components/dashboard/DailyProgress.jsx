@@ -47,7 +47,7 @@ const CircleChart = ({ value, max, color, label, icon: Icon, onClick }) => {
   );
 };
 
-export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, todaysLogs, onUpdateGoal, onSuggestMeal, onAnalyzeDay, suggestionCount = 0, overviewCount = 0 }) {
+export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, todaysLogs, onUpdateGoal, onSuggestMeal, onAnalyzeDay, suggestionCount = 0, overviewCount = 0, streak = 0, streakStatus = 'broken' }) {
   const remaining = dailyGoal - caloriesToday;
   const [editingGoal, setEditingGoal] = useState(null);
   const [tempGoalValue, setTempGoalValue] = useState('');
@@ -101,11 +101,30 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
       <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-full -mr-10 -mt-10 blur-2xl opacity-50"></div>
       
       <div className="relative z-10 mb-6">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-start mb-6">
           <div>
             <h2 className="text-2xl font-bold text-slate-800">Daily Progress</h2>
             <p className="text-slate-500 text-sm">Tap any ring to edit your goal</p>
+            {streakStatus === 'at_risk' && streak > 0 && (
+              <p className="text-xs font-medium text-rose-500 mt-1 animate-pulse">
+                🔥 Log a meal today to keep your {streak} day streak!
+              </p>
+            )}
           </div>
+          {streak > 0 && (
+            <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border animate-in fade-in slide-in-from-right-4 ${
+              streakStatus === 'safe' 
+                ? 'bg-orange-50 border-orange-100' 
+                : 'bg-slate-50 border-slate-100'
+            }`}>
+              <Flame className={`w-5 h-5 ${
+                streakStatus === 'safe' ? 'text-orange-500 fill-orange-500' : 'text-slate-300 fill-slate-300'
+              }`} />
+              <span className={`font-bold text-lg ${
+                streakStatus === 'safe' ? 'text-orange-600' : 'text-slate-400'
+              }`}>{streak}</span>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 justify-items-center">
