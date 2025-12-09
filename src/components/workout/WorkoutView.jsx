@@ -4,6 +4,8 @@ import WorkoutCard from './WorkoutCard';
 import PickerView from './PickerView';
 import ConfirmModal from '../ConfirmModal';
 
+import { getExercises } from '@/lib/api';
+
 export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [], onUpdateLogs }) {
   // Use props for logs if available, otherwise fallback to local state (though props should always be there now)
   const [localLogs, setLocalLogs] = useState([]);
@@ -27,6 +29,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
   const [showSummary, setShowSummary] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [timerInterval, setTimerInterval] = useState(null);
+  const [allExercises, setAllExercises] = useState([]);
   
   // Confirmation Modal State
   const [confirmModal, setConfirmModal] = useState({
@@ -116,18 +119,40 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
     }
   };
 
+  const fetchExercises = async () => {
+    try {
+      const data = await getExercises();
+      setAllExercises(data);
+    } catch (error) {
+      console.error("Failed to load exercises", error);
+    }
+  };
+
   useEffect(() => {
     // Only fetch logs if we are NOT using parent state (fallback)
     if (!onUpdateLogs) {
       fetchLogs();
     }
     fetchTemplates();
+    fetchExercises();
   }, [user]);
 
   const handleAddExerciseToDay = async (exercise) => {
     if (!user) return;
     
-    // Fetch last log for this exercise to prefill
+    // 1. Immediate UI Update: Close picker and add temp card
+    setShowPicker(false);
+    const tempId = `temp-${Date.now()}`;
+    const tempLog = {
+      id: tempId,
+      exercise_name: exercise.name,
+      category: exercise.category,
+      sets: [{ weight: '', reps: '', completed: false }], // Default empty sets
+      date: new Date().toISOString()
+    };
+    setWorkoutLogs(prev => [...prev, tempLog]);
+
+    // 2. Fetch history in background
     let initialSets = [{ weight: '', reps: '', completed: false }];
     try {
       const res = await fetch(`/api/workouts/history/last?exercise=${encodeURIComponent(exercise.name)}`);
@@ -139,25 +164,18 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
             reps: s.reps,
             completed: false
           }));
+          
+          // Update local state with history data immediately
+          setWorkoutLogs(prev => prev.map(log => 
+            log.id === tempId ? { ...log, sets: initialSets } : log
+          ));
         }
       }
     } catch (e) {
       console.error("Error fetching last log", e);
     }
 
-    // 1. Optimistic Update: Add temp card immediately
-    const tempId = `temp-${Date.now()}`;
-    const tempLog = {
-      id: tempId,
-      exercise_name: exercise.name,
-      category: exercise.category,
-      sets: initialSets,
-      date: new Date().toISOString()
-    };
-
-    setShowPicker(false);
-    setWorkoutLogs(prev => [...prev, tempLog]);
-
+    // 3. Persist to DB
     try {
       const res = await fetch('/api/workouts/logs', {
         method: 'POST',
@@ -172,7 +190,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       
       if (res.ok) {
         const newLog = await res.json();
-        // 2. Replace temp card with real data
+        // Replace temp card with real DB data
         setWorkoutLogs(prev => prev.map(log => log.id === tempId ? newLog : log));
       } else {
         // Revert if failed
@@ -601,7 +619,11 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       )}
 
       {showPicker ? (
-        <PickerView onBack={() => setShowPicker(false)} onAddExercise={handleAddExerciseToDay} />
+        <PickerView 
+          onBack={() => setShowPicker(false)} 
+          onAddExercise={handleAddExerciseToDay} 
+          exercises={allExercises}
+        />
       ) : (
         <div className="flex flex-col h-full">
           {/* Today's List */}

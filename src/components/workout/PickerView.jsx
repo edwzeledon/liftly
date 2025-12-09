@@ -1,26 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ChevronLeft, Search, Plus, Loader2 } from 'lucide-react';
-import { getExercises } from '@/lib/api';
 
-export default function PickerView({ onBack, onAddExercise }) {
+export default function PickerView({ onBack, onAddExercise, exercises = [] }) {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
-  const [exercises, setExercises] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const loadExercises = async () => {
-      try {
-        const data = await getExercises();
-        setExercises(data);
-      } catch (error) {
-        console.error("Failed to load exercises", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadExercises();
-  }, []);
+  
+  // Use passed exercises or empty array
+  const loading = exercises.length === 0;
 
   const categories = ['All', ...new Set(exercises.map(ex => ex.category))];
 
