@@ -11,7 +11,7 @@ export default function Sidebar({ activeTab, setActiveTab, onLogout }) {
           <Utensils className="w-6 h-6 text-white" />
         </div>
         <h1 className="text-xl font-bold bg-clip-text text-transparent bg-linear-to-r from-indigo-600 to-purple-600">
-          SnapCal
+          Liftly
         </h1>
       </div>
       

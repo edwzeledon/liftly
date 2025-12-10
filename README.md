@@ -1,16 +1,18 @@
-# SnapCal - AI-Powered Nutrition Tracker
+# Liftly - AI-Powered Nutrition Tracker
 
-SnapCal is an intelligent nutrition tracking application that simplifies the process of logging meals. By leveraging computer vision and AI, it transforms the tedious task of manual calorie counting into a seamless, single-step process.
+Liftly is an intelligent nutrition tracking application that simplifies the process of logging meals. By leveraging computer vision and AI, it transforms the tedious task of manual calorie counting into a seamless, single-step process.
 
 ## Inspiration
-I wanted an easier way to track calories because its a pain by hand. Most calorie trackers make you search for ingredients, guess portion sizes, and log everything by hand. SnapCal solves that by “seeing” your food and logging it automatically, so hitting your nutrition goals doesn’t feel like a chore.
+I wanted an easier way to track calories because its a pain by hand. Most calorie trackers make you search for ingredients, guess portion sizes, and log everything by hand. Liftly solves that by “seeing” your food and logging it automatically, so hitting your nutrition goals doesn’t feel like a chore.
 
 ## What it does
-SnapCal provides a comprehensive dashboard for tracking daily nutrition.
+Liftly provides a comprehensive dashboard for tracking daily nutrition and fitness.
 *   **AI Food Scanning:** Users can snap a photo of their meal, and the app automatically identifies the food, estimates portion sizes, and calculates calories and macros (Protein, Carbs, Fats).
+*   **Workout Tracking:** A complete workout logger allowing users to track exercises, sets, reps, and weight, with features like history pre-filling to ensure progressive overload.
+*   **Gamified Consistency:** A streak system that tracks consecutive days of logging to keep users motivated and accountable.
 *   **Smart Dashboard:** Visualizes daily progress with dynamic circular charts for calories and macros.
 *   **Intelligent Insights:** Offers "Chef's Suggestions" for healthy meal ideas based on remaining macro goals and a "Daily Overview" that analyzes eating patterns.
-*   **Secure Tracking:** Keeps a secure, persistent history of all logs and user settings.
+*   **Secure Tracking:** Keeps a secure, persistent history of all logs, workouts, and user settings.
 
 ## How I built it
 *   **Next.js 14 (App Router):** Serves as the full-stack framework, handling both the React frontend and server-side API routes for optimal performance.
@@ -34,7 +36,7 @@ SnapCal provides a comprehensive dashboard for tracking daily nutrition.
 *   **AI Integration:** Learned the nuances of working with multimodal AI models (text + image) and how to handle non-deterministic outputs in a structured application.
 *   **Database Design:** Reinforced the importance of normalized schemas and database-level security policies.
 
-## What's next for SnapCal
-*   **Streak System:** Gamifying the experience by tracking consecutive days of logging.
+## What's next for Liftly
 *   **Recipe Generation:** Expanding the "Chef's Suggestion" to generate full shopping lists and step-by-step recipes.
 *   **Social Features:** Allowing users to share meal photos and progress with friends for accountability.
+*   **Wearable Integration:** Syncing data with Apple Health and Google Fit.

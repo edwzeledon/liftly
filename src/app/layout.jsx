@@ -1,7 +1,7 @@
 import './globals.css'
 
 export const metadata = {
-  title: 'SnapCal',
+  title: 'Liftly',
   description: 'AI Powered Calorie Tracker',
 }
 

@@ -18,7 +18,7 @@ export default function LandingPage() {
           <div className="bg-indigo-600 p-2 rounded-lg">
             <Utensils className="w-5 h-5 text-white" />
           </div>
-          <span className="text-xl font-bold text-slate-900">SnapCal</span>
+          <span className="text-xl font-bold text-slate-900">Liftly</span>
         </div>
         {!showAuth && (
           <button 
