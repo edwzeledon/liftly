@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Dumbbell, Plus, Download, Folder, Save, Ban, Check, Trophy, X, Play, Trash2 } from 'lucide-react';
+import { Dumbbell, Plus, Download, Folder, Save, Ban, Check, Trophy, X, Play, Trash2, Loader2 } from 'lucide-react';
 import WorkoutCard from './WorkoutCard';
 import PickerView from './PickerView';
 import ConfirmModal from '../ConfirmModal';
@@ -43,6 +43,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
   // Template States
   const [showSaveTemplate, setShowSaveTemplate] = useState(false);
   const [showLoadTemplate, setShowLoadTemplate] = useState(false);
+  const [isLoadingTemplate, setIsLoadingTemplate] = useState(false);
   const [templateName, setTemplateName] = useState('');
   const [templates, setTemplates] = useState([]);
 
@@ -235,49 +236,64 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
   };
 
   const handleLoadTemplate = async (template) => {
-    if (!user) return;
-    try {
-      const promises = template.exercises.map(async (ex) => {
-        // Fetch last log for prefill
-        let setsToUse = ex.sets;
-        try {
-          const res = await fetch(`/api/workouts/history/last?exercise=${encodeURIComponent(ex.exercise)}`);
-          if (res.ok) {
-            const lastLog = await res.json();
-            if (lastLog && lastLog.sets) {
-              // Merge template structure with history values
-              setsToUse = ex.sets.map((templateSet, index) => {
-                const historySet = lastLog.sets[index];
-                return {
-                  ...templateSet,
-                  weight: historySet ? historySet.weight : '',
-                  reps: historySet ? historySet.reps : '',
-                  completed: false
-                };
-              });
-            }
+    if (!user || !template.exercises || template.exercises.length === 0) return;
+    
+    setIsLoadingTemplate(true);
+
+    // Helper to process a single exercise
+    const processExercise = async (ex) => {
+      // Fetch last log for prefill
+      let setsToUse = ex.sets;
+      try {
+        const res = await fetch(`/api/workouts/history/last?exercise=${encodeURIComponent(ex.exercise)}`);
+        if (res.ok) {
+          const lastLog = await res.json();
+          if (lastLog && lastLog.sets) {
+            // Merge template structure with history values
+            setsToUse = ex.sets.map((templateSet, index) => {
+              const historySet = lastLog.sets[index];
+              return {
+                ...templateSet,
+                weight: historySet ? historySet.weight : '',
+                reps: historySet ? historySet.reps : '',
+                completed: false
+              };
+            });
           }
-        } catch (e) {
-          console.error("Error fetching history for template load", e);
         }
+      } catch (e) {
+        console.error("Error fetching history for template load", e);
+      }
 
-        return fetch('/api/workouts/logs', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            exercise: ex.exercise,
-            category: ex.category,
-            sets: setsToUse,
-            date: new Date().toISOString()
-          })
-        });
+      return fetch('/api/workouts/logs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          exercise: ex.exercise,
+          category: ex.category,
+          sets: setsToUse,
+          date: new Date().toISOString()
+        })
       });
+    };
 
-      await Promise.all(promises);
-      fetchLogs();
+    try {
+      // 1. Process first exercise to ensure session creation
+      await processExercise(template.exercises[0]);
+
+      // 2. Process remaining exercises in parallel
+      if (template.exercises.length > 1) {
+        const remainingExercises = template.exercises.slice(1);
+        const promises = remainingExercises.map(ex => processExercise(ex));
+        await Promise.all(promises);
+      }
+
+      await fetchLogs();
       setShowLoadTemplate(false);
     } catch (e) {
       console.error("Error loading template", e);
+    } finally {
+      setIsLoadingTemplate(false);
     }
   };
 
@@ -447,11 +463,28 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       isDestructive: true,
       onConfirm: async () => {
         setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        
+        // Capture logs to delete (closure captures current state)
+        const logsToDelete = workoutLogs;
+
+        // Optimistic Update: Clear UI immediately
+        setWorkoutLogs([]);
+        setElapsedTime(0);
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            setTimerInterval(null);
+        }
+
         try {
-          const promises = workoutLogs.map(log => 
+          const promises = logsToDelete.map(log => 
             fetch(`/api/workouts/logs/${log.id}`, { method: 'DELETE' })
           );
           await Promise.all(promises);
+          
+          // Also delete the active session
+          await fetch('/api/workouts/active-session', { method: 'DELETE' });
+          
+          // Sync with server to ensure clean state
           fetchLogs();
         } catch (e) {
           console.error("Error discarding workout", e);
@@ -561,7 +594,12 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
             </div>
             
             <div className="flex-1 overflow-y-auto space-y-2">
-              {templates.length === 0 ? (
+              {isLoadingTemplate ? (
+                <div className="flex flex-col items-center justify-center py-12 text-indigo-600">
+                  <Loader2 className="w-8 h-8 animate-spin mb-2" />
+                  <p className="text-sm font-medium">Loading Routine...</p>
+                </div>
+              ) : templates.length === 0 ? (
                 <div className="text-center py-8 text-slate-400">
                   <Folder className="w-12 h-12 mx-auto mb-2 opacity-20" />
                   <p>No saved templates yet.</p>

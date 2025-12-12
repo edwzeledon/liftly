@@ -79,12 +79,15 @@ export async function POST(request) {
   // 1. Find or Create Active Session
   let sessionId = null;
   
-  const { data: activeSession } = await supabase
+  // Use limit(1) to handle potential duplicates
+  const { data: activeSessions } = await supabase
     .from('workout_sessions')
     .select('id')
     .eq('user_id', user.id)
     .eq('status', 'active')
-    .single();
+    .limit(1);
+
+  const activeSession = activeSessions?.[0];
 
   if (activeSession) {
     sessionId = activeSession.id;
