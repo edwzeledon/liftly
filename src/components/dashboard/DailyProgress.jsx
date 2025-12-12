@@ -2,9 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { Flame, Sparkles, Check, X, Beef, Wheat, Droplet, Brain } from 'lucide-react';
 
 const CircleChart = ({ value, max, color, label, icon: Icon, onClick }) => {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsMounted(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
+
   const radius = 36;
   const circumference = 2 * Math.PI * radius;
-  const percent = Math.min(Math.max(value / max, 0), 1);
+  const targetPercent = Math.min(Math.max(value / max, 0), 1);
+  const percent = isMounted ? targetPercent : 0;
   const offset = circumference - (percent * circumference);
 
   return (
@@ -30,7 +38,7 @@ const CircleChart = ({ value, max, color, label, icon: Icon, onClick }) => {
             strokeDasharray={circumference}
             strokeDashoffset={offset}
             strokeLinecap="round"
-            className={`${color} transition-all duration-1000 ease-out`}
+            className={`${color} transition-all duration-700 ease-out`}
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">

@@ -1,7 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { TrendingUp } from 'lucide-react';
 
 export default function WeeklyTrend({ weeklyData, dailyGoal }) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsMounted(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 h-full">
       <div className="flex items-center justify-between mb-6">
@@ -29,7 +36,7 @@ export default function WeeklyTrend({ weeklyData, dailyGoal }) {
                 className={`w-full rounded-t-lg transition-all duration-700 ${
                   day.height > 100 ? 'bg-red-400' : 'bg-indigo-400 group-hover:bg-indigo-500'
                 }`}
-                style={{ height: `${Math.min(Math.max(day.height * 0.8, 5), 100)}%` }}
+                style={{ height: isMounted ? `${Math.min(Math.max(day.height * 0.8, 5), 100)}%` : '5%' }}
               ></div>
             </div>
             <span className="text-xs font-medium text-slate-400">{day.dayName}</span>

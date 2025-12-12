@@ -47,10 +47,19 @@ export default function App() {
   useEffect(() => {
     const initAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
-      setLoading(false);
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+      
+      // If no user, stop loading immediately. 
+      // If user exists, keep loading true until fetchData (triggered by useEffect[user]) completes.
+      if (!currentUser) {
+        setLoading(false);
+      }
 
       const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        if (session?.user) {
+          setLoading(true);
+        }
         setUser(session?.user ?? null);
       });
 
@@ -123,6 +132,8 @@ export default function App() {
       }
     } catch (error) {
       console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
