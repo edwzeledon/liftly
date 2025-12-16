@@ -474,6 +474,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
 
         // Optimistic Update: Clear UI immediately
         setWorkoutLogs([]);
+        localStorage.removeItem('snapcal_activeWorkoutLogs');
         setElapsedTime(0);
         if (timerInterval) {
             clearInterval(timerInterval);
