@@ -78,6 +78,12 @@ export default function App() {
         getUserSettings(user.id),
         getDailyStats(new Date().toLocaleDateString('en-CA'))
       ]);
+
+      // Cache critical data for faster reload
+      localStorage.setItem('snapcal_logs', JSON.stringify(fetchedLogs));
+      localStorage.setItem('snapcal_activeWorkoutLogs', JSON.stringify(fetchedActiveWorkoutLogs));
+      if (settings) localStorage.setItem('snapcal_settings', JSON.stringify(settings));
+
       setLogs(fetchedLogs);
       setWorkoutLogs(fetchedWorkoutLogs);
       setActiveWorkoutLogs(fetchedActiveWorkoutLogs);
@@ -139,6 +145,32 @@ export default function App() {
 
   useEffect(() => {
     if (user) {
+      // Try to load from cache first to avoid loading spinner on reload
+      const cachedLogs = localStorage.getItem('snapcal_logs');
+      const cachedActiveWorkoutLogs = localStorage.getItem('snapcal_activeWorkoutLogs');
+      const cachedSettings = localStorage.getItem('snapcal_settings');
+
+      if (cachedLogs && cachedActiveWorkoutLogs) {
+        try {
+          setLogs(JSON.parse(cachedLogs));
+          setActiveWorkoutLogs(JSON.parse(cachedActiveWorkoutLogs));
+          
+          if (cachedSettings) {
+            const settings = JSON.parse(cachedSettings);
+            if (settings.daily_goal) setDailyGoal(settings.daily_goal);
+            setMacroGoals({
+              protein: settings.protein_goal || Math.round((settings.daily_goal * 0.3) / 4),
+              carbs: settings.carbs_goal || Math.round((settings.daily_goal * 0.4) / 4),
+              fats: settings.fats_goal || Math.round((settings.daily_goal * 0.3) / 9)
+            });
+          }
+          // Stop loading immediately so UI shows up
+          setLoading(false);
+        } catch (e) {
+          console.error("Error parsing cached data", e);
+        }
+      }
+
       fetchData();
     } else {
       setLogs([]);

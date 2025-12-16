@@ -44,6 +44,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
   const [showSaveTemplate, setShowSaveTemplate] = useState(false);
   const [showLoadTemplate, setShowLoadTemplate] = useState(false);
   const [isLoadingTemplate, setIsLoadingTemplate] = useState(false);
+  const [isSavingTemplate, setIsSavingTemplate] = useState(false);
   const [templateName, setTemplateName] = useState('');
   const [templates, setTemplates] = useState([]);
 
@@ -211,6 +212,8 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
 
   const handleSaveTemplate = async () => {
     if (!user || !templateName.trim() || workoutLogs.length === 0) return;
+    
+    setIsSavingTemplate(true);
     try {
       const res = await fetch('/api/workouts/templates', {
         method: 'POST',
@@ -232,6 +235,8 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       }
     } catch (e) {
       console.error("Error saving template", e);
+    } finally {
+      setIsSavingTemplate(false);
     }
   };
 
@@ -572,10 +577,17 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
               </button>
               <button 
                 onClick={handleSaveTemplate}
-                disabled={!templateName.trim()}
-                className="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-medium disabled:opacity-50"
+                disabled={!templateName.trim() || isSavingTemplate}
+                className="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-medium disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                Save
+                {isSavingTemplate ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  "Save"
+                )}
               </button>
             </div>
           </div>
