@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { CheckCircle, Trash2, Check, X, Plus, Trophy } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { CheckCircle, Trash2, Check, X, Plus, Trophy, Calculator } from 'lucide-react';
+import PlateCalculator from './PlateCalculator';
 
 export default function WorkoutCard({ log, onDelete, onUpdate }) {
   const [sets, setSets] = useState(log.sets || []);
   const [bestSet, setBestSet] = useState(null);
+  const [showCalculator, setShowCalculator] = useState(false);
   const isTemp = String(log.id).startsWith('temp');
   const abortControllerRef = useRef(null);
 
@@ -51,6 +53,26 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
     };
     fetchBestSet();
   }, [log.exercise_name, log.exercise]);
+
+  const handleApplyWeight = (weight) => {
+    if (sets.length > 0) {
+      // Apply to ALL sets
+      const newSets = sets.map(set => ({
+        ...set,
+        weight: weight
+      }));
+      setSets(newSets);
+      updateParent(newSets);
+      saveSets(newSets);
+    } else {
+      // If no sets, create one
+      const newSets = [{ weight: weight, reps: '', completed: false }];
+      setSets(newSets);
+      updateParent(newSets);
+      saveSets(newSets);
+    }
+    setShowCalculator(false);
+  };
 
   const isNewRecord = (weight, reps) => {
     if (!bestSet) return false;
@@ -170,6 +192,27 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
 
   const allSetsCompleted = sets.length > 0 && sets.every(s => s.completed);
 
+  // Calculate the single best set in the current session to avoid duplicate PRs
+  const bestSetIndex = useMemo(() => {
+    let bestIdx = -1;
+    let best = { weight: 0, reps: 0 };
+
+    sets.forEach((set, idx) => {
+      if (!set.completed) return;
+      const w = parseFloat(set.weight) || 0;
+      const r = parseFloat(set.reps) || 0;
+
+      if (w > best.weight) {
+        best = { weight: w, reps: r };
+        bestIdx = idx;
+      } else if (w === best.weight && r > best.reps) {
+        best = { weight: w, reps: r };
+        bestIdx = idx;
+      }
+    });
+    return bestIdx;
+  }, [sets]);
+
   return (
     <div className={`bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:border-indigo-100 transition-all ${isTemp ? 'opacity-60 pointer-events-none' : ''}`}>
       <div className="flex justify-between items-start mb-4">
@@ -191,6 +234,13 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
           </div>
         </div>
         <div className="flex items-center gap-1">
+          <button
+             onClick={() => setShowCalculator(true)}
+             className="p-2 text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors"
+             title="Plate Calculator"
+          >
+             <Calculator className="w-4 h-4" />
+          </button>
           <button
              onClick={quickFinish}
              className={`p-2 rounded-full transition-colors ${
@@ -222,7 +272,8 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
         </div>
 
         {sets.map((set, idx) => {
-          const isPR = set.completed && isNewRecord(set.weight, set.reps);
+          // Only mark as PR if it's the best set in the current session AND beats history
+          const isPR = set.completed && idx === bestSetIndex && isNewRecord(set.weight, set.reps);
           
           return (
             <div 
@@ -305,6 +356,10 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
           Add Set
         </button>
       </div>
-    </div>
+      <PlateCalculator 
+        isOpen={showCalculator}
+        onClose={() => setShowCalculator(false)}
+        onApply={handleApplyWeight}
+      />    </div>
   );
 }
