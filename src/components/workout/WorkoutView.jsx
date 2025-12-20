@@ -356,7 +356,18 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
 
         // Optimistic update
         const previousLogs = [...workoutLogs];
-        setWorkoutLogs(prev => prev.filter(log => log.id !== id));
+        const newLogs = previousLogs.filter(log => log.id !== id);
+        setWorkoutLogs(newLogs);
+
+        // If this was the last exercise, clean up session state locally
+        if (newLogs.length === 0) {
+            localStorage.removeItem('snapcal_activeWorkoutLogs');
+            setElapsedTime(0);
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                setTimerInterval(null);
+            }
+        }
 
         try {
           const res = await fetch(`/api/workouts/logs/${id}`, {
@@ -366,6 +377,12 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
             // Revert on failure
             setWorkoutLogs(previousLogs);
             alert("Failed to delete workout");
+            return;
+          }
+
+          // If we just deleted the last log, also delete the session on server
+          if (newLogs.length === 0) {
+             await fetch('/api/workouts/active-session', { method: 'DELETE' });
           }
         } catch (e) {
           // Revert on error
