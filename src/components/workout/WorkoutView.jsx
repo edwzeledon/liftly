@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Dumbbell, Plus, Download, Folder, Save, Ban, Check, Trophy, X, Play, Trash2, Loader2 } from 'lucide-react';
+import confetti from 'canvas-confetti';
 import WorkoutCard from './WorkoutCard';
 import PickerView from './PickerView';
 import ConfirmModal from '../ConfirmModal';
@@ -470,6 +471,32 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
         
         setCompletedAnimation(true);
         setShowSummary(true);
+        
+        // Trigger Celebration Confetti
+        const duration = 2000;
+        const end = Date.now() + duration;
+
+        (function frame() {
+          confetti({
+            particleCount: 5,
+            angle: 60,
+            spread: 55,
+            origin: { x: 0 },
+            colors: ['#FFD700', '#FFA500', '#6366f1']
+          });
+          confetti({
+            particleCount: 5,
+            angle: 120,
+            spread: 55,
+            origin: { x: 1 },
+            colors: ['#FFD700', '#FFA500', '#6366f1']
+          });
+
+          if (Date.now() < end) {
+            requestAnimationFrame(frame);
+          }
+        }());
+
         if (timerInterval) clearInterval(timerInterval);
         setTimerInterval(null);
         if (onWorkoutComplete) onWorkoutComplete();

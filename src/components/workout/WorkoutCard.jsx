@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { CheckCircle, Trash2, Check, X, Plus, Trophy, Calculator } from 'lucide-react';
+import confetti from 'canvas-confetti';
 import PlateCalculator from './PlateCalculator';
 
 export default function WorkoutCard({ log, onDelete, onUpdate }) {
@@ -8,6 +9,8 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
   const [showCalculator, setShowCalculator] = useState(false);
   const isTemp = String(log.id).startsWith('temp');
   const abortControllerRef = useRef(null);
+  const prevBestSetIndexRef = useRef(-1);
+  const trophyRefs = useRef({});
 
   // Sync state with props if props change (e.g. initial load)
   useEffect(() => {
@@ -213,6 +216,44 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
     return bestIdx;
   }, [sets]);
 
+  // Trigger confetti when a new PR is achieved
+  useEffect(() => {
+    // If we have a valid best set index
+    if (bestSetIndex !== -1) {
+      // Check if it's different from the last one (or if it's the first time we're checking and it's a PR)
+      // We also check if the current best set IS actually a new record
+      const currentSet = sets[bestSetIndex];
+      const isRecord = isNewRecord(currentSet.weight, currentSet.reps);
+
+      if (isRecord && bestSetIndex !== prevBestSetIndexRef.current) {
+        // Get the trophy element position
+        const trophyEl = trophyRefs.current[bestSetIndex];
+        let origin = { x: 0.5, y: 0.5 };
+        
+        if (trophyEl) {
+            const rect = trophyEl.getBoundingClientRect();
+            origin = {
+                x: (rect.left + rect.width / 2) / window.innerWidth,
+                y: (rect.top + rect.height / 2) / window.innerHeight
+            };
+        }
+
+        // Fire miniature confetti around the trophy
+        confetti({
+          particleCount: 30,
+          spread: 40,
+          startVelocity: 20,
+          origin: origin,
+          colors: ['#FFD700', '#FFA500', '#FFEC8B'], // Gold shades
+          disableForReducedMotion: true,
+          scalar: 0.6, // Smaller particles
+          ticks: 60 // Shorter duration
+        });
+      }
+    }
+    prevBestSetIndexRef.current = bestSetIndex;
+  }, [bestSetIndex, sets]); // Depend on sets to access the data
+
   return (
     <div className={`bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:border-indigo-100 transition-all ${isTemp ? 'opacity-60 pointer-events-none' : ''}`}>
       <div className="flex justify-between items-start mb-4">
@@ -224,12 +265,6 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
             <h3 className="font-bold text-slate-800">{log.exercise_name || log.exercise}</h3>
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{log.category}</span>
-              {bestSet && (
-                <span className="text-[10px] font-medium text-amber-500 bg-amber-50 px-2 py-0.5 rounded-full flex items-center gap-1">
-                  <Trophy className="w-3 h-3" />
-                  PR: {bestSet.weight}lb x {bestSet.reps}
-                </span>
-              )}
             </div>
           </div>
         </div>
@@ -323,26 +358,31 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
                 <button 
                   onClick={() => toggleSetCompletion(idx)}
                   className={`p-1.5 rounded-lg transition-all shadow-sm ${
-                    isPR
-                      ? 'bg-amber-500 text-white ring-2 ring-amber-200 shadow-amber-200'
-                      : set.completed 
+                    set.completed 
                         ? 'bg-green-500 text-white ring-2 ring-green-200' 
                         : (!set.weight || !set.reps) 
                           ? 'bg-slate-100 text-slate-300 cursor-not-allowed' 
                           : 'bg-slate-200 text-slate-400 hover:bg-slate-300'
                   }`}
                 >
-                  {isPR ? <Trophy className="w-5 h-5" /> : (set.completed ? <Check className="w-5 h-5" /> : <Check className="w-5 h-5 opacity-0" />)}
+                  {set.completed ? <Check className="w-5 h-5" /> : <Check className="w-5 h-5 opacity-0" />}
                 </button>
               </div>
-             <div className="col-span-1 flex justify-center">
-               {!set.completed && (
+             <div 
+               className="col-span-1 flex justify-center"
+               ref={el => trophyRefs.current[idx] = el}
+             >
+               {!set.completed ? (
                   <button 
                     onClick={() => removeSet(idx)}
                     className="text-slate-300 hover:text-red-500 p-1"
                   >
                     <X className="w-4 h-4" />
                   </button>
+               ) : isPR && (
+                  <div className="animate-in zoom-in duration-500 text-amber-500 drop-shadow-sm">
+                    <Trophy className="w-5 h-5 fill-amber-100" />
+                  </div>
                )}
             </div>
           </div>

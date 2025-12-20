@@ -56,7 +56,7 @@ export default function PlateCalculator({ isOpen, onClose, onApply }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in">
+    <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in">
       <div className="bg-white rounded-3xl p-6 shadow-2xl w-full max-w-sm animate-in zoom-in-95">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-xl font-bold text-slate-800">Plate Calculator</h3>
@@ -83,8 +83,8 @@ export default function PlateCalculator({ isOpen, onClose, onApply }) {
           
           {/* Background decoration */}
           <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-             <div className="absolute right-[-20px] top-[-20px] w-32 h-32 bg-indigo-500 rounded-full blur-3xl"></div>
-             <div className="absolute left-[-20px] bottom-[-20px] w-32 h-32 bg-blue-500 rounded-full blur-3xl"></div>
+             <div className="absolute -right-5 -top-5 w-32 h-32 bg-indigo-500 rounded-full blur-3xl"></div>
+             <div className="absolute -left-5 -bottom-5 w-32 h-32 bg-blue-500 rounded-full blur-3xl"></div>
           </div>
         </div>
 
