@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Utensils, Image as ImageIcon, Trash2, Edit2, Dumbbell, X } from 'lucide-react';
 import { deleteLog, deleteWorkoutLog } from '@/lib/api';
 import ConfirmModal from './ConfirmModal';
@@ -9,6 +10,7 @@ import WorkoutCard from './workout/WorkoutCard';
 export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted, onEditLog }) {
   const [viewMode, setViewMode] = useState('workouts'); // 'meals' | 'workouts'
   const [editingDay, setEditingDay] = useState(null); // { label, logs }
+  const [optimisticallyDeletedIds, setOptimisticallyDeletedIds] = useState(new Set());
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
     title: '',
@@ -27,6 +29,10 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
       isDestructive: true,
       onConfirm: async () => {
         setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        
+        // Optimistic update
+        setOptimisticallyDeletedIds(prev => new Set(prev).add(logId));
+
         try {
           if (viewMode === 'meals') {
             await deleteLog(logId, user.id);
@@ -40,6 +46,12 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
           if (onLogDeleted) onLogDeleted();
         } catch (e) {
           console.error("Error deleting", e);
+          // Revert optimistic update on error
+          setOptimisticallyDeletedIds(prev => {
+            const next = new Set(prev);
+            next.delete(logId);
+            return next;
+          });
         }
       }
     });
@@ -55,6 +67,14 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
       isDestructive: true,
       onConfirm: async () => {
         setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        
+        // Optimistic update
+        setOptimisticallyDeletedIds(prev => {
+            const next = new Set(prev);
+            dayLogs.forEach(log => next.add(log.id));
+            return next;
+        });
+
         try {
           const promises = dayLogs.map(log => deleteWorkoutLog(log.id));
           await Promise.all(promises);
@@ -70,6 +90,12 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
           if (onLogDeleted) onLogDeleted();
         } catch (e) {
           console.error("Error deleting session", e);
+          // Revert optimistic update
+          setOptimisticallyDeletedIds(prev => {
+            const next = new Set(prev);
+            dayLogs.forEach(log => next.delete(log.id));
+            return next;
+          });
         }
       }
     });
@@ -85,12 +111,26 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
       isDestructive: true,
       onConfirm: async () => {
         setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        
+        // Optimistic update
+        setOptimisticallyDeletedIds(prev => {
+            const next = new Set(prev);
+            dayLogs.forEach(log => next.add(log.id));
+            return next;
+        });
+
         try {
           const promises = dayLogs.map(log => deleteLog(log.id, user.id));
           await Promise.all(promises);
           if (onLogDeleted) onLogDeleted();
         } catch (e) {
           console.error("Error deleting day meals", e);
+          // Revert optimistic update
+          setOptimisticallyDeletedIds(prev => {
+            const next = new Set(prev);
+            dayLogs.forEach(log => next.delete(log.id));
+            return next;
+          });
         }
       }
     });
@@ -134,7 +174,9 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
 
   // Group by date and sort descending
   const groupedLogs = useMemo(() => {
-    const currentLogs = viewMode === 'meals' ? logs : workoutLogs;
+    const currentLogs = (viewMode === 'meals' ? logs : workoutLogs)
+      .filter(log => !optimisticallyDeletedIds.has(log.id));
+      
     const groups = {};
     
     currentLogs.forEach(log => {
@@ -162,7 +204,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
         });
         return { label, logs: group.logs };
       });
-  }, [logs, workoutLogs, viewMode]);
+  }, [logs, workoutLogs, viewMode, optimisticallyDeletedIds]);
 
   return (
     <div className="p-6 md:p-0 min-h-full pb-20 md:pb-0">
@@ -285,9 +327,17 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
            <p>No {viewMode} logged yet</p>
          </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-6" key={viewMode}>
+          <AnimatePresence mode="popLayout">
           {groupedLogs.map(({ label, logs: dayLogs }) => (
-            <div key={label}>
+            <motion.div 
+              key={label}
+              layout
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+            >
               <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 sticky top-0 bg-slate-50 py-2 z-10 backdrop-blur-sm">
                 {label}
               </h3>
@@ -405,8 +455,9 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
                   </div>
                 </div>
               )}
-            </div>
+            </motion.div>
           ))}
+          </AnimatePresence>
         </div>
       )}
       <ConfirmModal 
