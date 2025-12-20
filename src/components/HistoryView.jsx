@@ -17,7 +17,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
     isDestructive: true
   });
 
-  const handleDeleteLog = async (logId) => {
+  const handleDeleteLog = async (logId, exerciseName = null) => {
     if(!user) return;
     
     setConfirmModal({
@@ -32,6 +32,10 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
             await deleteLog(logId, user.id);
           } else {
             await deleteWorkoutLog(logId);
+            // Clear PR cache if exercise name is provided
+            if (exerciseName) {
+              localStorage.removeItem(`snapcal_pr_${exerciseName}`);
+            }
           }
           if (onLogDeleted) onLogDeleted();
         } catch (e) {
@@ -54,6 +58,15 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
         try {
           const promises = dayLogs.map(log => deleteWorkoutLog(log.id));
           await Promise.all(promises);
+          
+          // Clear PR Cache for these exercises
+          dayLogs.forEach(log => {
+             const name = log.exercise || log.exercise_name;
+             if (name) {
+                 localStorage.removeItem(`snapcal_pr_${name}`);
+             }
+          });
+
           if (onLogDeleted) onLogDeleted();
         } catch (e) {
           console.error("Error deleting session", e);
@@ -208,7 +221,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
                     log={log} 
                     onDelete={(id) => {
                       // Handle delete within modal
-                      handleDeleteLog(id);
+                      handleDeleteLog(id, log.exercise || log.exercise_name);
                       setEditingDay(prev => ({
                         ...prev,
                         logs: prev.logs.filter(l => l.id !== id)

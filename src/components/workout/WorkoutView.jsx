@@ -345,6 +345,15 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       onConfirm: async () => {
         setConfirmModal(prev => ({ ...prev, isOpen: false }));
         
+        // Find the log to get the exercise name for cache clearing
+        const logToDelete = workoutLogs.find(log => log.id === id);
+        if (logToDelete) {
+            const exerciseName = logToDelete.exercise_name || logToDelete.exercise;
+            if (exerciseName) {
+                localStorage.removeItem(`snapcal_pr_${exerciseName}`);
+            }
+        }
+
         // Optimistic update
         const previousLogs = [...workoutLogs];
         setWorkoutLogs(prev => prev.filter(log => log.id !== id));
@@ -400,10 +409,46 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       });
 
       if (res.ok) {
+        // Calculate Records Hit
+        let recordsCount = 0;
+        
+        // Check each log against cached PRs
+        for (const log of workoutLogs) {
+          const exerciseName = log.exercise_name || log.exercise;
+          if (!exerciseName) continue;
+          
+          const cacheKey = `snapcal_pr_${exerciseName}`;
+          const cached = localStorage.getItem(cacheKey);
+          
+          if (cached) {
+            try {
+              const bestSet = JSON.parse(cached);
+              const bestW = parseFloat(bestSet.weight) || 0;
+              const bestR = parseFloat(bestSet.reps) || 0;
+              
+              // Check if any set in this log beat the PR
+              const beatPR = log.sets.some(set => {
+                if (!set.completed) return false;
+                const w = parseFloat(set.weight) || 0;
+                const r = parseFloat(set.reps) || 0;
+                
+                if (w > bestW) return true;
+                if (w === bestW && r > bestR) return true;
+                return false;
+              });
+              
+              if (beatPR) recordsCount++;
+            } catch (e) {
+              console.error("Error checking PR for summary", e);
+            }
+          }
+        }
+        
         // Capture summary data BEFORE clearing logs via onWorkoutComplete
         setSummaryData({
           duration: elapsedTime,
-          count: workoutLogs.length
+          count: workoutLogs.length,
+          records: recordsCount
         });
         
         setCompletedAnimation(true);
@@ -472,6 +517,14 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
         // Capture logs to delete (closure captures current state)
         const logsToDelete = workoutLogs;
 
+        // Clear PR Cache for all exercises in the discarded workout
+        logsToDelete.forEach(log => {
+            const exerciseName = log.exercise_name || log.exercise;
+            if (exerciseName) {
+                localStorage.removeItem(`snapcal_pr_${exerciseName}`);
+            }
+        });
+
         // Optimistic Update: Clear UI immediately
         setWorkoutLogs([]);
         localStorage.removeItem('snapcal_activeWorkoutLogs');
@@ -532,8 +585,8 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
             <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
               <Trophy className="w-10 h-10 text-yellow-600" />
             </div>
-            <h2 className="text-2xl font-bold text-slate-800 mb-2">Workout Complete!</h2>
-            <p className="text-slate-500 mb-6">You crushed it. Here's your summary:</p>
+            <h2 className="text-2xl font-bold text-slate-800 mb-2">You Crushed It!</h2>
+            <p className="text-slate-500 mb-6">Here's your summary:</p>
             
             <div className="grid grid-cols-2 gap-4 w-full mb-6">
               <div className="bg-slate-50 p-4 rounded-2xl">
@@ -545,6 +598,22 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
                 <p className="text-xl font-bold text-slate-800">{summaryData.count}</p>
               </div>
             </div>
+            
+            {/* New Records Section */}
+            {summaryData.records > 0 && (
+              <div className="w-full bg-amber-50 p-4 rounded-2xl mb-6 flex items-center justify-between animate-in zoom-in-95 duration-500 delay-150">
+                 <div className="flex items-center gap-3">
+                   <div className="p-2 bg-amber-100 rounded-full text-amber-600">
+                     <Trophy className="w-5 h-5" />
+                   </div>
+                   <div className="text-left">
+                     <p className="font-bold text-slate-800">New Records</p>
+                     <p className="text-xs text-slate-500">Personal Bests Crushed</p>
+                   </div>
+                 </div>
+                 <span className="text-2xl font-bold text-amber-600">{summaryData.records}</span>
+              </div>
+            )}
 
             <button 
               onClick={closeSummary}

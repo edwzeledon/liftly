@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { CheckCircle, Trash2, Check, X, Plus } from 'lucide-react';
+import { CheckCircle, Trash2, Check, X, Plus, Trophy } from 'lucide-react';
 
 export default function WorkoutCard({ log, onDelete, onUpdate }) {
   const [sets, setSets] = useState(log.sets || []);
+  const [bestSet, setBestSet] = useState(null);
   const isTemp = String(log.id).startsWith('temp');
   const abortControllerRef = useRef(null);
 
@@ -10,6 +11,58 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
   useEffect(() => {
     setSets(log.sets || []);
   }, [log.sets]);
+
+  // Fetch Personal Record (Best Set)
+  useEffect(() => {
+    const fetchBestSet = async () => {
+      const exerciseName = log.exercise_name || log.exercise;
+      if (!exerciseName) return;
+
+      // 1. Try Local Cache First
+      const cacheKey = `snapcal_pr_${exerciseName}`;
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        try {
+          setBestSet(JSON.parse(cached));
+        } catch (e) {
+          console.error("Error parsing cached PR", e);
+        }
+      }
+
+      // 2. Fetch from API (Background Update)
+      try {
+        const res = await fetch(`/api/workouts/history/best?exercise=${encodeURIComponent(exerciseName)}`);
+        if (res.ok) {
+          const data = await res.json();
+          
+          // Only update if data changed to avoid unnecessary re-renders
+          if (JSON.stringify(data) !== cached) {
+            setBestSet(data);
+            if (data) {
+              localStorage.setItem(cacheKey, JSON.stringify(data));
+            } else {
+              localStorage.removeItem(cacheKey);
+            }
+          }
+        }
+      } catch (e) {
+        console.error("Error fetching PR", e);
+      }
+    };
+    fetchBestSet();
+  }, [log.exercise_name, log.exercise]);
+
+  const isNewRecord = (weight, reps) => {
+    if (!bestSet) return false;
+    const w = parseFloat(weight) || 0;
+    const r = parseFloat(reps) || 0;
+    const bestW = parseFloat(bestSet.weight) || 0;
+    const bestR = parseFloat(bestSet.reps) || 0;
+
+    if (w > bestW) return true;
+    if (w === bestW && r > bestR) return true;
+    return false;
+  };
 
   const updateParent = (newSets) => {
     if (onUpdate) {
@@ -126,7 +179,15 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
           </div>
           <div>
             <h3 className="font-bold text-slate-800">{log.exercise_name || log.exercise}</h3>
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{log.category}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{log.category}</span>
+              {bestSet && (
+                <span className="text-[10px] font-medium text-amber-500 bg-amber-50 px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <Trophy className="w-3 h-3" />
+                  PR: {bestSet.weight}lb x {bestSet.reps}
+                </span>
+              )}
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-1">
@@ -160,56 +221,69 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
           <div className="col-span-1"></div>
         </div>
 
-        {sets.map((set, idx) => (
-          <div 
-            key={idx} 
-            className={`grid grid-cols-10 gap-2 items-center transition-all ${set.completed ? 'opacity-50' : 'opacity-100'}`}
-          >
-            <div className="col-span-1 flex justify-center">
-              <div className="w-6 h-6 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-xs font-bold">
-                {idx + 1}
+        {sets.map((set, idx) => {
+          const isPR = set.completed && isNewRecord(set.weight, set.reps);
+          
+          return (
+            <div 
+              key={idx} 
+              className={`grid grid-cols-10 gap-2 items-center transition-all ${set.completed ? (isPR ? 'opacity-100' : 'opacity-50') : 'opacity-100'}`}
+            >
+              <div className="col-span-1 flex justify-center">
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${isPR ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-500'}`}>
+                  {idx + 1}
+                </div>
               </div>
-            </div>
-            <div className="col-span-3">
-              <input 
-                type="number" 
-                inputMode="decimal"
-                min="0"
-                value={set.weight}
-                onChange={e => updateSet(idx, 'weight', e.target.value)}
-                onBlur={handleBlur}
-                disabled={set.completed}
-                placeholder="-"
-                className="w-full text-center py-2 bg-slate-50 border border-slate-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none font-bold text-slate-800 text-sm disabled:bg-slate-100"
-              />
-            </div>
-            <div className="col-span-3">
-              <input 
-                type="number"
-                inputMode="numeric" 
-                min="0"
-                value={set.reps}
-                onChange={e => updateSet(idx, 'reps', e.target.value)}
-                onBlur={handleBlur}
-                disabled={set.completed}
-                placeholder="-"
-                className="w-full text-center py-2 bg-slate-50 border border-slate-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none font-bold text-slate-800 text-sm disabled:bg-slate-100"
-              />
-            </div>
-            <div className="col-span-2 flex justify-center">
-              <button 
-                onClick={() => toggleSetCompletion(idx)}
-                className={`p-1.5 rounded-lg transition-all shadow-sm ${
-                  set.completed 
-                    ? 'bg-green-500 text-white ring-2 ring-green-200' 
-                    : (!set.weight || !set.reps) 
-                      ? 'bg-slate-100 text-slate-300 cursor-not-allowed' 
-                      : 'bg-slate-200 text-slate-400 hover:bg-slate-300'
-                }`}
-              >
-                {set.completed ? <Check className="w-5 h-5" /> : <Check className="w-5 h-5 opacity-0" />}
-              </button>
-            </div>
+              <div className="col-span-3">
+                <input 
+                  type="number" 
+                  inputMode="decimal"
+                  min="0"
+                  value={set.weight}
+                  onChange={e => updateSet(idx, 'weight', e.target.value)}
+                  onBlur={handleBlur}
+                  disabled={set.completed}
+                  placeholder="-"
+                  className={`w-full text-center py-2 border rounded-lg outline-none font-bold text-sm disabled:bg-slate-100 transition-all ${
+                    isPR 
+                      ? 'bg-amber-50 border-amber-200' 
+                      : 'bg-slate-50 border-slate-200 text-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100'
+                  }`}
+                />
+              </div>
+              <div className="col-span-3">
+                <input 
+                  type="number"
+                  inputMode="numeric" 
+                  min="0"
+                  value={set.reps}
+                  onChange={e => updateSet(idx, 'reps', e.target.value)}
+                  onBlur={handleBlur}
+                  disabled={set.completed}
+                  placeholder="-"
+                  className={`w-full text-center py-2 border rounded-lg outline-none font-bold text-sm disabled:bg-slate-100 transition-all ${
+                    isPR 
+                      ? 'bg-amber-50 border-amber-200' 
+                      : 'bg-slate-50 border-slate-200 text-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100'
+                  }`}
+                />
+              </div>
+              <div className="col-span-2 flex justify-center">
+                <button 
+                  onClick={() => toggleSetCompletion(idx)}
+                  className={`p-1.5 rounded-lg transition-all shadow-sm ${
+                    isPR
+                      ? 'bg-amber-500 text-white ring-2 ring-amber-200 shadow-amber-200'
+                      : set.completed 
+                        ? 'bg-green-500 text-white ring-2 ring-green-200' 
+                        : (!set.weight || !set.reps) 
+                          ? 'bg-slate-100 text-slate-300 cursor-not-allowed' 
+                          : 'bg-slate-200 text-slate-400 hover:bg-slate-300'
+                  }`}
+                >
+                  {isPR ? <Trophy className="w-5 h-5" /> : (set.completed ? <Check className="w-5 h-5" /> : <Check className="w-5 h-5 opacity-0" />)}
+                </button>
+              </div>
              <div className="col-span-1 flex justify-center">
                {!set.completed && (
                   <button 
@@ -221,7 +295,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
                )}
             </div>
           </div>
-        ))}
+        ); })}
 
         <button 
           onClick={addSet}
