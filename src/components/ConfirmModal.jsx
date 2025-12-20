@@ -1,7 +1,7 @@
 import React from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Loader2 } from 'lucide-react';
 
-export default function ConfirmModal({ isOpen, title, message, onConfirm, onCancel, confirmText = 'Delete', cancelText = 'Cancel', isDestructive = true }) {
+export default function ConfirmModal({ isOpen, title, message, onConfirm, onCancel, confirmText = 'Delete', cancelText = 'Cancel', isDestructive = true, isLoading = false }) {
   if (!isOpen) return null;
 
   return (
@@ -18,15 +18,17 @@ export default function ConfirmModal({ isOpen, title, message, onConfirm, onCanc
         <div className="flex gap-3">
           <button 
             onClick={onCancel}
-            className="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl font-medium hover:bg-slate-200 transition-colors"
+            disabled={isLoading}
+            className="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl font-medium hover:bg-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {cancelText}
           </button>
           <button 
             onClick={onConfirm}
-            className={`flex-1 py-3 text-white rounded-xl font-medium transition-colors ${isDestructive ? 'bg-red-600 hover:bg-red-700' : 'bg-indigo-600 hover:bg-indigo-700'}`}
+            disabled={isLoading}
+            className={`flex-1 py-3 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2 ${isDestructive ? 'bg-red-600 hover:bg-red-700' : 'bg-indigo-600 hover:bg-indigo-700'} disabled:opacity-50 disabled:cursor-not-allowed`}
           >
-            {confirmText}
+            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : confirmText}
           </button>
         </div>
       </div>

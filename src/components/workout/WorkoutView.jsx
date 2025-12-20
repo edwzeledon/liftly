@@ -396,9 +396,11 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
 
   // Summary State
   const [summaryData, setSummaryData] = useState({ duration: 0, count: 0 });
+  const [isFinishing, setIsFinishing] = useState(false);
 
   const submitWorkout = async () => {
     if (!user) return;
+    setIsFinishing(true);
     try {
       // 1. Prune incomplete sets for each log before finishing
       // This ensures only "Done" sets are saved to history
@@ -471,6 +473,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
         
         setCompletedAnimation(true);
         setShowSummary(true);
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
         
         // Trigger Celebration Confetti
         const duration = 2000;
@@ -503,6 +506,8 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       }
     } catch (e) {
       console.error("Error finishing workout", e);
+    } finally {
+      setIsFinishing(false);
     }
   };
 
@@ -520,7 +525,6 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
         isDestructive: false,
         confirmText: 'Finish Anyway',
         onConfirm: async () => {
-          setConfirmModal(prev => ({ ...prev, isOpen: false }));
           await submitWorkout();
         }
       });
@@ -533,7 +537,6 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
         isDestructive: false,
         confirmText: 'Finish',
         onConfirm: async () => {
-          setConfirmModal(prev => ({ ...prev, isOpen: false }));
           await submitWorkout();
         }
       });
@@ -620,6 +623,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
         onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
         isDestructive={confirmModal.isDestructive}
         confirmText={confirmModal.confirmText}
+        isLoading={isFinishing}
       />
 
       {/* Summary Modal */}
