@@ -28,6 +28,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
   const [form, setForm] = useState({ foodItem: '', calories: '', protein: '', carbs: '', fats: '', mealType: 'snack' });
   const [error, setError] = useState('');
   const [isDragging, setIsDragging] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   
   // Camera State
   const videoRef = useRef(null);
@@ -200,6 +201,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
     if (!form.foodItem || !form.calories) return;
     if (!user) return;
 
+    setIsSaving(true);
     try {
       await addLog(user.id, {
         foodItem: form.foodItem,
@@ -214,6 +216,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
     } catch (err) {
       console.error(err);
       setError("Failed to save entry.");
+      setIsSaving(false);
     }
   };
 
@@ -223,6 +226,8 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
     if (preview && mode === 'scan') return 'max-w-4xl'; // Wide for split view
     return 'max-w-lg'; // Narrow for initial/manual
   };
+
+  const isFullScreenMode = (isCameraActive || capturedImage) && !preview;
 
   return (
     <div 
@@ -238,66 +243,74 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
         </div>
       )}
 
-      <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-white z-10">
-        <h2 className="text-2xl font-bold text-slate-800">Add Meal</h2>
-        <button onClick={() => { stopCamera(); onCancel(); }} className="p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition-colors">
-          <X className="w-5 h-5 text-slate-600" />
-        </button>
-      </div>
+      {!isFullScreenMode && (
+        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-white z-10">
+          <h2 className="text-2xl font-bold text-slate-800">Add Meal</h2>
+          <button onClick={() => { stopCamera(); onCancel(); }} className="p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition-colors">
+            <X className="w-5 h-5 text-slate-600" />
+          </button>
+        </div>
+      )}
 
       <div className={`flex-1 overflow-y-auto md:overflow-visible flex flex-col ${preview && mode === 'scan' ? 'md:flex-row' : ''} transition-all duration-500`}>
         
         {/* Left Side (Camera/Image/Dropzone) */}
-        <div className={`p-6 ${preview && mode === 'scan' ? 'md:w-1/2 border-b md:border-b-0 md:border-r border-slate-100' : 'w-full'} transition-all duration-500`}>
+        <div className={`${isFullScreenMode ? 'p-0 h-full' : 'p-6'} ${preview && mode === 'scan' ? 'md:w-1/2 border-b md:border-b-0 md:border-r border-slate-100' : 'w-full'} transition-all duration-500`}>
           
           {/* Tabs */}
-          <div className="flex p-1 bg-slate-100 rounded-xl mb-6">
-            <button 
-              onClick={() => { 
-                if (!preview && scanCount < MAX_DAILY_SCANS) {
-                  setMode('scan'); 
-                  stopCamera(); 
-                  setPreview(null); 
-                }
-              }}
-              disabled={scanCount >= MAX_DAILY_SCANS}
-              className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
-                mode === 'scan' 
-                  ? 'bg-white text-indigo-600 shadow-sm' 
-                  : scanCount >= MAX_DAILY_SCANS
-                    ? 'text-slate-300 cursor-not-allowed'
-                    : 'text-slate-500 hover:text-slate-700'
-              }`}
-            >
-              {scanCount >= MAX_DAILY_SCANS ? `Scan Limit (${MAX_DAILY_SCANS}/${MAX_DAILY_SCANS})` : `AI Scan (${MAX_DAILY_SCANS - scanCount} left)`}
-            </button>
-            <button 
-              onClick={() => { 
-                if (!preview) {
-                  setMode('manual'); 
-                  stopCamera(); 
-                  setPreview(null); 
-                }
-              }}
-              disabled={!!preview}
-              className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
-                mode === 'manual' 
-                  ? 'bg-white text-indigo-600 shadow-sm' 
-                  : preview 
-                    ? 'text-slate-300 cursor-not-allowed' 
-                    : 'text-slate-500 hover:text-slate-700'
-              }`}
-            >
-              Manual Entry
-            </button>
-          </div>
+          {!isFullScreenMode && (
+            <div className="flex p-1 bg-slate-100 rounded-xl mb-6">
+              <button 
+                onClick={() => { 
+                  if (!preview && scanCount < MAX_DAILY_SCANS) {
+                    setMode('scan'); 
+                    stopCamera(); 
+                    setPreview(null); 
+                  }
+                }}
+                disabled={scanCount >= MAX_DAILY_SCANS}
+                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
+                  mode === 'scan' 
+                    ? 'bg-white text-indigo-600 shadow-sm' 
+                    : scanCount >= MAX_DAILY_SCANS
+                      ? 'text-slate-300 cursor-not-allowed'
+                      : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                {scanCount >= MAX_DAILY_SCANS ? `Scan Limit (${MAX_DAILY_SCANS}/${MAX_DAILY_SCANS})` : `AI Scan (${MAX_DAILY_SCANS - scanCount} left)`}
+              </button>
+              <button 
+                onClick={() => { 
+                  if (!preview) {
+                    setMode('manual'); 
+                    stopCamera(); 
+                    setPreview(null); 
+                  }
+                }}
+                disabled={!!preview}
+                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
+                  mode === 'manual' 
+                    ? 'bg-white text-indigo-600 shadow-sm' 
+                    : preview 
+                      ? 'text-slate-300 cursor-not-allowed' 
+                      : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                Manual Entry
+              </button>
+            </div>
+          )}
 
           {/* Scan Mode UI */}
           {mode === 'scan' && (
-            <div className="flex-1 flex flex-col relative">
+            <div className={`flex-1 flex flex-col relative ${isFullScreenMode ? 'h-full' : ''}`}>
               
               {/* Main Content Area: Camera, Preview, or Buttons */}
-              <div className={`relative rounded-3xl overflow-hidden shadow-sm bg-slate-50 flex flex-col items-center justify-center border-2 border-dashed border-indigo-100 transition-all duration-500 ${isCameraActive ? 'min-h-[60vh] md:min-h-[500px]' : 'min-h-[40vh] md:min-h-[400px]'}`}>
+              <div className={`relative overflow-hidden shadow-sm bg-slate-50 flex flex-col items-center justify-center transition-all duration-500 
+                ${isFullScreenMode 
+                  ? 'absolute inset-0 w-full h-full rounded-none border-0' 
+                  : 'rounded-3xl border-2 border-dashed border-indigo-100 min-h-[40vh] md:min-h-[400px]'
+                }`}>
                 
                 {/* 1. Camera View */}
                 <video 
@@ -317,6 +330,16 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                     <Loader2 className="w-10 h-10 animate-spin mb-3" />
                     <p className="font-medium">Analyzing with Gemini...</p>
                   </div>
+                )}
+
+                {/* Close Button for Full Screen Mode */}
+                {isFullScreenMode && (
+                  <button 
+                    onClick={() => { stopCamera(); setCapturedImage(null); }} 
+                    className="absolute top-6 right-6 p-3 bg-black/40 text-white rounded-full backdrop-blur-md z-30 hover:bg-black/60 transition-colors shadow-lg"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
                 )}
 
                 {/* 4. Initial Buttons (Visible if no camera active & no preview & no captured image) */}
@@ -365,12 +388,6 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                       className="w-16 h-16 bg-white rounded-full border-4 border-indigo-500 shadow-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
                     >
                       <div className="w-12 h-12 bg-indigo-600 rounded-full"></div>
-                    </button>
-                    <button 
-                      onClick={stopCamera}
-                      className="absolute right-6 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full backdrop-blur-md"
-                    >
-                      <X className="w-5 h-5" />
                     </button>
                   </div>
                 )}
@@ -502,10 +519,11 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
 
               <button 
                 type="submit"
-                className="w-full py-4 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 active:scale-95 transition-all shadow-lg shadow-indigo-200 mt-4 flex items-center justify-center gap-2"
+                disabled={isSaving}
+                className="w-full py-4 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 active:scale-95 transition-all shadow-lg shadow-indigo-200 mt-4 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                <Check className="w-5 h-5" />
-                Save Entry
+                {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}
+                {isSaving ? 'Saving...' : 'Save Entry'}
               </button>
             </form>
           </div>
