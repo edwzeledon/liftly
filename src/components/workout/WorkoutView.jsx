@@ -113,14 +113,30 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Fetch Templates
-  const fetchTemplates = async () => {
+  // Fetch Templates (cached)
+  const fetchTemplates = async (forceRefetch = false) => {
     if (!user) return;
+    
+    const cacheKey = 'snapcal_workout_templates';
+    const cached = localStorage.getItem(cacheKey);
+    
+    // Use cache if available and not forcing refetch
+    if (!forceRefetch && cached) {
+      try {
+        setTemplates(JSON.parse(cached));
+        return;
+      } catch (e) {
+        console.error("Error parsing cached templates", e);
+      }
+    }
+    
+    // Fetch from API
     try {
       const res = await fetch('/api/workouts/templates');
       if (res.ok) {
         const data = await res.json();
         setTemplates(data);
+        localStorage.setItem(cacheKey, JSON.stringify(data));
       }
     } catch (e) {
       console.error("Error fetching templates", e);
@@ -128,9 +144,24 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
   };
 
   const fetchExercises = async () => {
+    const cacheKey = 'snapcal_exercises_list';
+    const cached = localStorage.getItem(cacheKey);
+    
+    // Use cache if available
+    if (cached) {
+      try {
+        setAllExercises(JSON.parse(cached));
+        return;
+      } catch (e) {
+        console.error("Error parsing cached exercises", e);
+      }
+    }
+    
+    // Fetch from API and cache
     try {
       const data = await getExercises();
       setAllExercises(data);
+      localStorage.setItem(cacheKey, JSON.stringify(data));
     } catch (error) {
       console.error("Failed to load exercises", error);
     }
@@ -160,28 +191,49 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
     };
     setWorkoutLogs(prev => [...prev, tempLog]);
 
-    // 2. Fetch history in background
+    // 2. Fetch history (cached) - combined endpoint for best + last
     let initialSets = [{ weight: '', reps: '', completed: false }];
-    try {
-      const res = await fetch(`/api/workouts/history/last?exercise=${encodeURIComponent(exercise.name)}`);
-      if (res.ok) {
-        const lastLog = await res.json();
-        if (lastLog && lastLog.sets && lastLog.sets.length > 0) {
-          initialSets = lastLog.sets.map(s => ({
+    const cacheKey = `snapcal_history_${exercise.name}`;
+    const cached = localStorage.getItem(cacheKey);
+    
+    if (cached) {
+      // Use cached data
+      try {
+        const cachedData = JSON.parse(cached);
+        if (cachedData.last && cachedData.last.sets && cachedData.last.sets.length > 0) {
+          initialSets = cachedData.last.sets.map(s => ({
             weight: s.weight,
             reps: s.reps,
             completed: false
           }));
-          
-          // Update local state with history data immediately
-          setWorkoutLogs(prev => prev.map(log => 
-            log.id === tempId ? { ...log, sets: initialSets } : log
-          ));
         }
+      } catch (e) {
+        console.error("Error parsing cached history", e);
       }
-    } catch (e) {
-      console.error("Error fetching last log", e);
+    } else {
+      // Fetch and cache (combines best + last in one request)
+      try {
+        const res = await fetch(`/api/workouts/history?exercise=${encodeURIComponent(exercise.name)}`);
+        if (res.ok) {
+          const historyData = await res.json();
+          if (historyData.last && historyData.last.sets && historyData.last.sets.length > 0) {
+            initialSets = historyData.last.sets.map(s => ({
+              weight: s.weight,
+              reps: s.reps,
+              completed: false
+            }));
+          }
+          localStorage.setItem(cacheKey, JSON.stringify(historyData));
+        }
+      } catch (e) {
+        console.error("Error fetching history", e);
+      }
     }
+    
+    // Update with history data
+    setWorkoutLogs(prev => prev.map(log => 
+      log.id === tempId ? { ...log, sets: initialSets } : log
+    ));
 
     // 3. Persist to DB
     try {
@@ -232,7 +284,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       if (res.ok) {
         setTemplateName('');
         setShowSaveTemplate(false);
-        fetchTemplates();
+        fetchTemplates(true); // Force refetch after save
       }
     } catch (e) {
       console.error("Error saving template", e);
@@ -248,16 +300,18 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
 
     // Helper to process a single exercise
     const processExercise = async (ex) => {
-      // Fetch last log for prefill
+      // Fetch history for prefill (cached) - combined endpoint
       let setsToUse = ex.sets;
-      try {
-        const res = await fetch(`/api/workouts/history/last?exercise=${encodeURIComponent(ex.exercise)}`);
-        if (res.ok) {
-          const lastLog = await res.json();
-          if (lastLog && lastLog.sets) {
-            // Merge template structure with history values
+      const cacheKey = `snapcal_history_${ex.exercise}`;
+      const cached = localStorage.getItem(cacheKey);
+      
+      if (cached) {
+        // Use cached data
+        try {
+          const historyData = JSON.parse(cached);
+          if (historyData.last && historyData.last.sets) {
             setsToUse = ex.sets.map((templateSet, index) => {
-              const historySet = lastLog.sets[index];
+              const historySet = historyData.last.sets[index];
               return {
                 ...templateSet,
                 weight: historySet ? historySet.weight : '',
@@ -266,9 +320,31 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
               };
             });
           }
+        } catch (e) {
+          console.error("Error parsing cached history", e);
         }
-      } catch (e) {
-        console.error("Error fetching history for template load", e);
+      } else {
+        // Fetch and cache (combines best + last in one request)
+        try {
+          const res = await fetch(`/api/workouts/history?exercise=${encodeURIComponent(ex.exercise)}`);
+          if (res.ok) {
+            const historyData = await res.json();
+            if (historyData.last && historyData.last.sets) {
+              setsToUse = ex.sets.map((templateSet, index) => {
+                const historySet = historyData.last.sets[index];
+                return {
+                  ...templateSet,
+                  weight: historySet ? historySet.weight : '',
+                  reps: historySet ? historySet.reps : '',
+                  completed: false
+                };
+              });
+            }
+            localStorage.setItem(cacheKey, JSON.stringify(historyData));
+          }
+        } catch (e) {
+          console.error("Error fetching history for template load", e);
+        }
       }
 
       return fetch('/api/workouts/logs', {
@@ -326,6 +402,9 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
             // Revert on failure
             setTemplates(previousTemplates);
             console.error("Failed to delete template");
+          } else {
+            // Update cache on success
+            localStorage.setItem('snapcal_workout_templates', JSON.stringify(templates.filter(t => t.id !== id)));
           }
         } catch (e) {
           console.error("Error deleting template", e);
@@ -502,6 +581,14 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
 
         if (timerInterval) clearInterval(timerInterval);
         setTimerInterval(null);
+        
+        // Clear workout history caches so next workout gets fresh data
+        Object.keys(localStorage).forEach(key => {
+          if (key.startsWith('snapcal_history_')) {
+            localStorage.removeItem(key);
+          }
+        });
+        
         if (onWorkoutComplete) onWorkoutComplete();
       }
     } catch (e) {

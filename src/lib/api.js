@@ -89,11 +89,24 @@ export async function getDailyStats(date) {
 }
 
 export async function getWeightHistory(range) {
-  const response = await fetch(`/api/daily-stats?range=${range}`, {
-    headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
-  });
+  const cacheKey = `snapcal_weight_history_${range}`;
+  const cached = localStorage.getItem(cacheKey);
+  
+  // Use cached data if available (persists until new weight logged)
+  if (cached) {
+    try {
+      return JSON.parse(cached);
+    } catch (e) {
+      console.error("Error parsing cached weight history", e);
+    }
+  }
+  
+  // Fetch from API and cache
+  const response = await fetch(`/api/daily-stats?range=${range}`);
   if (!response.ok) throw new Error('Failed to fetch weight history');
-  return response.json();
+  const data = await response.json();
+  localStorage.setItem(cacheKey, JSON.stringify(data));
+  return data;
 }
 
 export async function updateDailyStats(data) {
@@ -103,7 +116,16 @@ export async function updateDailyStats(data) {
     body: JSON.stringify(data)
   });
   if (!response.ok) throw new Error('Failed to update daily stats');
-  return response.json();
+  const result = await response.json();
+  
+  // Invalidate weight history cache only if weight was updated
+  if (data.weight !== undefined) {
+    ['week', 'month', '90days'].forEach(range => {
+      localStorage.removeItem(`snapcal_weight_history_${range}`);
+    });
+  }
+  
+  return result;
 }
 
 export async function getWorkoutLogs() {
