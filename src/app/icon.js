@@ -34,14 +34,14 @@ export default function Icon() {
           xmlns="http://www.w3.org/2000/svg"
         >
            <path
-            d="M50 20 
-               C 75 20, 85 40, 85 60
-               C 85 85, 65 90, 50 90
-               C 35 90, 15 85, 15 60
-               C 15 40, 25 20, 50 20
-               Z"
-            fill="#EBE9E4" // Bone
+            d="M 75 18 H 35 C 22 18, 15 25, 15 38 V 62 C 15 75, 22 82, 35 82 H 65 C 78 82, 85 75, 85 62 V 38"
+            stroke="#EBE9E4"
+            strokeWidth="10"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           />
+          <circle cx="56" cy="50" r="14" fill="#EBE9E4" style={{ opacity: 0.25 }} />
+          <circle cx="50" cy="50" r="14" fill="#EBE9E4" />
         </svg>
       </div>
     ),
