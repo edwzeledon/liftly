@@ -481,29 +481,52 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
     if (!user) return;
     setIsFinishing(true);
     try {
-      // 1. Prune incomplete sets for each log before finishing
-      // This ensures only "Done" sets are saved to history
-      const updatePromises = workoutLogs.map(log => {
+      // 1. Prune incomplete sets and delete empty logs
+      const results = await Promise.all(workoutLogs.map(async (log) => {
         const completedSets = log.sets.filter(s => s.completed);
-        // Only update if we are actually removing incomplete sets
-        if (completedSets.length !== log.sets.length) {
-             return fetch(`/api/workouts/logs/${log.id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ sets: completedSets })
-             });
+        
+        if (completedSets.length === 0) {
+            // No completed sets, delete the log
+            await fetch(`/api/workouts/logs/${log.id}`, { method: 'DELETE' });
+            return null;
+        } else {
+            // Has completed sets, update if needed
+            if (completedSets.length !== log.sets.length) {
+                 await fetch(`/api/workouts/logs/${log.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sets: completedSets })
+                 });
+            }
+            return log.id;
         }
-        return Promise.resolve();
-      });
+      }));
 
-      await Promise.all(updatePromises);
+      const validLogIds = results.filter(id => id !== null);
+
+      // 2. Check if we have any valid logs left
+      if (validLogIds.length === 0) {
+          // No valid logs, delete the session entirely
+          await fetch('/api/workouts/active-session', { method: 'DELETE' });
+          
+          // Clear local state/cache
+          if (timerInterval) clearInterval(timerInterval);
+          setTimerInterval(null);
+          Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('snapcal_history_')) {
+                localStorage.removeItem(key);
+            }
+          });
+          if (onWorkoutComplete) onWorkoutComplete();
+          return;
+      }
 
       const res = await fetch('/api/workouts/finish', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           duration: elapsedTime,
-          ids: workoutLogs.map(log => log.id)
+          ids: validLogIds
         })
       });
 
@@ -869,7 +892,12 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
           {workoutLogs.length > 0 && (
             <button 
               onClick={handleCompleteWorkout}
-              className="px-4 py-2 bg-slate-900 text-white rounded-xl font-bold shadow-lg hover:bg-slate-800 active:scale-95 transition-all flex items-center gap-2 text-sm"
+              disabled={!workoutLogs.some(log => log.sets.some(s => s.completed))}
+              className={`px-4 py-2 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2 text-sm ${
+                !workoutLogs.some(log => log.sets.some(s => s.completed))
+                  ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none' 
+                  : 'bg-slate-900 text-white hover:bg-slate-800 active:scale-95'
+              }`}
             >
               <Check className="w-4 h-4" />
               Finish
