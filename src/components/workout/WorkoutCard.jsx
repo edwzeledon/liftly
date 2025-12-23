@@ -108,14 +108,11 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
-    // Only save completed sets to the database
-    const completedSets = newSets.filter(s => s.completed);
-
     try {
       const response = await fetch(`/api/workouts/logs/${log.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sets: completedSets }),
+        body: JSON.stringify({ sets: newSets }),
         signal: controller.signal
       });
       if (!response.ok) throw new Error('Failed to save sets');
