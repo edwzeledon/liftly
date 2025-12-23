@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, Utensils, LogOut, Home, Plus, Calendar, Settings, Dumbbell } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { getLogs, getUserSettings, updateUserSettings, updateLog, getDailyStats, updateDailyStats, getWorkoutLogs, getActiveWorkoutLogs } from '@/lib/api';
@@ -32,7 +33,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('home');
   const [logs, setLogs] = useState([]);
   const [workoutLogs, setWorkoutLogs] = useState([]);
-  const [activeWorkoutLogs, setActiveWorkoutLogs] = useState([]);
+  const [activeWorkoutLogs, setActiveWorkoutLogs] = useState(null);
   const [loading, setLoading] = useState(true);
   const [dailyGoal, setDailyGoal] = useState(2000);
   const [macroGoals, setMacroGoals] = useState({ protein: 150, carbs: 200, fats: 65 });
@@ -42,6 +43,7 @@ export default function App() {
   const [streakStatus, setStreakStatus] = useState('broken'); // 'safe', 'at_risk', 'broken'
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isRetakingAssessment, setIsRetakingAssessment] = useState(false);
+  const [showActionSheet, setShowActionSheet] = useState(false);
 
   // --- Auth & Data Fetching ---
   useEffect(() => {
@@ -177,6 +179,12 @@ export default function App() {
       setScanCount(0);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (user && activeWorkoutLogs !== null) {
+      localStorage.setItem('snapcal_activeWorkoutLogs', JSON.stringify(activeWorkoutLogs));
+    }
+  }, [activeWorkoutLogs, user]);
 
   const handleUpdateGoal = async (updates) => {
     if (!user) return;
@@ -340,7 +348,7 @@ export default function App() {
               <WorkoutView 
                 user={user} 
                 onWorkoutComplete={fetchData} 
-                initialLogs={activeWorkoutLogs}
+                initialLogs={activeWorkoutLogs || []}
                 onUpdateLogs={setActiveWorkoutLogs}
               />
             )}
@@ -401,14 +409,10 @@ export default function App() {
           
           <div className="-mt-12">
             <button 
-              onClick={() => setActiveTab(activeTab === 'add' ? 'home' : 'add')}
-              className={`w-16 h-16 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-105 active:scale-95 ${
-                activeTab === 'add' 
-                  ? 'bg-slate-800 text-white' 
-                  : 'bg-indigo-600 text-white'
-              }`}
+              onClick={() => setShowActionSheet(true)}
+              className="w-16 h-16 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-105 active:scale-95 bg-indigo-600 text-white"
             >
-              <Plus className={`w-8 h-8 ${activeTab === 'add' ? 'rotate-45 transition-transform' : 'transition-transform'}`} />
+              <Plus className="w-8 h-8" />
             </button>
           </div>
 
@@ -439,6 +443,66 @@ export default function App() {
         {showOnboarding && (
           <OnboardingForm onComplete={handleOnboardingComplete} />
         )}
+
+        {/* Log Action Sheet */}
+        <AnimatePresence>
+        {showActionSheet && (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center sm:justify-center">
+            {/* Backdrop */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+              onClick={() => setShowActionSheet(false)}
+            />
+
+            {/* Menu */}
+            <motion.div 
+              initial={{ opacity: 0, y: 100, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 100, scale: 0.95 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative w-full sm:w-auto sm:min-w-[400px] sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl p-6 sm:p-8 shadow-2xl">
+              <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-4 sm:hidden" />
+              <h3 className="text-lg sm:text-xl font-bold text-slate-800 mb-5 sm:mb-6 text-center">Quick Log</h3>
+
+              <div className="grid grid-cols-2 gap-4 sm:gap-5">
+                {/* Log Meal */}
+                <button
+                  onClick={() => {
+                    setShowActionSheet(false);
+                    setActiveTab('add');
+                  }}
+                  className="flex flex-col items-center gap-3 sm:gap-4 p-6 sm:p-8 rounded-2xl bg-purple-50 border-2 border-purple-100 hover:bg-purple-100 hover:border-purple-200 transition-all active:scale-95 hover:shadow-lg"
+                >
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-linear-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white shadow-lg">
+                    <Utensils className="w-7 h-7 sm:w-8 sm:h-8" />
+                  </div>
+                  <span className="font-semibold text-slate-700 text-base sm:text-lg">Log Meal</span>
+                  <span className="text-xs sm:text-sm text-slate-500 text-center">Scan or add food</span>
+                </button>
+
+                {/* Log Workout */}
+                <button
+                  onClick={() => {
+                    setShowActionSheet(false);
+                    setActiveTab('workouts');
+                  }}
+                  className="flex flex-col items-center gap-3 sm:gap-4 p-6 sm:p-8 rounded-2xl bg-indigo-50 border-2 border-indigo-100 hover:bg-indigo-100 hover:border-indigo-200 transition-all active:scale-95 hover:shadow-lg"
+                >
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-linear-to-br from-indigo-600 to-indigo-700 flex items-center justify-center text-white shadow-lg">
+                    <Dumbbell className="w-7 h-7 sm:w-8 sm:h-8" />
+                  </div>
+                  <span className="font-semibold text-slate-700 text-base sm:text-lg">Log Workout</span>
+                  <span className="text-xs sm:text-sm text-slate-500 text-center">Track exercises</span>
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+        </AnimatePresence>
 
       </div>
     </div>

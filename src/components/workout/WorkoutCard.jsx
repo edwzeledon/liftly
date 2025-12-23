@@ -226,6 +226,17 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
       const isRecord = isNewRecord(currentSet.weight, currentSet.reps);
 
       if (isRecord && bestSetIndex !== prevBestSetIndexRef.current) {
+        // Check if we've already shown confetti for this specific PR instance
+        // This prevents re-triggering on page reload or re-render
+        const prKey = `snapcal_pr_shown_${log.id}_${bestSetIndex}`;
+        if (localStorage.getItem(prKey)) {
+            prevBestSetIndexRef.current = bestSetIndex;
+            return;
+        }
+        
+        // Mark as shown
+        localStorage.setItem(prKey, 'true');
+
         // Get the trophy element position
         const trophyEl = trophyRefs.current[bestSetIndex];
         let origin = { x: 0.5, y: 0.5 };

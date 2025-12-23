@@ -178,7 +178,12 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percen
         </div>
       </div>
 
-      {/* Row 2: Weekly Trend vs Macros */}
+      {/* Row 2: Weight Trend */}
+      <div className="w-full">
+        <WeightTrend user={user} />
+      </div>
+
+      {/* Row 3: Weekly Trend vs Macros */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 flex flex-col">
             <WeeklyTrend weeklyData={weeklyData} />
@@ -189,11 +194,6 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percen
                 goals={macroGoals} 
             />
         </div>
-      </div>
-
-      {/* Row 3: Weight Trend */}
-      <div className="w-full">
-        <WeightTrend user={user} />
       </div>
 
       {/* Row 4: Meal Feed */}
