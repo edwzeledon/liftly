@@ -237,8 +237,8 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
       
       {/* Edit Workout Modal */}
       {editingDay && (
-        <div className="fixed inset-0 z-50 flex flex-col bg-slate-50 animate-in slide-in-from-bottom-10">
-          <div className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+        <div className="fixed inset-0 z-50 flex flex-col bg-slate-50 animate-in slide-in-from-bottom-10 pt-safe">
+          <div className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between sticky top-0 z-10 shrink-0">
             <div>
               <h2 className="text-xl font-bold text-slate-800">Edit Workout</h2>
               <p className="text-sm text-slate-500">{editingDay.label}</p>
@@ -254,7 +254,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
             </button>
           </div>
           
-          <div className="flex-1 overflow-y-auto p-6">
+          <div className="flex-1 overflow-y-auto p-6 pt-4">
             <div className="max-w-xl mx-auto space-y-4">
               {viewMode === 'workouts' ? (
                 editingDay.logs.map(log => (
