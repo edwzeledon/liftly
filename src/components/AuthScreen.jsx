@@ -70,7 +70,11 @@ export default function AuthScreen({ embedded = false }) {
       <div className="relative z-10 text-center mb-8">
         {!embedded && (
           <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-600 rounded-2xl mb-4 shadow-lg shadow-indigo-200">
-            <Utensils className="w-8 h-8 text-white" />
+            <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M 75 18 H 35 C 22 18, 15 25, 15 38 V 62 C 15 75, 22 82, 35 82 H 65 C 78 82, 85 75, 85 62 V 38" stroke="#EBE9E4" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
+              <circle cx="56" cy="50" r="14" fill="#EBE9E4" style={{ opacity: 0.25 }} />
+              <circle cx="50" cy="50" r="14" fill="#EBE9E4" />
+            </svg>
           </div>
         )}
         <h1 className="text-3xl font-bold text-slate-800 mb-2">{isRegistering ? 'Create Account' : 'Welcome Back'}</h1>
