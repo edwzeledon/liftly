@@ -187,7 +187,8 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       exercise_name: exercise.name,
       category: exercise.category,
       sets: [{ weight: '', reps: '', completed: false }], // Default empty sets
-      date: new Date().toISOString()
+      date: new Date().toISOString(),
+      __userEditedSets: []
     };
     setWorkoutLogs(prev => [...prev, tempLog]);
 
@@ -230,10 +231,25 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       }
     }
     
-    // Update with history data
-    setWorkoutLogs(prev => prev.map(log => 
-      log.id === tempId ? { ...log, sets: initialSets } : log
-    ));
+    // Update with history data, but preserve any user edits
+    setWorkoutLogs(prev => prev.map(log => {
+      if (log.id !== tempId) return log;
+      
+      // Get user-edited sets from the log
+      const userEditedSets = log.__userEditedSets || [];
+      
+      // Merge: use history for untouched sets, keep user edits for touched sets
+      const mergedSets = initialSets.map((historySet, index) => {
+        // If user has edited this set, preserve their current values
+        if (userEditedSets.includes(index) && log.sets[index]) {
+          return log.sets[index];
+        }
+        // Otherwise use history data
+        return historySet;
+      });
+      
+      return { ...log, sets: mergedSets };
+    }));
 
     // 3. Persist to DB
     try {
@@ -250,8 +266,26 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       
       if (res.ok) {
         const newLog = await res.json();
-        // Replace temp card with real DB data
-        setWorkoutLogs(prev => prev.map(log => log.id === tempId ? newLog : log));
+        
+        // Replace temp card with real DB data, merging any pending user edits
+        setWorkoutLogs(prev => prev.map(log => {
+          if (log.id !== tempId) return log;
+          
+          // If user made edits while we were loading, preserve them
+          const userEditedSets = log.__userEditedSets || [];
+          if (userEditedSets.length > 0) {
+            // Merge user edits into the new log
+            const mergedSets = newLog.sets.map((dbSet, index) => {
+              if (userEditedSets.includes(index) && log.sets[index]) {
+                return log.sets[index];
+              }
+              return dbSet;
+            });
+            return { ...newLog, sets: mergedSets };
+          }
+          
+          return newLog;
+        }));
       } else {
         // Revert if failed
         setWorkoutLogs(prev => prev.filter(log => log.id !== tempId));

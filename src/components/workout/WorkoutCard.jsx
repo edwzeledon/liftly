@@ -13,11 +13,54 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
   const prevBestSetIndexRef = useRef(-1);
   const setsOnFocusRef = useRef(null);
   const trophyRefs = useRef({});
+  const pendingEditsRef = useRef(null);
+  const userEditedSetsRef = useRef(new Set());
 
   // Sync state with props if props change (e.g. initial load)
   useEffect(() => {
     setSets(log.sets || []);
   }, [log.sets]);
+
+
+  const performSave = useCallback(async (newSets) => {
+    // If temp ID, queue the changes instead of making API call
+    if (isTemp) {
+      pendingEditsRef.current = { sets: newSets };
+      return;
+    }
+
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    try {
+      const response = await fetch(`/api/workouts/logs/${log.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sets: newSets }),
+        signal: controller.signal
+      });
+      if (!response.ok) throw new Error('Failed to save sets');
+    } catch (e) {
+      if (e.name !== 'AbortError') {
+        console.error("Error saving sets:", e);
+      }
+    }
+  }, [log.id, isTemp]);
+
+  // Flush pending edits when temp ID becomes real ID
+  useEffect(() => {
+    if (!isTemp && pendingEditsRef.current) {
+      const editsToFlush = pendingEditsRef.current;
+      pendingEditsRef.current = null;
+      
+      // Apply the queued edits
+      performSave(editsToFlush.sets);
+    }
+  }, [isTemp, performSave]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -93,34 +136,16 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
     return false;
   };
 
-  const updateParent = (newSets) => {
+  const updateParent = (newSets, editedSets = null) => {
     if (onUpdate) {
-      onUpdate({ ...log, sets: newSets });
+      const updateData = { ...log, sets: newSets };
+      if (editedSets !== null) {
+        updateData.__userEditedSets = editedSets;
+      }
+      onUpdate(updateData);
     }
   };
 
-  const performSave = useCallback(async (newSets) => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-
-    try {
-      const response = await fetch(`/api/workouts/logs/${log.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sets: newSets }),
-        signal: controller.signal
-      });
-      if (!response.ok) throw new Error('Failed to save sets');
-    } catch (e) {
-      if (e.name !== 'AbortError') {
-        console.error("Error saving sets:", e);
-      }
-    }
-  }, [log.id]);
 
   const saveSets = useCallback((newSets, immediate = false) => {
     // Clear existing timeout
@@ -163,7 +188,13 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
     const newSets = [...sets];
     newSets[index][field] = value;
     setSets(newSets);
-    updateParent(newSets);
+    
+    // Track that this set has been edited by the user
+    userEditedSetsRef.current.add(index);
+    
+    // Pass edit info to parent
+    const editedSetsArray = Array.from(userEditedSetsRef.current);
+    updateParent(newSets, editedSetsArray);
   };
 
   const handleBlur = () => {
@@ -297,7 +328,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
   }, [bestSetIndex, sets]); // Depend on sets to access the data
 
   return (
-  <div className={`bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:border-indigo-100 transition-all ${isTemp ? 'opacity-60 pointer-events-none' : ''}`}>
+  <div className={`bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:border-indigo-100 transition-all ${isTemp ? 'opacity-60' : ''}`}>
     <div className="flex justify-between items-start mb-4">
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold">
