@@ -64,11 +64,10 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
 
   const handleApplyWeight = (weight) => {
     if (sets.length > 0) {
-      // Apply to ALL sets
-      const newSets = sets.map(set => ({
-        ...set,
-        weight: weight
-      }));
+      // Apply only to sets that are NOT completed
+      const newSets = sets.map(set => (
+        set.completed ? set : { ...set, weight: weight }
+      ));
       setSets(newSets);
       updateParent(newSets);
       saveSets(newSets); // debounced
