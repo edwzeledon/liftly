@@ -778,7 +778,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
               <Trophy className="w-10 h-10 text-yellow-600" />
             </div>
             <h2 className="text-2xl font-bold text-slate-800 mb-2">You Crushed It!</h2>
-            <p className="text-slate-500 mb-6">Here's your summary:</p>
+            <p className="text-slate-500 mb-6">Here&apos;s your summary:</p>
             
             <div className="grid grid-cols-2 gap-4 w-full mb-6">
               <div className="bg-slate-50 p-4 rounded-2xl">

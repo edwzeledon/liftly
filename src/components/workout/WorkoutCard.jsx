@@ -469,6 +469,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
       </button>
     </div>
     <PlateCalculator
+      key={showCalculator ? 'open' : 'closed'}
       isOpen={showCalculator}
       onClose={() => setShowCalculator(false)}
       onApply={handleApplyWeight}

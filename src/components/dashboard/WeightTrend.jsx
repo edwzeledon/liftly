@@ -167,7 +167,7 @@ export default function WeightTrend({ user }) {
           
           {trend?.direction === 'down' && (
             <p className="text-xs text-emerald-600 font-medium mt-2 bg-emerald-50 inline-block px-2 py-1 rounded-lg">
-              🎉 Great job! You're making progress!
+              🎉 Great job! You&apos;re making progress!
             </p>
           )}
         </div>

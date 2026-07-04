@@ -12,7 +12,7 @@ export default function MealFeed({ logs, onEditLog, onDeleteLog, onAnalyzeDay, o
   return (
     <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 h-full">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="font-bold text-slate-800 text-lg">Today's Meals</h3>
+        <h3 className="font-bold text-slate-800 text-lg">Today&apos;s Meals</h3>
         <div className="flex gap-2">
             {logs.length > 0 && (
             <button 

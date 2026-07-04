@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { X, Check, RotateCcw, Minus, Plus } from 'lucide-react';
 
 export default function PlateCalculator({ isOpen, onClose, onApply }) {
@@ -11,21 +11,6 @@ export default function PlateCalculator({ isOpen, onClose, onApply }) {
     5: 0,
     2.5: 0
   });
-
-  // Reset when opened
-  useEffect(() => {
-    if (isOpen) {
-      setPlates({
-        45: 0,
-        35: 0,
-        25: 0,
-        10: 0,
-        5: 0,
-        2.5: 0
-      });
-      setBarWeight(45);
-    }
-  }, [isOpen]);
 
   if (!isOpen) return null;
 
