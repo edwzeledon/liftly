@@ -8,6 +8,11 @@ export async function middleware(request) {
     },
   })
 
+  // Add cache-busting headers to prevent browser caching during development
+  response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0')
+  response.headers.set('Pragma', 'no-cache')
+  response.headers.set('Expires', '0')
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,

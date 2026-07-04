@@ -37,6 +37,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
   const [scanCount, setScanCount] = useState(initialScanCount);
   
   const fileInputRef = useRef(null);
+  const isCameraFullscreen = (isCameraActive || capturedImage) && !preview;
 
   // Cleanup on unmount
   useEffect(() => {
@@ -78,16 +79,45 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
     }
   };
 
+  const attachStreamToVideo = async (stream) => {
+    if (!videoRef.current) return;
+
+    const video = videoRef.current;
+    video.srcObject = stream;
+    video.muted = true;
+    video.playsInline = true;
+
+    try {
+      await video.play();
+    } catch (playError) {
+      console.warn('Video play() failed after stream attach:', playError);
+    }
+
+    setIsCameraActive(true);
+  };
+
   const startCamera = async () => {
     setError('');
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment' } 
-      });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        setIsCameraActive(true);
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error('Camera API is not available in this browser.');
       }
+
+      let stream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' } },
+          audio: false
+        });
+      } catch (preferredError) {
+        console.warn('Environment-facing camera unavailable, falling back to default camera.', preferredError);
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: false
+        });
+      }
+
+      await attachStreamToVideo(stream);
     } catch (err) {
       console.error(err);
       setError("Camera access denied or unavailable. Please use upload.");
@@ -222,16 +252,27 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
 
   // Determine Container Width
   const getContainerWidth = () => {
+    if (isCameraFullscreen) return 'max-w-none';
     if (isCameraActive) return 'max-w-5xl'; // Wide for camera
     if (preview && mode === 'scan') return 'max-w-4xl'; // Wide for split view
     return 'max-w-lg'; // Narrow for initial/manual
   };
 
-  const isFullScreenMode = (isCameraActive || capturedImage) && !preview;
+  const getRootClasses = () => {
+    const baseClasses = 'transition-all duration-500 ease-in-out mx-auto bg-white overflow-hidden w-full flex flex-col';
+
+    if (isCameraFullscreen) {
+      return `${baseClasses} fixed inset-0 z-50 h-dvh max-w-none rounded-none border-0 md:border-0 md:my-0 md:h-dvh`;
+    }
+
+    return `${baseClasses} md:rounded-3xl shadow-xl border-0 md:border border-slate-100 ${getContainerWidth()} h-dvh md:h-auto m-0 md:my-auto fixed inset-0 z-50 md:relative md:inset-auto md:z-auto`;
+  };
+
+  const isFullScreenMode = isCameraFullscreen;
 
   return (
     <div 
-      className={`transition-all duration-500 ease-in-out mx-auto bg-white md:rounded-3xl shadow-xl border-0 md:border border-slate-100 overflow-hidden ${getContainerWidth()} w-full h-dvh md:h-auto m-0 md:my-auto fixed inset-0 z-50 md:relative md:inset-auto md:z-auto flex flex-col`}
+      className={getRootClasses()}
       onDragOver={onDragOver} 
       onDragLeave={onDragLeave} 
       onDrop={onDrop}
@@ -255,7 +296,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
       <div className={`flex-1 overflow-y-auto md:overflow-visible flex flex-col ${preview && mode === 'scan' ? 'md:flex-row' : ''} transition-all duration-500`}>
         
         {/* Left Side (Camera/Image/Dropzone) */}
-        <div className={`${isFullScreenMode ? 'p-0 h-full' : 'p-6'} ${preview && mode === 'scan' ? 'md:w-1/2 border-b md:border-b-0 md:border-r border-slate-100' : 'w-full'} transition-all duration-500`}>
+        <div className={`${isFullScreenMode ? 'p-0 h-full min-h-0' : 'p-6'} ${preview && mode === 'scan' ? 'md:w-1/2 border-b md:border-b-0 md:border-r border-slate-100' : 'w-full'} transition-all duration-500`}>
           
           {/* Tabs */}
           {!isFullScreenMode && (
@@ -303,12 +344,12 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
 
           {/* Scan Mode UI */}
           {mode === 'scan' && (
-            <div className={`flex-1 flex flex-col relative ${isFullScreenMode ? 'h-full' : ''}`}>
+            <div className={`flex-1 flex flex-col relative ${isFullScreenMode ? 'h-full min-h-0' : ''}`}>
               
               {/* Main Content Area: Camera, Preview, or Buttons */}
               <div className={`relative overflow-hidden shadow-sm bg-slate-50 flex flex-col items-center justify-center transition-all duration-500 
                 ${isFullScreenMode 
-                  ? 'absolute inset-0 w-full h-full rounded-none border-0' 
+                  ? 'absolute inset-0 w-full h-full rounded-none border-0 min-h-0' 
                   : 'rounded-3xl border-2 border-dashed border-indigo-100 min-h-[40vh] md:min-h-[400px]'
                 }`}>
                 
@@ -317,6 +358,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                   ref={videoRef} 
                   autoPlay 
                   playsInline 
+                  muted
                   className={`absolute inset-0 w-full h-full object-cover ${isCameraActive && !preview && !capturedImage ? 'block' : 'hidden'}`}
                 />
                 
