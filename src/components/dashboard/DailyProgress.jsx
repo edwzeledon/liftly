@@ -28,8 +28,9 @@ const DualRing = ({ protein, proteinGoal, calories, calorieGoal, baseCalorieGoal
           stroke="#334155" strokeDasharray={ring(inner.r)} strokeDashoffset={offset(inner.r, calories, calorieGoal)}
           className="transition-all duration-700 ease-out motion-reduce:transition-none" />
         {baseCalorieGoal !== calorieGoal && (
+          /* Invariant: notch must sit at the base-goal fraction along the calorie arc; the arc starts at 12 o'clock (svg -rotate-90), and this line is drawn at svg-top, so it needs rotate(notchAngle + 180). */
           <line x1="50" y1={50 - inner.r - inner.w / 2} x2="50" y2={50 - inner.r + inner.w / 2}
-            stroke="#cbd5e1" strokeWidth="1.5" transform={`rotate(${notchAngle + 90} 50 50)`} />
+            stroke="#cbd5e1" strokeWidth="1.5" transform={`rotate(${notchAngle + 180} 50 50)`} />
         )}
       </svg>
       <button onClick={onEditProtein}
