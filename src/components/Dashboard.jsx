@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { Sparkles, Brain, Loader2, X } from 'lucide-react';
-import { callGeminiText, deleteLog, getDailyStats, updateDailyStats, addLog } from '@/lib/api';
+import { callGeminiText, deleteLog, getDailyStats, updateDailyStats } from '@/lib/api';
 import DailyProgress from './dashboard/DailyProgress';
 import WeeklyTrend from './dashboard/WeeklyTrend';
 import HydrationTracker from './dashboard/HydrationTracker';
 import MealFeed from './dashboard/MealFeed';
-import QuickAdd from './dashboard/QuickAdd';
+import QuickProtein from './dashboard/QuickProtein';
 import WeightTrend from './dashboard/WeightTrend';
 
 export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percentComplete, weeklyData, todaysLogs, user, onLogDeleted, onUpdateGoal, onEditLog, onLogAdded, onAddMeal, streak, streakStatus }) {
@@ -63,17 +63,6 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percen
   };
 
 
-
-  const handleQuickAdd = async (logData) => {
-    if (!user) return;
-    try {
-        await addLog(user.id, logData);
-        // Only refetch if actually needed
-        if (onLogAdded) onLogAdded();
-    } catch (error) {
-        console.error("Error adding quick log:", error);
-    }
-  };
 
   const handleDeleteLog = async (logId) => {
     if(!user) return;
@@ -160,7 +149,7 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percen
             />
         </div>
         <div className="flex flex-col gap-6 h-full">
-            <QuickAdd onAddLog={handleQuickAdd} />
+            <QuickProtein user={user} onLogAdded={onLogAdded} />
         </div>
       </div>
 
