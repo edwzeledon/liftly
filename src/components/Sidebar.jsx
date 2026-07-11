@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Utensils, Home, Plus, Calendar, LogOut, Settings, Dumbbell } from 'lucide-react';
+import { Utensils, Home, Plus, Calendar, LogOut, Settings, Dumbbell, BarChart3 } from 'lucide-react';
 
-export default function Sidebar({ activeTab, setActiveTab, onLogout }) {
+export default function Sidebar({ activeTab, setActiveTab, onLogout, onOpenLog }) {
   return (
     <div className="hidden md:flex flex-col w-64 bg-white border-r border-slate-200 p-6 h-full shrink-0">
       <div className="flex items-center gap-2 mb-10">
@@ -18,39 +18,39 @@ export default function Sidebar({ activeTab, setActiveTab, onLogout }) {
           Liftly
         </h1>
       </div>
-      
+
       <nav className="flex-1 space-y-2">
-        <button 
+        <button
           onClick={() => setActiveTab('home')}
           className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
             activeTab === 'home' ? 'bg-indigo-50 text-indigo-600 font-medium' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
           }`}
         >
           <Home className="w-5 h-5" />
-          <span>Dashboard</span>
+          <span>Today</span>
         </button>
 
-        <button 
+        <button
           onClick={() => setActiveTab('workouts')}
           className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
             activeTab === 'workouts' ? 'bg-indigo-50 text-indigo-600 font-medium' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
           }`}
         >
           <Dumbbell className="w-5 h-5" />
-          <span>Workouts</span>
-        </button>
-        
-        <button 
-          onClick={() => setActiveTab('add')}
-          className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
-            activeTab === 'add' ? 'bg-indigo-50 text-indigo-600 font-medium' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-          }`}
-        >
-          <Plus className="w-5 h-5" />
-          <span>Add Meal</span>
+          <span>Train</span>
         </button>
 
-        <button 
+        <button
+          onClick={() => setActiveTab('insights')}
+          className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
+            activeTab === 'insights' ? 'bg-indigo-50 text-indigo-600 font-medium' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+          }`}
+        >
+          <BarChart3 className="w-5 h-5" />
+          <span>Insights</span>
+        </button>
+
+        <button
           onClick={() => setActiveTab('history')}
           className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
             activeTab === 'history' ? 'bg-indigo-50 text-indigo-600 font-medium' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
@@ -59,8 +59,18 @@ export default function Sidebar({ activeTab, setActiveTab, onLogout }) {
           <Calendar className="w-5 h-5" />
           <span>History</span>
         </button>
+      </nav>
 
-        <button 
+      <button
+        onClick={onOpenLog}
+        className="w-full flex items-center justify-center gap-2 py-3 mb-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 active:scale-95 transition-all shadow-lg shadow-indigo-200"
+      >
+        <Plus className="w-5 h-5" />
+        <span>Log</span>
+      </button>
+
+      <div className="border-t border-slate-100 pt-2 space-y-1">
+        <button
           onClick={() => setActiveTab('settings')}
           className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
             activeTab === 'settings' ? 'bg-indigo-50 text-indigo-600 font-medium' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
@@ -69,15 +79,15 @@ export default function Sidebar({ activeTab, setActiveTab, onLogout }) {
           <Settings className="w-5 h-5" />
           <span>Settings</span>
         </button>
-      </nav>
 
-      <button 
-        onClick={onLogout}
-        className="flex items-center gap-3 text-slate-500 hover:text-red-600 p-3 rounded-xl hover:bg-red-50 transition-colors mt-auto"
-      >
-        <LogOut className="w-5 h-5" />
-        <span className="font-medium">Sign Out</span>
-      </button>
+        <button
+          onClick={onLogout}
+          className="flex items-center gap-3 text-slate-500 hover:text-red-600 p-3 rounded-xl hover:bg-red-50 transition-colors w-full"
+        >
+          <LogOut className="w-5 h-5" />
+          <span className="font-medium">Sign Out</span>
+        </button>
+      </div>
     </div>
   );
 }

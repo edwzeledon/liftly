@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, Utensils, LogOut, Home, Plus, Calendar, Settings, Dumbbell } from 'lucide-react';
+import { Loader2, Utensils, LogOut, Home, Plus, Calendar, Settings, Dumbbell, BarChart3 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { getLogs, getUserSettings, updateUserSettings, updateLog, getDailyStats, updateDailyStats, getWorkoutLogs, getActiveWorkoutLogs } from '@/lib/api';
 import Sidebar from '@/components/Sidebar';
@@ -299,7 +299,7 @@ export default function App() {
     <div className="flex h-screen bg-slate-50 font-sans text-slate-900 overflow-hidden">
       
       {/* Desktop Sidebar */}
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} />
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} onOpenLog={() => setShowActionSheet(true)} />
 
       {/* Main Content Container */}
       <div className="flex-1 flex flex-col h-full relative overflow-hidden">
@@ -318,13 +318,22 @@ export default function App() {
               Liftly
             </h1>
           </div>
-          <button 
-            onClick={handleLogout}
-            className="text-slate-400 hover:text-slate-600 p-2 rounded-full hover:bg-slate-100 transition-colors"
-            title="Sign Out"
-          >
-            <LogOut className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setActiveTab('settings')}
+              className={`p-2 rounded-full transition-colors ${activeTab === 'settings' ? 'text-indigo-600 bg-indigo-50' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'}`}
+              title="Settings"
+            >
+              <Settings className="w-5 h-5" />
+            </button>
+            <button
+              onClick={handleLogout}
+              className="text-slate-400 hover:text-slate-600 p-2 rounded-full hover:bg-slate-100 transition-colors"
+              title="Sign Out"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
+          </div>
         </header>
 
         {/* Scrollable Content Area */}
@@ -376,6 +385,9 @@ export default function App() {
                 onEditLog={setEditingLog}
               />
             )}
+            {activeTab === 'insights' && (
+              <div className="p-6 text-slate-400 text-sm">Insights coming in Task 11.</div>
+            )}
             {activeTab === 'settings' && (
               isRetakingAssessment ? (
                 <OnboardingForm 
@@ -398,21 +410,21 @@ export default function App() {
 
         {/* Mobile Bottom Navigation (Hidden on Desktop) */}
         <nav className="md:hidden absolute bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-4 py-2 flex justify-between items-center z-20 pb-safe">
-          <NavButton 
-            active={activeTab === 'home'} 
-            onClick={() => setActiveTab('home')} 
-            icon={Home} 
-            label="Home" 
+          <NavButton
+            active={activeTab === 'home'}
+            onClick={() => setActiveTab('home')}
+            icon={Home}
+            label="Today"
           />
-          <NavButton 
-            active={activeTab === 'workouts'} 
-            onClick={() => setActiveTab('workouts')} 
-            icon={Dumbbell} 
-            label="Workouts" 
+          <NavButton
+            active={activeTab === 'workouts'}
+            onClick={() => setActiveTab('workouts')}
+            icon={Dumbbell}
+            label="Train"
           />
-          
+
           <div className="-mt-12">
-            <button 
+            <button
               onClick={() => setShowActionSheet(true)}
               className="w-16 h-16 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-105 active:scale-95 bg-indigo-600 text-white"
             >
@@ -420,17 +432,17 @@ export default function App() {
             </button>
           </div>
 
-          <NavButton 
-            active={activeTab === 'history'} 
-            onClick={() => setActiveTab('history')} 
-            icon={Calendar} 
-            label="History" 
+          <NavButton
+            active={activeTab === 'insights'}
+            onClick={() => setActiveTab('insights')}
+            icon={BarChart3}
+            label="Insights"
           />
-          <NavButton 
-            active={activeTab === 'settings'} 
-            onClick={() => setActiveTab('settings')} 
-            icon={Settings} 
-            label="Settings" 
+          <NavButton
+            active={activeTab === 'history'}
+            onClick={() => setActiveTab('history')}
+            icon={Calendar}
+            label="History"
           />
         </nav>
         
@@ -473,21 +485,6 @@ export default function App() {
               <h3 className="text-lg sm:text-xl font-bold text-slate-800 mb-5 sm:mb-6 text-center">Quick Log</h3>
 
               <div className="grid grid-cols-2 gap-4 sm:gap-5">
-                {/* Log Meal */}
-                <button
-                  onClick={() => {
-                    setShowActionSheet(false);
-                    setActiveTab('add');
-                  }}
-                  className="flex flex-col items-center gap-3 sm:gap-4 p-6 sm:p-8 rounded-2xl bg-purple-50 border-2 border-purple-100 hover:bg-purple-100 hover:border-purple-200 transition-all active:scale-95 hover:shadow-lg"
-                >
-                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-linear-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white shadow-lg">
-                    <Utensils className="w-7 h-7 sm:w-8 sm:h-8" />
-                  </div>
-                  <span className="font-semibold text-slate-700 text-base sm:text-lg">Log Meal</span>
-                  <span className="text-xs sm:text-sm text-slate-500 text-center">Scan or add food</span>
-                </button>
-
                 {/* Log Workout */}
                 <button
                   onClick={() => {
@@ -501,6 +498,21 @@ export default function App() {
                   </div>
                   <span className="font-semibold text-slate-700 text-base sm:text-lg">Log Workout</span>
                   <span className="text-xs sm:text-sm text-slate-500 text-center">Track exercises</span>
+                </button>
+
+                {/* Log Meal */}
+                <button
+                  onClick={() => {
+                    setShowActionSheet(false);
+                    setActiveTab('add');
+                  }}
+                  className="flex flex-col items-center gap-3 sm:gap-4 p-6 sm:p-8 rounded-2xl bg-purple-50 border-2 border-purple-100 hover:bg-purple-100 hover:border-purple-200 transition-all active:scale-95 hover:shadow-lg"
+                >
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-linear-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white shadow-lg">
+                    <Utensils className="w-7 h-7 sm:w-8 sm:h-8" />
+                  </div>
+                  <span className="font-semibold text-slate-700 text-base sm:text-lg">Log Meal</span>
+                  <span className="text-xs sm:text-sm text-slate-500 text-center">Scan or add food</span>
                 </button>
               </div>
             </motion.div>
