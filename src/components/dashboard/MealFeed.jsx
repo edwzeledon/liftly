@@ -48,10 +48,16 @@ export default function MealFeed({ logs, onEditLog, onDeleteLog, onAnalyzeDay, o
                 className={`p-4 flex items-center justify-between group hover:bg-slate-50 rounded-xl transition-colors ${index !== logs.length - 1 ? 'border-b border-slate-50' : ''}`}
               >
                 <div className="flex items-center gap-3">
-                    {/* Visual (Emoji Avatar) */}
-                    <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
-                      <Utensils className="w-5 h-5 text-slate-500" />
-                    </div>
+                    {/* Visual (Photo or Utensils fallback) */}
+                    {log.image_url ? (
+                        <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 overflow-hidden">
+                          <img src={log.image_url} alt={log.food_item} className="w-full h-full object-cover" />
+                        </div>
+                    ) : (
+                        <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+                          <Utensils className="w-5 h-5 text-slate-500" />
+                        </div>
+                    )}
 
                     {/* Details */}
                     <div>
