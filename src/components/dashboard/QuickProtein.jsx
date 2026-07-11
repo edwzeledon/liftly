@@ -18,6 +18,7 @@ export default function QuickProtein({ user, onLogAdded }) {
   const [activeId, setActiveId] = useState(null); // chip expanded with stepper
   const [portions, setPortions] = useState(1);
   const [toast, setToast] = useState(null); // { logId, name }
+  const [submitting, setSubmitting] = useState(false);
   const toastTimer = useRef(null);
 
   // Step 1b: preset editing
@@ -34,6 +35,9 @@ export default function QuickProtein({ user, onLogAdded }) {
       if (saved) setPresets(JSON.parse(saved));
     } catch { /* keep defaults */ }
   }, []);
+
+  // Clear any pending toast timer on unmount.
+  useEffect(() => () => clearTimeout(toastTimer.current), []);
 
   const savePresets = (next) => {
     setPresets(next);
@@ -67,7 +71,9 @@ export default function QuickProtein({ user, onLogAdded }) {
   };
 
   const logPreset = async (preset) => {
+    if (!user || submitting) return;
     const qty = portions;
+    setSubmitting(true);
     setActiveId(null);
     setPortions(1);
     try {
@@ -88,10 +94,13 @@ export default function QuickProtein({ user, onLogAdded }) {
       console.error('Quick protein log failed', e);
       setToast({ error: true, name: preset.name });
       toastTimer.current = setTimeout(() => setToast(null), 5000);
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const undo = async () => {
+    if (!user) return;
     if (toast?.logId) {
       try {
         await deleteLog(toast.logId, user.id);
@@ -111,7 +120,7 @@ export default function QuickProtein({ user, onLogAdded }) {
         </h4>
         <button
           type="button"
-          onClick={() => { setEditing((v) => !v); resetAddForm(); }}
+          onClick={() => { setEditing((v) => !v); setActiveId(null); resetAddForm(); }}
           className="text-xs font-semibold text-slate-400 hover:text-slate-600 min-h-11 px-2 -mr-2"
         >
           {editing ? 'Done' : 'Edit'}
@@ -130,41 +139,44 @@ export default function QuickProtein({ user, onLogAdded }) {
                 type="button"
                 onClick={() => removePreset(p)}
                 aria-label={`Remove ${p.name}`}
-                className="w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500"
+                className="relative w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 before:absolute before:-inset-2.5 before:content-['']"
               >
                 <X className="w-3 h-3" />
               </button>
             </span>
+          ) : activeId === p.id ? (
+            <motion.span
+              layout
+              key={p.id}
+              className="flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-semibold border transition-colors min-h-11 border-emerald-400 bg-emerald-50 text-slate-800"
+            >
+              <span>{p.name}</span>
+              <span className="text-protein-strong tabular-nums">{p.protein * portions}g</span>
+              <span className="flex items-center gap-1 ml-1">
+                <button type="button" aria-label="Fewer portions" onClick={() => setPortions((n) => Math.max(1, n - 1))}
+                  className="relative w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center before:absolute before:-inset-y-2.5 before:-inset-x-0.5 before:content-['']">
+                  <Minus className="w-3 h-3" />
+                </button>
+                <span className="tabular-nums text-xs w-6 text-center">×{portions}</span>
+                <button type="button" aria-label="More portions" onClick={() => setPortions((n) => Math.min(9, n + 1))}
+                  className="relative w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center before:absolute before:-inset-y-2.5 before:-inset-x-0.5 before:content-['']">
+                  <Plus className="w-3 h-3" />
+                </button>
+                <button type="button" aria-label="Log it" disabled={submitting} onClick={() => logPreset(p)}
+                  className="relative w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center ml-0.5 disabled:opacity-50 before:absolute before:-inset-y-2.5 before:-inset-x-0.5 before:content-['']">
+                  <Check className="w-3.5 h-3.5" />
+                </button>
+              </span>
+            </motion.span>
           ) : (
             <motion.button
               layout
               key={p.id}
-              onClick={() => (activeId === p.id ? logPreset(p) : (setActiveId(p.id), setPortions(1)))}
-              className={`flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-semibold border transition-colors active:scale-95 min-h-11 ${
-                activeId === p.id
-                  ? 'border-emerald-400 bg-emerald-50 text-slate-800'
-                  : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
-              }`}
+              onClick={() => { setActiveId(p.id); setPortions(1); }}
+              className="flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-semibold border transition-colors active:scale-95 min-h-11 border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100"
             >
               <span>{p.name}</span>
-              <span className="text-protein-strong tabular-nums">{p.protein * (activeId === p.id ? portions : 1)}g</span>
-              {activeId === p.id && (
-                <span className="flex items-center gap-1 ml-1" onClick={(e) => e.stopPropagation()}>
-                  <span role="button" aria-label="Fewer portions" onClick={() => setPortions((n) => Math.max(1, n - 1))}
-                    className="w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center">
-                    <Minus className="w-3 h-3" />
-                  </span>
-                  <span className="tabular-nums text-xs w-6 text-center">×{portions}</span>
-                  <span role="button" aria-label="More portions" onClick={() => setPortions((n) => Math.min(9, n + 1))}
-                    className="w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center">
-                    <Plus className="w-3 h-3" />
-                  </span>
-                  <span role="button" aria-label="Log it" onClick={() => logPreset(p)}
-                    className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center ml-0.5">
-                    <Check className="w-3.5 h-3.5" />
-                  </span>
-                </span>
-              )}
+              <span className="text-protein-strong tabular-nums">{p.protein}g</span>
             </motion.button>
           )
         ))}
@@ -234,7 +246,7 @@ export default function QuickProtein({ user, onLogAdded }) {
             {!toast.error && (
               <button onClick={undo} className="font-bold text-emerald-300 ml-3">Undo</button>
             )}
-            <button onClick={() => setToast(null)} aria-label="Dismiss" className="ml-3 text-slate-400">
+            <button onClick={() => { clearTimeout(toastTimer.current); setToast(null); }} aria-label="Dismiss" className="ml-3 text-slate-400">
               <X className="w-4 h-4" />
             </button>
           </motion.div>
