@@ -106,8 +106,6 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
 
   return (
     <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-full -mr-10 -mt-10 blur-2xl opacity-50"></div>
-      
       <div className="relative z-10 mb-6">
         <div className="flex justify-between items-start mb-6">
           <div>

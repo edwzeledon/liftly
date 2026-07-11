@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Edit2, Trash2, Brain, Plus, MoreVertical } from 'lucide-react';
+import { Edit2, Trash2, Brain, Plus, MoreVertical, Utensils } from 'lucide-react';
 
 // Helper to convert food name to title case
 const toTitleCase = (str) => {
@@ -49,12 +49,8 @@ export default function MealFeed({ logs, onEditLog, onDeleteLog, onAnalyzeDay, o
               >
                 <div className="flex items-center gap-3">
                     {/* Visual (Emoji Avatar) */}
-                    <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 overflow-hidden">
-                      {log.image_url ? (
-                          <img src={log.image_url} alt={log.food_item} className="w-full h-full object-cover" />
-                      ) : (
-                          <span className="text-2xl">🍽️</span>
-                      )}
+                    <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+                      <Utensils className="w-5 h-5 text-slate-500" />
                     </div>
 
                     {/* Details */}

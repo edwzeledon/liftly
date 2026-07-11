@@ -1,6 +1,13 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@theme {
+  --color-protein: #10b981;        /* emerald-500 — protein hero */
+  --color-protein-strong: #059669; /* emerald-600 — small text on white (4.5:1) */
+  --color-training: #4f46e5;       /* indigo-600 — training/brand */
+  --font-display: var(--font-barlow-condensed), ui-sans-serif, system-ui, sans-serif;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
