@@ -6,7 +6,6 @@ import { callGeminiText, deleteLog, getDailyStats, updateDailyStats, addLog } fr
 import DailyProgress from './dashboard/DailyProgress';
 import WeeklyTrend from './dashboard/WeeklyTrend';
 import HydrationTracker from './dashboard/HydrationTracker';
-import MacroDistribution from './dashboard/MacroDistribution';
 import MealFeed from './dashboard/MealFeed';
 import QuickAdd from './dashboard/QuickAdd';
 import WeightTrend from './dashboard/WeightTrend';
@@ -140,13 +139,6 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percen
     }
   };
 
-  // Calculate Macros for Distribution Chart
-  const currentMacros = todaysLogs.reduce((acc, log) => ({
-    protein: acc.protein + (log.protein || 0),
-    carbs: acc.carbs + (log.carbs || 0),
-    fats: acc.fats + (log.fats || 0)
-  }), { protein: 0, carbs: 0, fats: 0 });
-
   return (
     <div className="p-6 md:p-0 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20 md:pb-0">
       
@@ -169,12 +161,6 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percen
         </div>
         <div className="flex flex-col gap-6 h-full">
             <QuickAdd onAddLog={handleQuickAdd} />
-            <div className="flex-1 min-h-0">
-                <HydrationTracker 
-                    waterIntake={dailyStats.water_intake} 
-                    onUpdateWater={handleUpdateWater} 
-                />
-            </div>
         </div>
       </div>
 
@@ -183,28 +169,25 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percen
         <WeightTrend user={user} />
       </div>
 
-      {/* Row 3: Weekly Trend vs Macros */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 flex flex-col">
-            <WeeklyTrend weeklyData={weeklyData} />
-        </div>
-        <div className="h-full">
-            <MacroDistribution 
-                macros={currentMacros} 
-                goals={macroGoals} 
-            />
-        </div>
+      {/* Row 3: Weekly Trend */}
+      <div className="w-full">
+        <WeeklyTrend weeklyData={weeklyData} />
       </div>
 
       {/* Row 4: Meal Feed */}
       <div className="w-full">
-        <MealFeed 
-            logs={todaysLogs} 
-            onEditLog={onEditLog} 
+        <MealFeed
+            logs={todaysLogs}
+            onEditLog={onEditLog}
             onDeleteLog={handleDeleteLog}
             onAnalyzeDay={handleAnalyzeDay}
             onAddMeal={onAddMeal}
         />
+      </div>
+
+      {/* Row 5: Hydration (demoted) */}
+      <div className="w-full">
+        <HydrationTracker waterIntake={dailyStats.water_intake} onUpdateWater={handleUpdateWater} />
       </div>
 
       {/* AI Modal */}

@@ -1,61 +1,62 @@
 import React, { useState, useEffect } from 'react';
-import { Flame, Sparkles, Check, X, Beef, Wheat, Droplet, Brain } from 'lucide-react';
+import { Flame, Sparkles, Brain } from 'lucide-react';
 
-const CircleChart = ({ value, max, color, label, icon: Icon, onClick }) => {
-  const [isMounted, setIsMounted] = useState(false);
-
+const DualRing = ({ protein, proteinGoal, calories, calorieGoal, baseCalorieGoal, onEditProtein, onEditCalories }) => {
+  const [mounted, setMounted] = useState(false);
   useEffect(() => {
-    const timer = setTimeout(() => setIsMounted(true), 100);
-    return () => clearTimeout(timer);
+    const t = setTimeout(() => setMounted(true), 100);
+    return () => clearTimeout(t);
   }, []);
 
-  const radius = 36;
-  const circumference = 2 * Math.PI * radius;
-  const targetPercent = Math.min(Math.max(value / max, 0), 1);
-  const percent = isMounted ? targetPercent : 0;
-  const offset = circumference - (percent * circumference);
+  const outer = { r: 42, w: 9 };  // protein
+  const inner = { r: 31, w: 5 };  // calories
+  const ring = (r) => 2 * Math.PI * r;
+  const pct = (v, m) => Math.min(Math.max(v / (m || 1), 0), 1);
+  const offset = (r, v, m) => ring(r) - (mounted ? pct(v, m) : 0) * ring(r);
+  // ghost notch: marks the base (rest-day) goal position on the calorie ring
+  const notchAngle = pct(baseCalorieGoal, calorieGoal) * 360 - 90;
 
   return (
-    <div className="flex flex-col items-center gap-3 cursor-pointer group" onClick={onClick}>
-      <div className="relative w-48 h-48 lg:w-40 lg:h-40 flex items-center justify-center">
-        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 96 96">
-          <circle
-            cx="48"
-            cy="48"
-            r={radius}
-            fill="transparent"
-            stroke="currentColor"
-            strokeWidth="6"
-            className="text-slate-100"
-          />
-          <circle
-            cx="48"
-            cy="48"
-            r={radius}
-            fill="transparent"
-            stroke="currentColor"
-            strokeWidth="6"
-            strokeDasharray={circumference}
-            strokeDashoffset={offset}
-            strokeLinecap="round"
-            className={`${color} transition-all duration-700 ease-out`}
-          />
-        </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <Icon className={`w-6 h-6 mb-1 ${color.replace('text-', 'text-opacity-80 text-')}`} />
-          <span className="text-2xl font-bold text-slate-700">{value}</span>
-          <span className="text-xs text-slate-400 font-medium">/ {max}</span>
-          <span className="text-[10px] text-slate-400 font-medium mt-1">
-            {max - value > 0 ? `${max - value} left` : `${value - max} over`}
-          </span>
-        </div>
-      </div>
-      <span className="text-sm font-semibold text-slate-500 group-hover:text-indigo-600 transition-colors">{label}</span>
+    <div className="relative w-56 h-56 mx-auto">
+      <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r={outer.r} fill="none" strokeWidth={outer.w} className="stroke-slate-100" stroke="currentColor" />
+        <circle cx="50" cy="50" r={outer.r} fill="none" strokeWidth={outer.w} strokeLinecap="round"
+          stroke="var(--color-protein)" strokeDasharray={ring(outer.r)} strokeDashoffset={offset(outer.r, protein, proteinGoal)}
+          className="transition-all duration-700 ease-out motion-reduce:transition-none" />
+        <circle cx="50" cy="50" r={inner.r} fill="none" strokeWidth={inner.w} className="stroke-slate-100" stroke="currentColor" />
+        <circle cx="50" cy="50" r={inner.r} fill="none" strokeWidth={inner.w} strokeLinecap="round"
+          stroke="#334155" strokeDasharray={ring(inner.r)} strokeDashoffset={offset(inner.r, calories, calorieGoal)}
+          className="transition-all duration-700 ease-out motion-reduce:transition-none" />
+        {baseCalorieGoal !== calorieGoal && (
+          <line x1="50" y1={50 - inner.r - inner.w / 2} x2="50" y2={50 - inner.r + inner.w / 2}
+            stroke="#cbd5e1" strokeWidth="1.5" transform={`rotate(${notchAngle + 90} 50 50)`} />
+        )}
+      </svg>
+      <button onClick={onEditProtein}
+        className="absolute inset-0 flex flex-col items-center justify-center rounded-full focus-visible:ring-2 focus-visible:ring-emerald-400"
+        aria-label={`Protein ${protein} of ${proteinGoal} grams. Edit goal.`}>
+        <span className="font-display text-5xl font-black text-slate-800 tabular-nums leading-none">{protein}</span>
+        <span className="text-sm font-semibold text-protein-strong tabular-nums">/ {proteinGoal} g protein</span>
+        <span className="text-xs text-slate-400 tabular-nums mt-1">{calories} / {calorieGoal} kcal</span>
+      </button>
     </div>
   );
 };
 
-export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, todaysLogs, onUpdateGoal, onSuggestMeal, onAnalyzeDay, suggestionCount = 0, overviewCount = 0, streak = 0, streakStatus = 'broken' }) {
+const MacroBar = ({ label, value, max, barClass, onClick }) => (
+  <button onClick={onClick} className="flex-1 text-left group" aria-label={`${label} ${value} of ${max} grams. Edit goal.`}>
+    <div className="flex justify-between text-xs font-semibold mb-1">
+      <span className="text-slate-500 group-hover:text-slate-700">{label}</span>
+      <span className="text-slate-400 tabular-nums">{value} / {max} g</span>
+    </div>
+    <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+      <div className={`h-full rounded-full ${barClass} transition-all duration-700 motion-reduce:transition-none`}
+        style={{ width: `${Math.min(100, (value / (max || 1)) * 100)}%` }} />
+    </div>
+  </button>
+);
+
+export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, todaysLogs, onUpdateGoal, onSuggestMeal, onAnalyzeDay, suggestionCount = 0, overviewCount = 0, streak = 0, streakStatus = 'broken', trainingDay = false, calorieOffset = 0 }) {
   const remaining = dailyGoal - caloriesToday;
   const [editingGoal, setEditingGoal] = useState(null);
   const [tempGoalValue, setTempGoalValue] = useState('');
@@ -77,6 +78,8 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
     carbs: macroGoals?.carbs || Math.round((dailyGoal * 0.4) / 4),
     fats: macroGoals?.fats || Math.round((dailyGoal * 0.3) / 9)
   };
+
+  const effectiveCalorieGoal = currentGoals.calories + (trainingDay ? calorieOffset : 0);
 
   const handleStartEdit = (type, value) => {
     setEditingGoal(type);
@@ -109,11 +112,11 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
       <div className="relative z-10 mb-6">
         <div className="flex justify-between items-start mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-slate-800">Daily Progress</h2>
-            <p className="text-slate-500 text-sm">Tap any ring to edit your goal</p>
+            <h2 className="font-display text-2xl font-bold text-slate-800">Daily Progress</h2>
+            <p className="text-slate-500 text-sm">Fuel your training</p>
             {streakStatus === 'at_risk' && streak > 0 && (
-              <p className="text-xs font-medium text-rose-500 mt-1 animate-pulse">
-                🔥 Log a meal today to keep your {streak} day streak!
+              <p className="text-xs font-medium text-rose-500 mt-1">
+                Log food or train today to keep your {streak} day streak!
               </p>
             )}
           </div>
@@ -133,39 +136,23 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 justify-items-center">
-          <CircleChart 
-            value={caloriesToday} 
-            max={currentGoals.calories} 
-            color="text-indigo-500" 
-            label="Calories" 
-            icon={Flame}
-            onClick={() => handleStartEdit('calories', currentGoals.calories)}
-          />
-          <CircleChart 
-            value={macros.protein} 
-            max={currentGoals.protein} 
-            color="text-blue-500" 
-            label="Protein" 
-            icon={Beef}
-            onClick={() => handleStartEdit('protein', currentGoals.protein)}
-          />
-          <CircleChart 
-            value={macros.carbs} 
-            max={currentGoals.carbs} 
-            color="text-amber-500" 
-            label="Carbs" 
-            icon={Wheat}
-            onClick={() => handleStartEdit('carbs', currentGoals.carbs)}
-          />
-          <CircleChart 
-            value={macros.fats} 
-            max={currentGoals.fats} 
-            color="text-rose-500" 
-            label="Fats" 
-            icon={Droplet}
-            onClick={() => handleStartEdit('fats', currentGoals.fats)}
-          />
+        <DualRing
+          protein={macros.protein} proteinGoal={currentGoals.protein}
+          calories={caloriesToday} calorieGoal={effectiveCalorieGoal} baseCalorieGoal={currentGoals.calories}
+          onEditProtein={() => handleStartEdit('protein', currentGoals.protein)}
+          onEditCalories={() => handleStartEdit('calories', currentGoals.calories)}
+        />
+        <div className="flex gap-6 mt-6">
+          <MacroBar label="Carbs" value={macros.carbs} max={currentGoals.carbs} barClass="bg-amber-500"
+            onClick={() => handleStartEdit('carbs', currentGoals.carbs)} />
+          <MacroBar label="Fats" value={macros.fats} max={currentGoals.fats} barClass="bg-rose-500"
+            onClick={() => handleStartEdit('fats', currentGoals.fats)} />
+        </div>
+        <div className="mt-3">
+          <button onClick={() => handleStartEdit('calories', currentGoals.calories)}
+            className="text-xs font-semibold text-slate-400 hover:text-slate-600">
+            Edit calorie goal
+          </button>
         </div>
       </div>
 
