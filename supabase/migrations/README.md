@@ -13,13 +13,17 @@ applied.
 ### Option A: Supabase CLI (preferred)
 
 ```bash
+npx supabase init
 npx supabase login
 npx supabase link
 npx supabase db dump --schema public -f supabase/migrations/00000000000000_baseline.sql
 ```
 
-`npx supabase link` will prompt you to select the hosted project. This
-requires an access token from https://supabase.com/dashboard/account/tokens.
+`npx supabase init` scaffolds the local Supabase project config — it creates
+`supabase/config.toml`, which `supabase link` requires (this repo does not
+have one yet, so `link` would fail without this step). `npx supabase link`
+will then prompt you to select the hosted project; it requires an access
+token from https://supabase.com/dashboard/account/tokens.
 
 ### Option B: Supabase Studio (fallback, if the CLI can't be linked)
 
