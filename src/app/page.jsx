@@ -44,6 +44,10 @@ export default function App() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isRetakingAssessment, setIsRetakingAssessment] = useState(false);
   const [showActionSheet, setShowActionSheet] = useState(false);
+  const [bumpSkipped, setBumpSkipped] = useState(false);
+
+  // Stable date key (en-CA => YYYY-MM-DD) for per-day training-bump skip state
+  const todayStr = new Date().toLocaleDateString('en-CA');
 
   // --- Auth & Data Fetching ---
   useEffect(() => {
@@ -186,9 +190,33 @@ export default function App() {
     }
   }, [activeWorkoutLogs, user]);
 
+  // Load the per-day training-bump skip flag from localStorage
+  useEffect(() => {
+    setBumpSkipped(localStorage.getItem('snapcal_skip_bump_' + todayStr) === '1');
+  }, [todayStr]);
+
+  const handleToggleBumpSkip = () => {
+    const next = !bumpSkipped;
+    setBumpSkipped(next);
+    if (next) localStorage.setItem('snapcal_skip_bump_' + todayStr, '1');
+    else localStorage.removeItem('snapcal_skip_bump_' + todayStr);
+  };
+
   const handleUpdateGoal = async (updates) => {
     if (!user) return;
-    
+
+    // Training/rest-day offset updates: no optimistic dailyGoal change; save then
+    // refetch so cached settings (and the derived offset) pick up the new value.
+    if (updates.trainingDayOffset !== undefined || updates.restDayOffset !== undefined) {
+      try {
+        await updateUserSettings(user.id, updates);
+        await fetchData();
+      } catch (e) {
+        console.error("Error saving offset", e);
+      }
+      return;
+    }
+
     // If updates contain profile data, we can't update local state immediately with goals
     // because the server calculates them. We should refetch after update.
     
@@ -256,7 +284,24 @@ export default function App() {
   });
 
   const caloriesToday = todaysLogs.reduce((acc, log) => acc + (parseInt(log.calories) || 0), 0);
-  const percentComplete = Math.min(100, Math.round((caloriesToday / dailyGoal) * 100));
+
+  // --- Training-day-aware calorie target ---
+  const trainedToday = (activeWorkoutLogs?.length > 0) || workoutLogs.some((l) => {
+    const d = new Date(l.date);
+    return d.toDateString() === today.toDateString();
+  });
+
+  const settingsCache = (() => {
+    try { return JSON.parse(localStorage.getItem('snapcal_settings') || '{}'); } catch { return {}; }
+  })();
+  const trainingOffset = settingsCache.training_day_calorie_offset ?? 250;
+  const restOffset = settingsCache.rest_day_calorie_offset ?? 0;
+  const isTrainingDay = trainedToday && !bumpSkipped;
+  const offsetSkipped = trainedToday && bumpSkipped;
+  const calorieOffset = isTrainingDay ? trainingOffset : restOffset;
+
+  const effectiveGoal = dailyGoal + calorieOffset;
+  const percentComplete = Math.min(100, Math.round((caloriesToday / effectiveGoal) * 100));
 
   // Weekly Data Calculation
   const weeklyData = useMemo(() => {
@@ -355,6 +400,10 @@ export default function App() {
                 onEditLog={setEditingLog}
                 onLogAdded={fetchData}
                 onAddMeal={() => setActiveTab('add')}
+                trainingDay={isTrainingDay}
+                calorieOffset={calorieOffset}
+                offsetSkipped={offsetSkipped}
+                onToggleBumpSkip={handleToggleBumpSkip}
               />
             )}
             {activeTab === 'workouts' && (

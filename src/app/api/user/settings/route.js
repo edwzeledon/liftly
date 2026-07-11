@@ -122,6 +122,8 @@ export async function POST(request) {
     if (body.proteinGoal) updates.protein_goal = body.proteinGoal;
     if (body.carbsGoal) updates.carbs_goal = body.carbsGoal;
     if (body.fatsGoal) updates.fats_goal = body.fatsGoal;
+    if (body.trainingDayOffset !== undefined) updates.training_day_calorie_offset = parseInt(body.trainingDayOffset) || 0;
+    if (body.restDayOffset !== undefined) updates.rest_day_calorie_offset = parseInt(body.restDayOffset) || 0;
     if (body.timezone) updates.timezone = body.timezone;
   }
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Flame, Sparkles, Brain } from 'lucide-react';
 
 const DualRing = ({ protein, proteinGoal, calories, calorieGoal, baseCalorieGoal, onEditProtein, onEditCalories }) => {
@@ -57,10 +57,24 @@ const MacroBar = ({ label, value, max, barClass, onClick }) => (
   </button>
 );
 
-export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, todaysLogs, onUpdateGoal, onSuggestMeal, onAnalyzeDay, suggestionCount = 0, overviewCount = 0, streak = 0, streakStatus = 'broken', trainingDay = false, calorieOffset = 0 }) {
+export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, todaysLogs, onUpdateGoal, onSuggestMeal, onAnalyzeDay, suggestionCount = 0, overviewCount = 0, streak = 0, streakStatus = 'broken', trainingDay = false, calorieOffset = 0, offsetSkipped = false, onToggleBumpSkip }) {
   const remaining = dailyGoal - caloriesToday;
   const [editingGoal, setEditingGoal] = useState(null);
   const [tempGoalValue, setTempGoalValue] = useState('');
+  const [showBumpPopover, setShowBumpPopover] = useState(false);
+  const bumpRef = useRef(null);
+
+  // Close the training-bump popover on outside click
+  useEffect(() => {
+    if (!showBumpPopover) return;
+    const handleClick = (e) => {
+      if (bumpRef.current && !bumpRef.current.contains(e.target)) {
+        setShowBumpPopover(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [showBumpPopover]);
 
   const suggestionDisabled = suggestionCount >= 1;
   const overviewDisabled = overviewCount >= 1;
@@ -102,11 +116,15 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
   const handleSaveGoal = () => {
     if (editingGoal === 'calories') {
       onUpdateGoal({ dailyGoal: parseInt(tempGoalValue) });
+    } else if (editingGoal === 'trainingOffset') {
+      onUpdateGoal({ trainingDayOffset: parseInt(tempGoalValue) });
     } else {
       onUpdateGoal({ [`${editingGoal}Goal`]: parseInt(tempGoalValue) });
     }
     setEditingGoal(null);
   };
+
+  const editLabel = editingGoal === 'trainingOffset' ? 'training bump' : editingGoal;
 
   return (
     <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 relative overflow-hidden">
@@ -137,6 +155,43 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
           )}
         </div>
 
+        {(trainingDay || offsetSkipped) && (
+          <div ref={bumpRef} className="relative inline-block min-h-7 mt-1 mb-4">
+            <button
+              onClick={() => setShowBumpPopover((v) => !v)}
+              aria-expanded={showBumpPopover}
+              aria-haspopup="dialog"
+              className={`px-3 py-1 rounded-full text-xs font-bold border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${
+                trainingDay
+                  ? 'bg-indigo-50 text-indigo-600 border-indigo-100'
+                  : 'bg-slate-50 text-slate-400 border-slate-100'
+              }`}
+            >
+              {trainingDay ? `Training day +${calorieOffset}` : 'Training bump off (+0)'}
+            </button>
+            {showBumpPopover && (
+              <div role="dialog" aria-label="Training bump options"
+                className="absolute top-full left-0 mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 p-4 w-64 z-20">
+                <p className="text-xs text-slate-500 mb-3">
+                  Training days adjust your calorie target. Base goal stays marked on the ring.
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => { setShowBumpPopover(false); handleStartEdit('trainingOffset', trainingDay ? calorieOffset : 250); }}
+                    className="flex-1 py-2 text-xs font-bold bg-slate-100 rounded-xl text-slate-600 hover:bg-slate-200 transition-colors">
+                    Adjust
+                  </button>
+                  <button
+                    onClick={() => { setShowBumpPopover(false); onToggleBumpSkip && onToggleBumpSkip(); }}
+                    className="flex-1 py-2 text-xs font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors">
+                    {trainingDay ? 'Skip today' : 'Re-apply'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         <DualRing
           protein={macros.protein} proteinGoal={currentGoals.protein}
           calories={caloriesToday} calorieGoal={effectiveCalorieGoal} baseCalorieGoal={currentGoals.calories}
@@ -161,8 +216,10 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
       {editingGoal && (
         <div className="fixed inset-0 z-100 bg-white/95 backdrop-blur-sm flex items-center justify-center p-6 animate-in fade-in duration-200">
             <div className="w-full max-w-sm">
-                <h3 className="text-xl font-bold text-slate-800 mb-2 text-center capitalize">Update {editingGoal} Goal</h3>
-                <p className="text-slate-400 text-sm text-center mb-6">Enter your new daily target</p>
+                <h3 className="text-xl font-bold text-slate-800 mb-2 text-center capitalize">Update {editLabel}{editingGoal === 'trainingOffset' ? '' : ' Goal'}</h3>
+                <p className="text-slate-400 text-sm text-center mb-6">
+                  {editingGoal === 'trainingOffset' ? 'Extra calories added on training days' : 'Enter your new daily target'}
+                </p>
                 
                 <div className="flex gap-3">
                     <input 

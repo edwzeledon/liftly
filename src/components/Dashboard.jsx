@@ -10,8 +10,9 @@ import MealFeed from './dashboard/MealFeed';
 import QuickProtein from './dashboard/QuickProtein';
 import WeightTrend from './dashboard/WeightTrend';
 
-export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percentComplete, weeklyData, todaysLogs, user, onLogDeleted, onUpdateGoal, onEditLog, onLogAdded, onAddMeal, streak, streakStatus }) {
-  const remaining = dailyGoal - caloriesToday;
+export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percentComplete, weeklyData, todaysLogs, user, onLogDeleted, onUpdateGoal, onEditLog, onLogAdded, onAddMeal, streak, streakStatus, trainingDay = false, calorieOffset = 0, offsetSkipped = false, onToggleBumpSkip }) {
+  const effectiveGoal = dailyGoal + calorieOffset;
+  const remaining = effectiveGoal - caloriesToday;
   const [aiModal, setAiModal] = useState({ open: false, type: '', step: 'confirm', content: '', loading: false });
   
   // New State for Daily Stats
@@ -146,6 +147,10 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percen
                 overviewCount={dailyStats.overview_count || 0}
                 streak={streak}
                 streakStatus={streakStatus}
+                trainingDay={trainingDay}
+                calorieOffset={calorieOffset}
+                offsetSkipped={offsetSkipped}
+                onToggleBumpSkip={onToggleBumpSkip}
             />
         </div>
         <div className="flex flex-col gap-6 h-full">
