@@ -57,14 +57,14 @@ const MacroBar = ({ label, value, max, barClass, onClick }) => (
   </button>
 );
 
-export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, todaysLogs, onUpdateGoal, onSuggestMeal, onAnalyzeDay, suggestionCount = 0, overviewCount = 0, streak = 0, streakStatus = 'broken', trainingDay = false, calorieOffset = 0, offsetSkipped = false, onToggleBumpSkip }) {
-  const remaining = dailyGoal - caloriesToday;
+export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, todaysLogs, onUpdateGoal, onSuggestMeal, onAnalyzeDay, suggestionCount = 0, overviewCount = 0, streak = 0, streakStatus = 'broken', trainingDay = false, calorieOffset = 0, trainingOffset = 250, offsetSkipped = false, onToggleBumpSkip }) {
   const [editingGoal, setEditingGoal] = useState(null);
   const [tempGoalValue, setTempGoalValue] = useState('');
   const [showBumpPopover, setShowBumpPopover] = useState(false);
   const bumpRef = useRef(null);
+  const bumpTriggerRef = useRef(null);
 
-  // Close the training-bump popover on outside click
+  // Close the training-bump popover on outside click or Escape
   useEffect(() => {
     if (!showBumpPopover) return;
     const handleClick = (e) => {
@@ -72,8 +72,18 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
         setShowBumpPopover(false);
       }
     };
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setShowBumpPopover(false);
+        bumpTriggerRef.current?.focus();
+      }
+    };
     document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, [showBumpPopover]);
 
   const suggestionDisabled = suggestionCount >= 1;
@@ -95,6 +105,7 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
   };
 
   const effectiveCalorieGoal = currentGoals.calories + (trainingDay ? calorieOffset : 0);
+  const remaining = effectiveCalorieGoal - caloriesToday;
 
   const handleStartEdit = (type, value) => {
     setEditingGoal(type);
@@ -158,6 +169,7 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
         {(trainingDay || offsetSkipped) && (
           <div ref={bumpRef} className="relative inline-block min-h-7 mt-1 mb-4">
             <button
+              ref={bumpTriggerRef}
               onClick={() => setShowBumpPopover((v) => !v)}
               aria-expanded={showBumpPopover}
               aria-haspopup="dialog"
@@ -177,7 +189,7 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
                 </p>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => { setShowBumpPopover(false); handleStartEdit('trainingOffset', trainingDay ? calorieOffset : 250); }}
+                    onClick={() => { setShowBumpPopover(false); handleStartEdit('trainingOffset', trainingOffset); }}
                     className="flex-1 py-2 text-xs font-bold bg-slate-100 rounded-xl text-slate-600 hover:bg-slate-200 transition-colors">
                     Adjust
                   </button>

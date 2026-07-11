@@ -402,6 +402,7 @@ export default function App() {
                 onAddMeal={() => setActiveTab('add')}
                 trainingDay={isTrainingDay}
                 calorieOffset={calorieOffset}
+                trainingOffset={trainingOffset}
                 offsetSkipped={offsetSkipped}
                 onToggleBumpSkip={handleToggleBumpSkip}
               />

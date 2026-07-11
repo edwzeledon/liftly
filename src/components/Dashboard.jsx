@@ -10,7 +10,7 @@ import MealFeed from './dashboard/MealFeed';
 import QuickProtein from './dashboard/QuickProtein';
 import WeightTrend from './dashboard/WeightTrend';
 
-export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percentComplete, weeklyData, todaysLogs, user, onLogDeleted, onUpdateGoal, onEditLog, onLogAdded, onAddMeal, streak, streakStatus, trainingDay = false, calorieOffset = 0, offsetSkipped = false, onToggleBumpSkip }) {
+export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percentComplete, weeklyData, todaysLogs, user, onLogDeleted, onUpdateGoal, onEditLog, onLogAdded, onAddMeal, streak, streakStatus, trainingDay = false, calorieOffset = 0, trainingOffset = 250, offsetSkipped = false, onToggleBumpSkip }) {
   const effectiveGoal = dailyGoal + calorieOffset;
   const remaining = effectiveGoal - caloriesToday;
   const [aiModal, setAiModal] = useState({ open: false, type: '', step: 'confirm', content: '', loading: false });
@@ -149,6 +149,7 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percen
                 streakStatus={streakStatus}
                 trainingDay={trainingDay}
                 calorieOffset={calorieOffset}
+                trainingOffset={trainingOffset}
                 offsetSkipped={offsetSkipped}
                 onToggleBumpSkip={onToggleBumpSkip}
             />
