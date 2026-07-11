@@ -558,9 +558,10 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       const res = await fetch('/api/workouts/finish', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           duration: elapsedTime,
-          ids: validLogIds
+          ids: validLogIds,
+          localDate: new Date().toLocaleDateString('en-CA')
         })
       });
 
