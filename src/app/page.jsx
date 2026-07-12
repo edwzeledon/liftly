@@ -13,6 +13,7 @@ import EditFoodModal from '@/components/EditFoodModal';
 import LandingPage from '@/components/landing-page/LandingPage';
 import OnboardingForm from '@/components/OnboardingForm';
 import WorkoutView from '@/components/workout/WorkoutView';
+import InsightsView from '@/components/insights/InsightsView';
 
 import SettingsView from '@/components/SettingsView';
 
@@ -436,7 +437,7 @@ export default function App() {
               />
             )}
             {activeTab === 'insights' && (
-              <div className="p-6 text-slate-400 text-sm">Insights coming in Task 11.</div>
+              <InsightsView user={user} onGoLogProtein={() => setActiveTab('home')} />
             )}
             {activeTab === 'settings' && (
               isRetakingAssessment ? (

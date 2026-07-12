@@ -8,7 +8,6 @@ import WeeklyTrend from './dashboard/WeeklyTrend';
 import HydrationTracker from './dashboard/HydrationTracker';
 import MealFeed from './dashboard/MealFeed';
 import QuickProtein from './dashboard/QuickProtein';
-import WeightTrend from './dashboard/WeightTrend';
 
 export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percentComplete, weeklyData, todaysLogs, user, onLogDeleted, onUpdateGoal, onEditLog, onLogAdded, onAddMeal, streak, streakStatus, trainingDay = false, calorieOffset = 0, trainingOffset = 250, offsetSkipped = false, onToggleBumpSkip }) {
   const effectiveGoal = dailyGoal + calorieOffset;
@@ -157,11 +156,6 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percen
         <div className="flex flex-col gap-6 h-full">
             <QuickProtein user={user} onLogAdded={onLogAdded} />
         </div>
-      </div>
-
-      {/* Row 2: Weight Trend */}
-      <div className="w-full">
-        <WeightTrend user={user} />
       </div>
 
       {/* Row 3: Weekly Trend */}

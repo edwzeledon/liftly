@@ -1,0 +1,160 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { Dumbbell, Trophy, Scale, Plus, Check, X } from 'lucide-react';
+import { getInsights, updateDailyStats } from '@/lib/api';
+import { LockedCard, SkeletonCard } from './ChartStates';
+import VolumeProteinCard from './VolumeProteinCard';
+import PrTimelineCard from './PrTimelineCard';
+import WeightBalanceCard from './WeightBalanceCard';
+
+const RANGES = [{ label: '4W', weeks: 4 }, { label: '8W', weeks: 8 }, { label: '12W', weeks: 12 }];
+const UNLOCK_DAYS = 7;
+
+// Minimal weight-entry affordance moved here from the retired WeightTrend card.
+// Reuses the existing updateDailyStats API pattern; calls onSaved so the parent
+// can refetch insights (the WeightBalanceCard picks up the new point).
+function WeightEntry({ user, onSaved }) {
+  const [isLogging, setIsLogging] = useState(false);
+  const [weight, setWeight] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    if (!weight || !user || saving) return;
+    const weightVal = parseFloat(weight);
+    if (!Number.isFinite(weightVal) || weightVal <= 0) return;
+    setSaving(true);
+    try {
+      await updateDailyStats({
+        date: new Date().toLocaleDateString('en-CA'),
+        weight: weightVal,
+      });
+      setIsLogging(false);
+      setWeight('');
+      if (onSaved) onSaved();
+    } catch (error) {
+      console.error('Error saving weight:', error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-3xl px-5 py-4 shadow-sm border border-slate-100 flex items-center justify-between gap-4">
+      <div className="flex items-center gap-2 min-w-0">
+        <div className="p-2 bg-rose-100 rounded-xl text-rose-600 shrink-0">
+          <Scale className="w-5 h-5" />
+        </div>
+        <div className="min-w-0">
+          <p className="font-semibold text-slate-800 text-sm">Today&apos;s weight</p>
+          <p className="text-xs text-slate-400 truncate">Keep your trend up to date</p>
+        </div>
+      </div>
+      {isLogging ? (
+        <div className="flex items-center gap-2 animate-in slide-in-from-right-4 fade-in duration-300">
+          <input
+            type="number"
+            inputMode="decimal"
+            value={weight}
+            onChange={(e) => setWeight(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); }}
+            placeholder="0.0"
+            className="w-24 px-3 py-2 rounded-xl border-2 border-indigo-100 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none font-bold text-slate-800"
+            autoFocus
+          />
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="p-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200 disabled:opacity-60"
+            aria-label="Save weight"
+          >
+            <Check className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => { setIsLogging(false); setWeight(''); }}
+            className="p-2.5 bg-slate-100 text-slate-500 rounded-xl hover:bg-slate-200 transition-colors"
+            aria-label="Cancel"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      ) : (
+        <button
+          onClick={() => setIsLogging(true)}
+          className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 shrink-0"
+        >
+          <Plus className="w-4 h-4" />
+          Log Weight
+        </button>
+      )}
+    </div>
+  );
+}
+
+export default function InsightsView({ user, onGoLogProtein }) {
+  const [range, setRange] = useState(4);
+  const [data, setData] = useState(null);
+  const [state, setState] = useState('loading'); // loading | ready | error
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: show the skeleton while a range/refresh change refetches.
+    setState('loading');
+    getInsights(range)
+      .then((d) => { if (!cancelled) { setData(d); setState('ready'); } })
+      .catch(() => { if (!cancelled) setState('error'); });
+    return () => { cancelled = true; };
+  }, [range, user?.id, refreshKey]);
+
+  const locked = state === 'ready' && data.foodDaysLogged < UNLOCK_DAYS;
+
+  return (
+    <div className="p-6 md:p-0 space-y-6 max-w-3xl mx-auto pb-20 md:pb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="flex items-center justify-between">
+        <h2 className="font-display text-2xl font-bold text-slate-800">Insights</h2>
+        <div className="bg-slate-100 p-1 rounded-xl flex gap-1">
+          {RANGES.map((r) => (
+            <button key={r.weeks} onClick={() => setRange(r.weeks)}
+              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${
+                range === r.weeks ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-400 hover:text-slate-600'
+              }`}>
+              {r.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <WeightEntry user={user} onSaved={() => setRefreshKey((k) => k + 1)} />
+
+      {state === 'loading' && (<><SkeletonCard /><SkeletonCard /><SkeletonCard /></>)}
+
+      {state === 'error' && (
+        <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 text-center">
+          <p className="text-sm text-slate-500 mb-3">Couldn&apos;t load insights.</p>
+          <button
+            onClick={() => { setState('loading'); setRefreshKey((k) => k + 1); }}
+            className="px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-xl">
+            Retry
+          </button>
+        </div>
+      )}
+
+      {state === 'ready' && locked && (
+        <>
+          <LockedCard title="Volume vs Protein" icon={Dumbbell} daysLogged={data.foodDaysLogged} daysNeeded={UNLOCK_DAYS} onCta={onGoLogProtein} />
+          <LockedCard title="PRs & Fuel" icon={Trophy} daysLogged={data.foodDaysLogged} daysNeeded={UNLOCK_DAYS} onCta={onGoLogProtein} />
+          <LockedCard title="Weight vs Calorie Balance" icon={Scale} daysLogged={data.foodDaysLogged} daysNeeded={UNLOCK_DAYS} onCta={onGoLogProtein} />
+        </>
+      )}
+
+      {state === 'ready' && !locked && (
+        <>
+          <VolumeProteinCard data={data} />
+          <PrTimelineCard data={data} />
+          <WeightBalanceCard data={data} />
+        </>
+      )}
+    </div>
+  );
+}

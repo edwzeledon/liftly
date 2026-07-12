@@ -1,0 +1,59 @@
+'use client';
+
+import React from 'react';
+import { Trophy } from 'lucide-react';
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceDot } from 'recharts';
+import InsightTooltip from './InsightTooltip';
+import { InsightCard, EmptyCard } from './ChartStates';
+
+const AXIS = { fontSize: 12, fill: '#94a3b8' };
+const fmtDay = (d) => new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+export default function PrTimelineCard({ data }) {
+  const prEvents = data.prEvents || [];
+  const weightSeries = data.weightSeries || [];
+  // Build a daily calorie series from weightSeries days + PR days (both carry day nutrition)
+  const dayMap = {};
+  weightSeries.forEach((s) => { dayMap[s.date] = { date: s.date, calories: s.balance != null ? s.balance + data.dailyGoal : null }; });
+  prEvents.forEach((p) => { if (p.dayCalories != null) dayMap[p.date] = { date: p.date, calories: p.dayCalories }; });
+  const series = Object.values(dayMap).filter((d) => d.calories != null).sort((a, b) => a.date.localeCompare(b.date));
+
+  if (!prEvents.length) {
+    return <EmptyCard title="PRs & Fuel" icon={Trophy} message="No PRs in this range yet — go lift!" />;
+  }
+
+  return (
+    <InsightCard title="PRs & Fuel" icon={Trophy}>
+      {series.length >= 2 && (
+        <ResponsiveContainer width="100%" height={200}>
+          <LineChart data={series} aria-label="Daily calories with strength PR markers">
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+            <XAxis dataKey="date" tickFormatter={fmtDay} axisLine={false} tickLine={false} tick={AXIS} minTickGap={30} />
+            <YAxis hide />
+            <Tooltip content={<InsightTooltip formatter={(e) => `Calories: ${e.value}`} />} labelFormatter={fmtDay} />
+            <Line dataKey="calories" name="Calories" stroke="#94a3b8" strokeWidth={1.5} dot={false} isAnimationActive={false} />
+            {prEvents.map((p) => (
+              <ReferenceDot key={p.exercise + p.date} x={p.date} y={p.dayCalories ?? 0} r={6}
+                fill="#f59e0b" stroke="#ffffff" strokeWidth={2} isFront />
+            ))}
+          </LineChart>
+        </ResponsiveContainer>
+      )}
+      {/* Accessible PR list (also the touch fallback) */}
+      <ul className="mt-3 divide-y divide-slate-50">
+        {[...prEvents].reverse().slice(0, 6).map((p) => (
+          <li key={p.exercise + p.date} className="py-2.5 flex items-center justify-between text-sm">
+            <div>
+              <p className="font-semibold text-slate-700">{p.exercise} — <span className="tabular-nums">{p.weight}×{p.reps}</span></p>
+              <p className="text-xs text-slate-400">{fmtDay(p.date)}</p>
+            </div>
+            <p className="text-xs text-slate-500 tabular-nums text-right">
+              {p.dayProtein != null ? `${p.dayProtein}g protein` : 'no food logged'}
+              {p.prevDayProtein != null && <><br />{p.prevDayProtein}g day before</>}
+            </p>
+          </li>
+        ))}
+      </ul>
+    </InsightCard>
+  );
+}
