@@ -20,7 +20,7 @@ Liftly integrates training and nutrition into a unified app designed for strengt
 *   **Supabase (PostgreSQL + RLS):** Relational database for logs, workouts, daily stats, and user settings. Row-level security ensures users only access their own data.
 *   **Tailwind CSS 4 + Framer Motion:** Mobile-first responsive styling with smooth animations on entry sheets, modals, and the hero ring.
 *   **Recharts:** Data visualization for weekly volume charts, PR timelines, and weight trends.
-*   **Jest:** 28 passing unit tests covering `workoutStats`, `streak`, and `insights` utilities.
+*   **Jest:** 25 passing unit tests covering `workoutStats`, `streak`, and `insights` utilities.
 
 ## Challenges I ran into
 *   **Prompt Engineering:** Tuning Gemini prompts to parse macros consistently without hallucinating ingredients—especially protein-heavy meals and prepared foods that don't have standard labels.
