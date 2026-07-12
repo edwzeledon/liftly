@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Flame, Sparkles, Brain } from 'lucide-react';
 
-const DualRing = ({ protein, proteinGoal, calories, calorieGoal, baseCalorieGoal, onEditProtein, onEditCalories }) => {
+const DualRing = ({ protein, proteinGoal, calories, calorieGoal, baseCalorieGoal, onEditProtein }) => {
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 100);
@@ -104,6 +104,7 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
     fats: macroGoals?.fats || Math.round((dailyGoal * 0.3) / 9)
   };
 
+  // Rest-day offset is intentionally not applied here; if a rest-offset UI is ever added, apply calorieOffset unconditionally to match the budget math in page.jsx/Dashboard.jsx.
   const effectiveCalorieGoal = currentGoals.calories + (trainingDay ? calorieOffset : 0);
   const remaining = effectiveCalorieGoal - caloriesToday;
 
@@ -208,7 +209,6 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
           protein={macros.protein} proteinGoal={currentGoals.protein}
           calories={caloriesToday} calorieGoal={effectiveCalorieGoal} baseCalorieGoal={currentGoals.calories}
           onEditProtein={() => handleStartEdit('protein', currentGoals.protein)}
-          onEditCalories={() => handleStartEdit('calories', currentGoals.calories)}
         />
         <div className="flex gap-6 mt-6">
           <MacroBar label="Carbs" value={macros.carbs} max={currentGoals.carbs} barClass="bg-amber-500"

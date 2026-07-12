@@ -24,7 +24,7 @@ Liftly integrates training and nutrition into a unified app designed for strengt
 
 ## Challenges I ran into
 *   **Prompt Engineering:** Tuning Gemini prompts to parse macros consistently without hallucinating ingredients—especially protein-heavy meals and prepared foods that don't have standard labels.
-*   **Optimistic UI Updates:** Coordinating instant dashboard feedback (streak ring animations, calorie pie updates, weight chart) before server responses to keep the app snappy on mobile networks.
+*   **Optimistic UI Updates:** Coordinating instant dashboard feedback (streak ring animations, calorie ring updates, weight chart) before server responses to keep the app snappy on mobile networks.
 *   **Secure Rate Limiting:** Implementing database-backed rate limiting (5 AI scans/day) at the server layer to prevent client-side bypass, while keeping the UX frictionless on hits.
 
 ## Accomplishments that I'm proud of
