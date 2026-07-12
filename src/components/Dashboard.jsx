@@ -189,17 +189,17 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percen
       {aiModal.open && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center pointer-events-none p-4 pb-24 sm:pb-4">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm pointer-events-auto transition-opacity" onClick={() => setAiModal({ ...aiModal, open: false })} />
-          <div className="bg-white w-full max-w-sm rounded-3xl shadow-2xl p-6 pointer-events-auto transform transition-all animate-in slide-in-from-bottom-10 relative">
-            <button 
+          <div className="bg-card w-full max-w-sm rounded-3xl shadow-2xl p-6 pointer-events-auto transform transition-all animate-in slide-in-from-bottom-10 relative">
+            <button
               onClick={() => setAiModal({ ...aiModal, open: false })}
-              className="absolute top-4 right-4 p-2 bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200"
+              className="absolute top-4 right-4 p-2 bg-muted rounded-full text-muted-foreground hover:bg-muted/80"
             >
               <X className="w-4 h-4" />
             </button>
-            
+
             <div className="flex flex-col items-center text-center">
               <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${
-                aiModal.type === 'suggestion' ? 'bg-indigo-100 text-indigo-600' : 'bg-purple-100 text-purple-600'
+                aiModal.type === 'suggestion' ? 'bg-indigo-100 text-training-text' : 'bg-ai-soft-border text-ai'
               }`}>
                 {aiModal.loading ? (
                   <Loader2 className="w-6 h-6 animate-spin" />
@@ -210,21 +210,21 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percen
                 )}
               </div>
               
-              <h3 className="text-lg font-bold text-slate-800 mb-2">
-                {aiModal.loading ? 'Thinking...' : 
+              <h3 className="text-lg font-bold text-foreground mb-2">
+                {aiModal.loading ? 'Thinking...' :
                  aiModal.step === 'confirm' ? (aiModal.type === 'suggestion' ? 'Chef Suggestion' : 'Daily Overview') :
                  (aiModal.type === 'suggestion' ? "Chef Gemini Suggests" : "Daily Insights")}
               </h3>
-              
-              <div className="text-slate-600 text-sm leading-relaxed w-full">
+
+              <div className="text-muted-foreground text-sm leading-relaxed w-full">
                 {aiModal.loading ? (
                   <div className="space-y-2 animate-pulse">
-                    <div className="h-2 bg-slate-100 rounded w-3/4 mx-auto"></div>
-                    <div className="h-2 bg-slate-100 rounded w-full"></div>
-                    <div className="h-2 bg-slate-100 rounded w-5/6 mx-auto"></div>
+                    <div className="h-2 bg-muted rounded w-3/4 mx-auto"></div>
+                    <div className="h-2 bg-muted rounded w-full"></div>
+                    <div className="h-2 bg-muted rounded w-5/6 mx-auto"></div>
                   </div>
                 ) : (
-                  <div className={`whitespace-pre-line ${aiModal.step === 'result' ? 'bg-slate-50 p-4 rounded-xl text-left border border-slate-100' : 'text-center px-2'}`}>
+                  <div className={`whitespace-pre-line ${aiModal.step === 'result' ? 'bg-muted p-4 rounded-xl text-left border border-border' : 'text-center px-2'}`}>
                     {aiModal.content}
                   </div>
                 )}
@@ -234,9 +234,9 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percen
                 <div className="mt-6 w-full flex gap-3">
                   {aiModal.step === 'confirm' ? (
                     <>
-                      <button 
+                      <button
                         onClick={() => setAiModal({ ...aiModal, open: false })}
-                        className="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl font-medium hover:bg-slate-200 active:scale-95 transition-all"
+                        className="flex-1 py-3 bg-muted text-muted-foreground rounded-xl font-medium hover:bg-muted/80 active:scale-95 transition-all"
                       >
                         Cancel
                       </button>
@@ -248,9 +248,9 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percen
                       </button>
                     </>
                   ) : (
-                    <button 
+                    <button
                       onClick={() => setAiModal({ ...aiModal, open: false })}
-                      className="w-full py-3 bg-slate-900 text-white rounded-xl font-medium hover:bg-slate-800 active:scale-95 transition-all"
+                      className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-medium hover:bg-primary/90 active:scale-95 transition-all"
                     >
                       Got it
                     </button>

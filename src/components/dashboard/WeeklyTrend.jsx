@@ -21,9 +21,9 @@ const PLOT_MARGIN = 5;
 export default function WeeklyTrend({ weeklyData, dailyGoal }) {
   const rows = weeklyData.map((d) => ({ ...d, label: d.dayName }));
   return (
-    <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-      <h3 className="font-display text-lg font-bold text-slate-800 flex items-center gap-2 mb-4">
-        <TrendingUp className="w-5 h-5 text-slate-400" />
+    <div className="bg-card rounded-3xl p-6 shadow-sm border border-border">
+      <h3 className="font-display text-lg font-bold text-foreground flex items-center gap-2 mb-4">
+        <TrendingUp className="w-5 h-5 text-faint" />
         This Week
       </h3>
       <ResponsiveContainer width="100%" height={180}>
@@ -43,7 +43,7 @@ export default function WeeklyTrend({ weeklyData, dailyGoal }) {
       <div className="flex mt-1" style={{ paddingLeft: PLOT_MARGIN, paddingRight: PLOT_MARGIN }} aria-hidden="true">
         {rows.map((r) => (
           <span key={r.label + r.date} className="flex-1 flex justify-center">
-            {r.trained ? <Dumbbell className="w-3 h-3 text-indigo-400" /> : <span className="w-3 h-3" />}
+            {r.trained ? <Dumbbell className="w-3 h-3 text-training-text" /> : <span className="w-3 h-3" />}
           </span>
         ))}
       </div>

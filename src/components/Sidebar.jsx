@@ -5,7 +5,7 @@ import { Home, Plus, Calendar, LogOut, Settings, Dumbbell, BarChart3 } from 'luc
 
 export default function Sidebar({ activeTab, setActiveTab, onLogout, onOpenLog }) {
   return (
-    <div className="hidden md:flex flex-col w-64 bg-white border-r border-slate-200 p-6 h-full shrink-0">
+    <div className="hidden md:flex flex-col w-64 bg-card border-r border-border p-6 h-full shrink-0">
       <div className="flex items-center gap-2 mb-10">
         <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-indigo-600">
           <svg width="24" height="24" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -14,7 +14,7 @@ export default function Sidebar({ activeTab, setActiveTab, onLogout, onOpenLog }
             <circle cx="50" cy="50" r="14" fill="#EBE9E4" />
           </svg>
         </div>
-        <h1 className="text-xl font-bold text-indigo-600">
+        <h1 className="text-xl font-bold text-training-text">
           Liftly
         </h1>
       </div>
@@ -23,7 +23,7 @@ export default function Sidebar({ activeTab, setActiveTab, onLogout, onOpenLog }
         <button
           onClick={() => setActiveTab('home')}
           className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
-            activeTab === 'home' ? 'bg-indigo-50 text-indigo-600 font-medium' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+            activeTab === 'home' ? 'bg-training-soft text-training-text font-medium' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
           }`}
         >
           <Home className="w-5 h-5" />
@@ -33,7 +33,7 @@ export default function Sidebar({ activeTab, setActiveTab, onLogout, onOpenLog }
         <button
           onClick={() => setActiveTab('workouts')}
           className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
-            activeTab === 'workouts' ? 'bg-indigo-50 text-indigo-600 font-medium' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+            activeTab === 'workouts' ? 'bg-training-soft text-training-text font-medium' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
           }`}
         >
           <Dumbbell className="w-5 h-5" />
@@ -43,7 +43,7 @@ export default function Sidebar({ activeTab, setActiveTab, onLogout, onOpenLog }
         <button
           onClick={() => setActiveTab('insights')}
           className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
-            activeTab === 'insights' ? 'bg-indigo-50 text-indigo-600 font-medium' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+            activeTab === 'insights' ? 'bg-training-soft text-training-text font-medium' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
           }`}
         >
           <BarChart3 className="w-5 h-5" />
@@ -53,7 +53,7 @@ export default function Sidebar({ activeTab, setActiveTab, onLogout, onOpenLog }
         <button
           onClick={() => setActiveTab('history')}
           className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
-            activeTab === 'history' ? 'bg-indigo-50 text-indigo-600 font-medium' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+            activeTab === 'history' ? 'bg-training-soft text-training-text font-medium' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
           }`}
         >
           <Calendar className="w-5 h-5" />
@@ -69,11 +69,11 @@ export default function Sidebar({ activeTab, setActiveTab, onLogout, onOpenLog }
         <span>Log</span>
       </button>
 
-      <div className="border-t border-slate-100 pt-2 space-y-1">
+      <div className="border-t border-border pt-2 space-y-1">
         <button
           onClick={() => setActiveTab('settings')}
           className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
-            activeTab === 'settings' ? 'bg-indigo-50 text-indigo-600 font-medium' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+            activeTab === 'settings' ? 'bg-training-soft text-training-text font-medium' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
           }`}
         >
           <Settings className="w-5 h-5" />
@@ -82,7 +82,7 @@ export default function Sidebar({ activeTab, setActiveTab, onLogout, onOpenLog }
 
         <button
           onClick={onLogout}
-          className="flex items-center gap-3 text-slate-500 hover:text-red-600 p-3 rounded-xl hover:bg-red-50 transition-colors w-full"
+          className="flex items-center gap-3 text-muted-foreground hover:text-destructive-text p-3 rounded-xl hover:bg-destructive/10 transition-colors w-full"
         >
           <LogOut className="w-5 h-5" />
           <span className="font-medium">Sign Out</span>

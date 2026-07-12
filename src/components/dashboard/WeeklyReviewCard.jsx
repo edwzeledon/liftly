@@ -7,10 +7,10 @@ import { getWeeklyReview } from '@/lib/api';
 import { startOfWeek } from '@/lib/workoutStats';
 
 const SECTIONS = [
-  { key: 'training', label: 'Training', icon: Dumbbell, tint: 'text-indigo-600 bg-indigo-50' },
-  { key: 'fuel', label: 'Fuel', icon: Beef, tint: 'text-protein-strong bg-emerald-50' },
+  { key: 'training', label: 'Training', icon: Dumbbell, tint: 'text-training-text bg-training-soft' },
+  { key: 'fuel', label: 'Fuel', icon: Beef, tint: 'text-protein-text bg-protein-soft' },
   { key: 'win', label: 'Win of the week', icon: Trophy, tint: 'text-amber-600 bg-amber-50' },
-  { key: 'focus', label: 'Next week\'s focus', icon: Target, tint: 'text-slate-600 bg-slate-100' },
+  { key: 'focus', label: 'Next week\'s focus', icon: Target, tint: 'text-muted-foreground bg-muted' },
 ];
 
 export default function WeeklyReviewCard() {
@@ -42,19 +42,19 @@ export default function WeeklyReviewCard() {
     <>
       {read ? (
         <button onClick={openReview}
-          className="w-full h-12 bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center gap-2 px-4 text-sm font-semibold text-slate-500 hover:text-slate-700">
-          <Sparkles className="w-4 h-4 text-purple-500" />
+          className="w-full h-12 bg-card rounded-2xl shadow-sm border border-border flex items-center gap-2 px-4 text-sm font-semibold text-muted-foreground hover:text-foreground">
+          <Sparkles className="w-4 h-4 text-ai" />
           Week of {weekStart} review · Read again
         </button>
       ) : (
-        <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 border-l-4 border-l-indigo-500">
+        <div className="bg-card rounded-3xl p-6 shadow-sm border border-border border-l-4 border-l-indigo-500">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-linear-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white shrink-0">
               <Sparkles className="w-5 h-5" />
             </div>
             <div className="flex-1">
-              <h3 className="font-display text-lg font-bold text-slate-800">Your Week in Review</h3>
-              <p className="text-xs text-slate-400">Training + nutrition, one AI summary per week</p>
+              <h3 className="font-display text-lg font-bold text-foreground">Your Week in Review</h3>
+              <p className="text-xs text-faint">Training + nutrition, one AI summary per week</p>
             </div>
             <button onClick={openReview}
               className="px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-xl hover:bg-indigo-700 active:scale-95 transition-all shadow-lg shadow-indigo-200">
@@ -72,28 +72,28 @@ export default function WeeklyReviewCard() {
             <motion.div
               initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 100 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="relative w-full sm:max-w-lg bg-white rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl max-h-[85vh] overflow-y-auto">
-              <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-4 sm:hidden" />
+              className="relative w-full sm:max-w-lg bg-card rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl max-h-[85vh] overflow-y-auto">
+              <div className="w-12 h-1.5 bg-muted rounded-full mx-auto mb-4 sm:hidden" />
               <button onClick={() => setOpen(false)} aria-label="Close"
-                className="absolute top-4 right-4 p-2 bg-slate-100 rounded-full text-slate-500"><X className="w-4 h-4" /></button>
-              <h3 className="font-display text-xl font-bold text-slate-800 mb-4">Week of {weekStart}</h3>
+                className="absolute top-4 right-4 p-2 bg-muted rounded-full text-muted-foreground"><X className="w-4 h-4" /></button>
+              <h3 className="font-display text-xl font-bold text-foreground mb-4">Week of {weekStart}</h3>
 
               {state === 'loading' && (
                 <div className="space-y-4">
                   {SECTIONS.map((s) => (
                     <div key={s.key} className="animate-pulse space-y-2">
-                      <div className="h-3 bg-slate-100 rounded w-1/4" />
-                      <div className="h-2 bg-slate-50 rounded w-full" />
-                      <div className="h-2 bg-slate-50 rounded w-3/4" />
+                      <div className="h-3 bg-muted rounded w-1/4" />
+                      <div className="h-2 bg-muted rounded w-full" />
+                      <div className="h-2 bg-muted rounded w-3/4" />
                     </div>
                   ))}
-                  <p className="text-xs text-slate-400 text-center">Reviewing your week...</p>
+                  <p className="text-xs text-faint text-center">Reviewing your week...</p>
                 </div>
               )}
-              {state === 'nodata' && <p className="text-sm text-slate-500">Log a few more days this week to get your review.</p>}
+              {state === 'nodata' && <p className="text-sm text-muted-foreground">Log a few more days this week to get your review.</p>}
               {state === 'error' && (
                 <div className="text-center">
-                  <p className="text-sm text-slate-500 mb-3">Could not generate - try again.</p>
+                  <p className="text-sm text-muted-foreground mb-3">Could not generate - try again.</p>
                   <button onClick={openReview} className="px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-xl">Retry</button>
                 </div>
               )}
@@ -105,8 +105,8 @@ export default function WeeklyReviewCard() {
                         <Icon className="w-4 h-4" />
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">{label}</p>
-                        <p className="text-sm text-slate-700 leading-relaxed">{review[key]}</p>
+                        <p className="text-xs font-bold text-faint uppercase tracking-wide">{label}</p>
+                        <p className="text-sm text-foreground leading-relaxed">{review[key]}</p>
                       </div>
                     </div>
                   ) : null)}

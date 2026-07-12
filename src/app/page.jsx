@@ -21,7 +21,7 @@ const NavButton = ({ active, onClick, icon: Icon, label }) => (
   <button 
     onClick={onClick}
     className={`flex flex-col items-center gap-1 p-2 min-w-16 rounded-xl transition-colors ${
-      active ? 'text-indigo-600' : 'text-slate-400 hover:text-slate-600'
+      active ? 'text-training-text' : 'text-faint hover:text-muted-foreground'
     }`}
   >
     <Icon className="w-6 h-6" />
@@ -333,8 +333,8 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-50">
-        <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <Loader2 className="w-8 h-8 text-training-text animate-spin" />
       </div>
     );
   }
@@ -344,7 +344,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex h-screen bg-slate-50 font-sans text-slate-900 overflow-hidden">
+    <div className="flex h-screen bg-background font-sans text-foreground overflow-hidden">
       
       {/* Desktop Sidebar */}
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout} onOpenLog={() => setShowActionSheet(true)} />
@@ -353,7 +353,7 @@ export default function App() {
       <div className="flex-1 flex flex-col h-full relative overflow-hidden">
         
         {/* Mobile Header (Hidden on Desktop) */}
-        <header className="md:hidden bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between z-10 sticky top-0">
+        <header className="md:hidden bg-card border-b border-border px-6 py-4 flex items-center justify-between z-10 sticky top-0">
           <div className="flex items-center gap-2">
             <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-indigo-600">
               <svg width="20" height="20" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -362,21 +362,21 @@ export default function App() {
                 <circle cx="50" cy="50" r="14" fill="#EBE9E4" />
               </svg>
             </div>
-            <h1 className="text-xl font-bold text-indigo-600">
+            <h1 className="text-xl font-bold text-training-text">
               Liftly
             </h1>
           </div>
           <div className="flex items-center gap-1">
             <button
               onClick={() => setActiveTab('settings')}
-              className={`p-2 rounded-full transition-colors ${activeTab === 'settings' ? 'text-indigo-600 bg-indigo-50' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'}`}
+              className={`p-2 rounded-full transition-colors ${activeTab === 'settings' ? 'text-training-text bg-training-soft' : 'text-faint hover:text-muted-foreground hover:bg-muted'}`}
               title="Settings"
             >
               <Settings className="w-5 h-5" />
             </button>
             <button
               onClick={handleLogout}
-              className="text-slate-400 hover:text-slate-600 p-2 rounded-full hover:bg-slate-100 transition-colors"
+              className="text-faint hover:text-muted-foreground p-2 rounded-full hover:bg-muted transition-colors"
               title="Sign Out"
             >
               <LogOut className="w-5 h-5" />
@@ -385,7 +385,7 @@ export default function App() {
         </header>
 
         {/* Scrollable Content Area */}
-        <main className="flex-1 overflow-y-auto pb-24 md:pb-0 scroll-smooth bg-slate-50">
+        <main className="flex-1 overflow-y-auto pb-24 md:pb-0 scroll-smooth bg-background">
           <div className="w-full max-w-5xl mx-auto md:p-8"> 
             {activeTab === 'home' && (
               <Dashboard 
@@ -462,7 +462,7 @@ export default function App() {
         </main>
 
         {/* Mobile Bottom Navigation (Hidden on Desktop) */}
-        <nav className="md:hidden absolute bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-4 py-2 flex justify-between items-center z-20 pb-safe">
+        <nav className="md:hidden absolute bottom-0 left-0 right-0 bg-card border-t border-border px-4 py-2 flex justify-between items-center z-20 pb-safe">
           <NavButton
             active={activeTab === 'home'}
             onClick={() => setActiveTab('home')}
@@ -533,9 +533,9 @@ export default function App() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 100, scale: 0.95 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="relative w-full sm:w-auto sm:min-w-[400px] sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl p-6 sm:p-8 shadow-2xl">
-              <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-4 sm:hidden" />
-              <h3 className="text-lg sm:text-xl font-bold text-slate-800 mb-5 sm:mb-6 text-center">Quick Log</h3>
+              className="relative w-full sm:w-auto sm:min-w-[400px] sm:max-w-md bg-card rounded-t-3xl sm:rounded-3xl p-6 sm:p-8 shadow-2xl">
+              <div className="w-12 h-1.5 bg-muted rounded-full mx-auto mb-4 sm:hidden" />
+              <h3 className="text-lg sm:text-xl font-bold text-foreground mb-5 sm:mb-6 text-center">Quick Log</h3>
 
               <div className="grid grid-cols-2 gap-4 sm:gap-5">
                 {/* Log Workout */}
@@ -544,13 +544,13 @@ export default function App() {
                     setShowActionSheet(false);
                     setActiveTab('workouts');
                   }}
-                  className="flex flex-col items-center gap-3 sm:gap-4 p-6 sm:p-8 rounded-2xl bg-indigo-50 border-2 border-indigo-100 hover:bg-indigo-100 hover:border-indigo-200 transition-all active:scale-95 hover:shadow-lg"
+                  className="flex flex-col items-center gap-3 sm:gap-4 p-6 sm:p-8 rounded-2xl bg-training-soft border-2 border-training-soft-border hover:bg-indigo-100 hover:border-indigo-200 transition-all active:scale-95 hover:shadow-lg"
                 >
                   <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-linear-to-br from-indigo-600 to-indigo-700 flex items-center justify-center text-white shadow-lg">
                     <Dumbbell className="w-7 h-7 sm:w-8 sm:h-8" />
                   </div>
-                  <span className="font-semibold text-slate-700 text-base sm:text-lg">Log Workout</span>
-                  <span className="text-xs sm:text-sm text-slate-500 text-center">Track exercises</span>
+                  <span className="font-semibold text-foreground text-base sm:text-lg">Log Workout</span>
+                  <span className="text-xs sm:text-sm text-muted-foreground text-center">Track exercises</span>
                 </button>
 
                 {/* Log Meal */}
@@ -559,13 +559,13 @@ export default function App() {
                     setShowActionSheet(false);
                     setActiveTab('add');
                   }}
-                  className="flex flex-col items-center gap-3 sm:gap-4 p-6 sm:p-8 rounded-2xl bg-purple-50 border-2 border-purple-100 hover:bg-purple-100 hover:border-purple-200 transition-all active:scale-95 hover:shadow-lg"
+                  className="flex flex-col items-center gap-3 sm:gap-4 p-6 sm:p-8 rounded-2xl bg-ai-soft border-2 border-ai-soft-border hover:bg-ai-soft-border hover:border-ai/20 transition-all active:scale-95 hover:shadow-lg"
                 >
                   <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-linear-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white shadow-lg">
                     <Utensils className="w-7 h-7 sm:w-8 sm:h-8" />
                   </div>
-                  <span className="font-semibold text-slate-700 text-base sm:text-lg">Log Meal</span>
-                  <span className="text-xs sm:text-sm text-slate-500 text-center">Scan or add food</span>
+                  <span className="font-semibold text-foreground text-base sm:text-lg">Log Meal</span>
+                  <span className="text-xs sm:text-sm text-muted-foreground text-center">Scan or add food</span>
                 </button>
               </div>
             </motion.div>

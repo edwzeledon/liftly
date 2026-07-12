@@ -6,20 +6,20 @@ export default function ConfirmModal({ isOpen, title, message, onConfirm, onCanc
 
   return (
     <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in">
-      <div className="bg-white rounded-3xl p-6 shadow-2xl w-full max-w-sm animate-in zoom-in-95">
+      <div className="bg-card rounded-3xl p-6 shadow-2xl w-full max-w-sm animate-in zoom-in-95">
         <div className="flex flex-col items-center text-center mb-6">
-          <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${isDestructive ? 'bg-red-100 text-red-600' : 'bg-indigo-100 text-indigo-600'}`}>
+          <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${isDestructive ? 'bg-red-100 text-destructive-text' : 'bg-indigo-100 text-training-text'}`}>
             <AlertTriangle className="w-6 h-6" />
           </div>
-          <h3 className="text-xl font-bold text-slate-800 mb-2">{title}</h3>
-          <p className="text-slate-500">{message}</p>
+          <h3 className="text-xl font-bold text-foreground mb-2">{title}</h3>
+          <p className="text-muted-foreground">{message}</p>
         </div>
-        
+
         <div className="flex gap-3">
-          <button 
+          <button
             onClick={onCancel}
             disabled={isLoading}
-            className="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl font-medium hover:bg-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 py-3 bg-muted text-muted-foreground rounded-xl font-medium hover:bg-muted/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {cancelText}
           </button>

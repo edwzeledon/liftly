@@ -24,8 +24,8 @@ export default function HydrationTracker({ waterIntake = 0, onUpdateWater }) {
   };
 
   return (
-    <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 h-full flex flex-col justify-center">
-      <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2 shrink-0">
+    <div className="bg-card rounded-3xl p-6 shadow-sm border border-border h-full flex flex-col justify-center">
+      <h3 className="font-bold text-foreground mb-4 flex items-center gap-2 shrink-0">
         <Droplet className="w-5 h-5 text-blue-500" />
         Hydration
       </h3>
@@ -38,14 +38,14 @@ export default function HydrationTracker({ waterIntake = 0, onUpdateWater }) {
             className={`p-2 rounded-xl transition-all duration-300 ${
               i < waterIntake 
                 ? 'bg-blue-500 text-white shadow-md scale-105' 
-                : 'bg-slate-100 text-slate-300 hover:bg-blue-50 hover:text-blue-300'
+                : 'bg-muted text-faint hover:bg-blue-50 hover:text-blue-300'
             }`}
           >
             <Droplet className={`w-5 h-5 ${i < waterIntake ? 'fill-current' : ''}`} />
           </button>
         ))}
       </div>
-      <p className="text-center text-sm text-slate-400 mt-4 font-medium shrink-0">
+      <p className="text-center text-sm text-faint mt-4 font-medium shrink-0">
         {waterIntake} / 8 Bottles
       </p>
     </div>

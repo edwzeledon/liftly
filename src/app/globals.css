@@ -22,6 +22,8 @@
   --color-destructive-text: #e11d48;
   --color-faint: #94a3b8;
   --color-ring-calorie: #334155;
+  --color-ring-notch: #cbd5e1;
+  --color-ai-soft-border: #f3e8ff;
   --font-display: var(--font-barlow-condensed), ui-sans-serif, system-ui, sans-serif;
 }
 
