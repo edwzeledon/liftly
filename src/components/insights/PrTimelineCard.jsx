@@ -5,8 +5,8 @@ import { Trophy } from 'lucide-react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceDot } from 'recharts';
 import InsightTooltip from './InsightTooltip';
 import { InsightCard, EmptyCard } from './ChartStates';
+import { AXIS_TICK, SERIES, gridProps } from './chartTheme';
 
-const AXIS = { fontSize: 12, fill: '#94a3b8' };
 const fmtDay = (d) => new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
 export default function PrTimelineCard({ data }) {
@@ -27,11 +27,11 @@ export default function PrTimelineCard({ data }) {
       {series.length >= 2 && (
         <ResponsiveContainer width="100%" height={200}>
           <LineChart data={series} aria-label="Daily calories with strength PR markers">
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-            <XAxis dataKey="date" tickFormatter={fmtDay} axisLine={false} tickLine={false} tick={AXIS} minTickGap={30} />
+            <CartesianGrid {...gridProps} />
+            <XAxis dataKey="date" tickFormatter={fmtDay} axisLine={false} tickLine={false} tick={AXIS_TICK} minTickGap={30} />
             <YAxis hide />
             <Tooltip content={<InsightTooltip formatter={(e) => `Calories: ${e.value}`} />} labelFormatter={fmtDay} />
-            <Line dataKey="calories" name="Calories" stroke="#94a3b8" strokeWidth={1.5} dot={false} isAnimationActive={false} />
+            <Line dataKey="calories" name="Calories" stroke={SERIES.caloriesContext} strokeWidth={1.5} dot={false} isAnimationActive={false} />
             {/* Anchor each dot to the plotted series value for its date; PRs with no
                 plottable calories stay list-only (the accessible PR list covers them). */}
             {prEvents.map((p) => {
@@ -39,7 +39,7 @@ export default function PrTimelineCard({ data }) {
               if (yVal == null) return null;
               return (
                 <ReferenceDot key={p.exercise + p.date} x={p.date} y={yVal} r={6}
-                  fill="#f59e0b" stroke="#ffffff" strokeWidth={2} isFront />
+                  fill={SERIES.prDot} stroke={SERIES.prDotHalo} strokeWidth={2} isFront />
               );
             })}
           </LineChart>

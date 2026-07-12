@@ -4,6 +4,7 @@ import React from 'react';
 import { TrendingUp, Dumbbell } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, Cell } from 'recharts';
 import InsightTooltip from '../insights/InsightTooltip';
+import { AXIS_TICK, REF_LINE, SERIES, gridProps } from '../insights/chartTheme';
 
 // Recharts' default chart margin is { top: 5, right: 5, bottom: 5, left: 5 } and the
 // YAxis below is `hide`, which excludes it from the offset calculation entirely (recharts
@@ -27,14 +28,14 @@ export default function WeeklyTrend({ weeklyData, dailyGoal }) {
       </h3>
       <ResponsiveContainer width="100%" height={180}>
         <BarChart data={rows}>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-          <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }} />
+          <CartesianGrid {...gridProps} />
+          <XAxis dataKey="label" axisLine={false} tickLine={false} tick={AXIS_TICK} />
           <YAxis hide />
           <Tooltip content={<InsightTooltip formatter={(e) => `${e.value} kcal`} />} />
-          {dailyGoal > 0 && <ReferenceLine y={dailyGoal} stroke="#cbd5e1" strokeDasharray="3 3" />}
+          {dailyGoal > 0 && <ReferenceLine y={dailyGoal} stroke={REF_LINE} strokeDasharray="3 3" />}
           <Bar dataKey="calories" name="Calories" radius={[6, 6, 0, 0]} maxBarSize={28} isAnimationActive={false}>
             {rows.map((r) => (
-              <Cell key={r.label + r.date} fill={r.calories > 0 ? '#4f46e5' : '#e2e8f0'} fillOpacity={r.calories > 0 ? 0.85 : 1} />
+              <Cell key={r.label + r.date} fill={r.calories > 0 ? SERIES.weeklyBars : SERIES.weeklyBarsEmpty} fillOpacity={r.calories > 0 ? 0.85 : 1} />
             ))}
           </Bar>
         </BarChart>
