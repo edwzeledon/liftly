@@ -40,7 +40,7 @@ export default function WeeklyReviewCard() {
 
   return (
     <>
-      {read && !open ? (
+      {read ? (
         <button onClick={openReview}
           className="w-full h-12 bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center gap-2 px-4 text-sm font-semibold text-slate-500 hover:text-slate-700">
           <Sparkles className="w-4 h-4 text-purple-500" />
