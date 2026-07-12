@@ -1,4 +1,4 @@
-import { aggregateInsights, dayKey } from '../insights';
+import { aggregateInsights, dayKey, pickWeekPair } from '../insights';
 
 const food = (date, calories, protein) => ({ date: date + 'T12:00:00.000Z', calories, protein });
 const lift = (date, exercise_name, sets) => ({ date: date + 'T17:00:00.000Z', exercise_name, sets });
@@ -51,5 +51,41 @@ describe('aggregateInsights', () => {
 
   it('counts distinct food-logged days', () => {
     expect(result.foodDaysLogged).toBe(3);
+  });
+});
+
+describe('pickWeekPair', () => {
+  const wk = (weekStart, extra = {}) => ({ weekStart, volume: 100, avgProtein: 150, avgCalories: 2200, daysLogged: 5, ...extra });
+  const THIS = '2026-07-06'; // Monday
+  const PREV = '2026-06-29'; // Monday before
+
+  it('length 0: both weeks zero-filled with the requested week-starts', () => {
+    const { thisWk, prevWk } = pickWeekPair([], THIS, PREV);
+    expect(thisWk).toEqual({ weekStart: THIS, volume: 0, avgProtein: 0, avgCalories: 0, daysLogged: 0 });
+    expect(prevWk).toEqual({ weekStart: PREV, volume: 0, avgProtein: 0, avgCalories: 0, daysLogged: 0 });
+  });
+
+  it('length 1 (current week only): thisWk from data, prevWk zero-filled', () => {
+    const { thisWk, prevWk } = pickWeekPair([wk(THIS)], THIS, PREV);
+    expect(thisWk.volume).toBe(100);
+    expect(prevWk).toEqual({ weekStart: PREV, volume: 0, avgProtein: 0, avgCalories: 0, daysLogged: 0 });
+  });
+
+  it('length 1 (last week only, nothing this week): thisWk zero-filled (NOT the stale bucket)', () => {
+    const { thisWk, prevWk } = pickWeekPair([wk(PREV)], THIS, PREV);
+    expect(thisWk).toEqual({ weekStart: THIS, volume: 0, avgProtein: 0, avgCalories: 0, daysLogged: 0 });
+    expect(prevWk.volume).toBe(100);
+  });
+
+  it('length 2: matches each bucket by week-start regardless of array order', () => {
+    const { thisWk, prevWk } = pickWeekPair([wk(PREV, { volume: 50 }), wk(THIS, { volume: 200 })], THIS, PREV);
+    expect(thisWk.volume).toBe(200);
+    expect(prevWk.volume).toBe(50);
+  });
+
+  it('non-array input is treated as empty', () => {
+    const { thisWk, prevWk } = pickWeekPair(undefined, THIS, PREV);
+    expect(thisWk.daysLogged).toBe(0);
+    expect(prevWk.daysLogged).toBe(0);
   });
 });

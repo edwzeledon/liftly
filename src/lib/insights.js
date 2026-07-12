@@ -5,6 +5,31 @@ export function dayKey(isoDate) {
   return String(isoDate).slice(0, 10);
 }
 
+/**
+ * Select the current-week and previous-week buckets out of an aggregated
+ * (ASC-by-weekStart) weeks array BY their week-start date, never by position.
+ *
+ * aggregateInsights only emits buckets for weeks that actually have data, so a
+ * naive `[prev, this] = weeks` destructure is wrong: if the lifter logged last
+ * week but nothing this week, the most-recent bucket is last week — it must NOT
+ * be treated as "this week". Matching by weekStart handles lengths 0/1/2+
+ * uniformly and yields zero-filled defaults for any week with no data.
+ *
+ * @param {Array<{weekStart:string}>} weeks - ASC by weekStart
+ * @param {string} thisWeekStart - startOfWeek(today)
+ * @param {string} prevWeekStart - startOfWeek(today - 7d)
+ * @returns {{ thisWk:Object, prevWk:Object }}
+ */
+export function pickWeekPair(weeks, thisWeekStart, prevWeekStart) {
+  const list = Array.isArray(weeks) ? weeks : [];
+  const zero = (weekStart) => ({ weekStart, volume: 0, avgProtein: 0, avgCalories: 0, daysLogged: 0 });
+  const find = (ws) => list.find((w) => w && w.weekStart === ws);
+  return {
+    thisWk: find(thisWeekStart) || zero(thisWeekStart),
+    prevWk: find(prevWeekStart) || zero(prevWeekStart),
+  };
+}
+
 export function aggregateInsights({ foodLogs = [], workoutLogs = [], dailyStats = [], dailyGoal = 2000, weeks = 4 }) {
   // Per-day nutrition totals
   const dayNutrition = {};

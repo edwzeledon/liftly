@@ -48,5 +48,24 @@ export const prompts = {
     1. Give me positive reinforcement.
     2. Give me one specific nutritional tip based on what I ate (e.g., "Great protein, but watch the sugar" or "Good job staying under, try to eat more fiber").
     Use emojis. Be concise.
-  `
+  `,
+
+  /**
+   * Weekly cross-domain review (training + nutrition)
+   * @param {Object} s - computed weekly summary stats
+   */
+  weeklyReview: (s) => `
+    Act as a pragmatic strength coach reviewing a lifter's week.
+    This week's data:
+    - Training volume: ${s.volume} lb (last week: ${s.prevVolume} lb)
+    - Workouts completed: ${s.sessions}
+    - PRs: ${s.prList || 'none'}
+    - Avg daily protein: ${s.avgProtein} g (target ${s.proteinGoal} g)
+    - Avg daily calories: ${s.avgCalories} (goal ${s.dailyGoal})
+    - Days with food logged: ${s.daysLogged}/7
+
+    Return ONLY raw JSON, no markdown, in this exact shape:
+    { "training": "1-2 sentences on volume/PRs trend", "fuel": "1-2 sentences on protein and calorie adherence, reference training days", "win": "one specific stat-backed highlight", "focus": "one actionable instruction for next week" }
+    Be direct and specific with the numbers given. No emojis.
+  `,
 };

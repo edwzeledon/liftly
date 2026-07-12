@@ -138,3 +138,14 @@ export async function getInsights(weeks = 4) {
   if (!response.ok) throw new Error('Failed to fetch insights');
   return response.json();
 }
+
+export async function getWeeklyReview() {
+  const res = await fetch('/api/gemini/text', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: 'weekly-review' }),
+  });
+  const data = await res.json();
+  if (!res.ok) { const err = new Error(data.error || 'Failed'); err.status = res.status; throw err; }
+  return data;
+}
