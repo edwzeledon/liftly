@@ -153,3 +153,9 @@ export async function getExercises() {
   if (!response.ok) throw new Error('Failed to fetch exercises');
   return response.json();
 }
+
+export async function getInsights(weeks = 4) {
+  const response = await fetch(`/api/insights?weeks=${weeks}`);
+  if (!response.ok) throw new Error('Failed to fetch insights');
+  return response.json();
+}
