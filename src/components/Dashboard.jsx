@@ -160,7 +160,7 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percen
 
       {/* Row 3: Weekly Trend */}
       <div className="w-full">
-        <WeeklyTrend weeklyData={weeklyData} />
+        <WeeklyTrend weeklyData={weeklyData} dailyGoal={dailyGoal} />
       </div>
 
       {/* Row 4: Meal Feed */}

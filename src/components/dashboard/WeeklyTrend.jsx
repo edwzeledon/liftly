@@ -1,46 +1,49 @@
-import React, { useState, useEffect } from 'react';
-import { TrendingUp } from 'lucide-react';
+'use client';
+
+import React from 'react';
+import { TrendingUp, Dumbbell } from 'lucide-react';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, Cell } from 'recharts';
+import InsightTooltip from '../insights/InsightTooltip';
+
+// Recharts' default chart margin is { top: 5, right: 5, bottom: 5, left: 5 } and the
+// YAxis below is `hide`, which excludes it from the offset calculation entirely (recharts
+// only reserves axis width for visible left/right axes). So the plot area spans exactly
+// [5px, containerWidth - 5px] regardless of viewport width. The default XAxis `padding` is
+// { left: 0, right: 0 }, so the category band scale divides that full plot width into
+// `rows.length` equal bands with no extra inset. The marker row below mirrors this exactly:
+// 5px of horizontal padding (matching the chart margin) plus `rows.length` equal-width
+// (`flex-1`) flex children, each centering its own content. That reproduces the same
+// per-category band centers Recharts computes internally, so the markers track the bars at
+// any width (mobile 375px or desktop) without depending on unstable internal chart hooks.
+const PLOT_MARGIN = 5;
 
 export default function WeeklyTrend({ weeklyData, dailyGoal }) {
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setIsMounted(true), 100);
-    return () => clearTimeout(timer);
-  }, []);
-
+  const rows = weeklyData.map((d) => ({ ...d, label: d.dayName }));
   return (
-    <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 h-full">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="font-bold text-slate-800 flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-indigo-500" />
-          Weekly Trend
-        </h3>
-      </div>
-      <div className="flex items-stretch justify-between h-48 gap-4 relative">
-        {/* Goal Line */}
-        <div 
-          className="absolute left-0 right-0 border-t-2 border-dashed border-slate-300 z-20 pointer-events-none flex items-end justify-end"
-          style={{ bottom: '80%' }}
-        >
-          <span className="text-[10px] text-slate-400 bg-white px-1 -mb-2.5">Goal</span>
-        </div>
-
-        {weeklyData.map((day, i) => (
-          <div key={i} className="flex flex-col items-center gap-2 flex-1 group z-10">
-            <div className="w-full relative flex-1 flex flex-col justify-end items-center bg-slate-50 rounded-lg overflow-hidden" title={`${day.calories} calories`}>
-              <span className="text-[10px] font-bold text-slate-500 mb-1">
-                {day.calories}
-              </span>
-              <div 
-                className={`w-full rounded-t-lg transition-all duration-700 ${
-                  day.height > 100 ? 'bg-red-400' : 'bg-indigo-400 group-hover:bg-indigo-500'
-                }`}
-                style={{ height: isMounted ? `${Math.min(Math.max(day.height * 0.8, 5), 100)}%` : '5%' }}
-              ></div>
-            </div>
-            <span className="text-xs font-medium text-slate-400">{day.dayName}</span>
-          </div>
+    <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
+      <h3 className="font-display text-lg font-bold text-slate-800 flex items-center gap-2 mb-4">
+        <TrendingUp className="w-5 h-5 text-slate-400" />
+        This Week
+      </h3>
+      <ResponsiveContainer width="100%" height={180}>
+        <BarChart data={rows}>
+          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+          <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }} />
+          <YAxis hide />
+          <Tooltip content={<InsightTooltip formatter={(e) => `${e.value} kcal`} />} />
+          {dailyGoal > 0 && <ReferenceLine y={dailyGoal} stroke="#cbd5e1" strokeDasharray="3 3" />}
+          <Bar dataKey="calories" name="Calories" radius={[6, 6, 0, 0]} maxBarSize={28} isAnimationActive={false}>
+            {rows.map((r) => (
+              <Cell key={r.label + r.date} fill={r.calories > 0 ? '#4f46e5' : '#e2e8f0'} fillOpacity={r.calories > 0 ? 0.85 : 1} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+      <div className="flex mt-1" style={{ paddingLeft: PLOT_MARGIN, paddingRight: PLOT_MARGIN }} aria-hidden="true">
+        {rows.map((r) => (
+          <span key={r.label + r.date} className="flex-1 flex justify-center">
+            {r.trained ? <Dumbbell className="w-3 h-3 text-indigo-400" /> : <span className="w-3 h-3" />}
+          </span>
         ))}
       </div>
     </div>

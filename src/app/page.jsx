@@ -317,15 +317,17 @@ export default function App() {
       });
       
       const total = dayLogs.reduce((acc, log) => acc + (parseInt(log.calories) || 0), 0);
+      const trained = workoutLogs.some((l) => new Date(l.date).toDateString() === d.toDateString());
       days.push({
         dayName: d.toLocaleDateString('en-US', { weekday: 'short' }),
         date: d,
         calories: total,
-        height: (total / dailyGoal) * 100
+        height: (total / dailyGoal) * 100,
+        trained
       });
     }
     return days;
-  }, [logs, dailyGoal]);
+  }, [logs, dailyGoal, workoutLogs]);
 
   // --- Render ---
 
