@@ -38,11 +38,11 @@ export default function LandingPage() {
       <HeroSection
         title={
           <>
-            Snap Your Food. <br />
-            <span className="text-indigo-600">Track Your Health.</span>
+            Train Hard. <br />
+            <span className="text-indigo-600">Fuel Right.</span>
           </>
         }
-        subtitle="The AI-powered calorie tracker that makes nutrition simple. Just take a photo, and let our advanced AI analyze your meal's calories and macros instantly."
+        subtitle="Track workouts with built-in PR detection, logging meals instantly via AI scanning. Training-day aware nutrition targets keep you fueled for the next session."
         callToAction={{
           text: "Start Tracking Free",
           href: "#"
