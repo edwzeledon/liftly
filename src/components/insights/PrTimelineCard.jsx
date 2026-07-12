@@ -32,10 +32,16 @@ export default function PrTimelineCard({ data }) {
             <YAxis hide />
             <Tooltip content={<InsightTooltip formatter={(e) => `Calories: ${e.value}`} />} labelFormatter={fmtDay} />
             <Line dataKey="calories" name="Calories" stroke="#94a3b8" strokeWidth={1.5} dot={false} isAnimationActive={false} />
-            {prEvents.map((p) => (
-              <ReferenceDot key={p.exercise + p.date} x={p.date} y={p.dayCalories ?? 0} r={6}
-                fill="#f59e0b" stroke="#ffffff" strokeWidth={2} isFront />
-            ))}
+            {/* Anchor each dot to the plotted series value for its date; PRs with no
+                plottable calories stay list-only (the accessible PR list covers them). */}
+            {prEvents.map((p) => {
+              const yVal = dayMap[p.date]?.calories;
+              if (yVal == null) return null;
+              return (
+                <ReferenceDot key={p.exercise + p.date} x={p.date} y={yVal} r={6}
+                  fill="#f59e0b" stroke="#ffffff" strokeWidth={2} isFront />
+              );
+            })}
           </LineChart>
         </ResponsiveContainer>
       )}

@@ -46,7 +46,7 @@ export default function VolumeProteinCard({ data }) {
         </ResponsiveContainer>
       </div>
       {/* Desktop: combined overlay */}
-      <div className="hidden md:block">
+      <div className="hidden md:block" aria-label="Weekly training volume compared with average daily protein">
         <ResponsiveContainer width="100%" height={288}>
           <ComposedChart data={rows}>
             {GRID}
