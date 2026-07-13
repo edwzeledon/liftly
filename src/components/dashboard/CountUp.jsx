@@ -17,7 +17,8 @@ const prefersReducedMotion = () =>
 export default function CountUp({ value, className }) {
   const target = Number(value) || 0;
   const [display, setDisplay] = useState(target);
-  const fromRef = useRef(target);
+  const displayRef = useRef(target); // last value actually rendered (updated every frame)
+  const fromRef = useRef(target); // where the next tween starts from
   const rafRef = useRef(null);
 
   useEffect(() => {
@@ -26,26 +27,31 @@ export default function CountUp({ value, className }) {
 
     // Reduced motion: jump to the value on the next frame (async keeps effects side-effect-clean).
     if (prefersReducedMotion()) {
-      fromRef.current = target;
-      rafRef.current = requestAnimationFrame(() => setDisplay(target));
-      return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+      rafRef.current = requestAnimationFrame(() => {
+        displayRef.current = target;
+        setDisplay(target);
+      });
+      return () => {
+        if (rafRef.current) cancelAnimationFrame(rafRef.current);
+        fromRef.current = displayRef.current;
+      };
     }
 
     const start = performance.now();
     const step = (now) => {
       const t = Math.min((now - start) / DURATION, 1);
-      setDisplay(Math.round(from + (target - from) * easeOut(t)));
-      if (t < 1) {
-        rafRef.current = requestAnimationFrame(step);
-      } else {
-        fromRef.current = target;
-      }
+      const next = Math.round(from + (target - from) * easeOut(t));
+      displayRef.current = next;
+      setDisplay(next);
+      if (t < 1) rafRef.current = requestAnimationFrame(step);
     };
     rafRef.current = requestAnimationFrame(step);
 
+    // Interrupt-safe: a mid-tween value change must resume from what is on screen
+    // (displayRef), not the interrupted tween's destination.
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      fromRef.current = target;
+      fromRef.current = displayRef.current;
     };
   }, [target]);
 
