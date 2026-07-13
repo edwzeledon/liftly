@@ -89,6 +89,7 @@ export async function POST(request) {
             // Safety Caps
             if (targetCalories < 1200 && gender === 'female') targetCalories = 1200;
             if (targetCalories < 1500 && gender === 'male') targetCalories = 1500;
+            if (targetCalories < 1350 && gender !== 'male' && gender !== 'female') targetCalories = 1350; // midpoint floor for unspecified
         }
     }
 

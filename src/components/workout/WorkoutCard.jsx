@@ -443,7 +443,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
                 disabled={!set.weight || !set.reps}
                 aria-label={`Mark set ${idx + 1} ${set.completed ? 'not done' : 'done'}`}
                 aria-pressed={set.completed}
-                className={`p-1.5 rounded-lg transition-all min-h-11 min-w-11 flex items-center justify-center ${set.completed
+                className={`relative p-1.5 rounded-lg transition-all flex items-center justify-center before:absolute before:-inset-2 before:content-[''] ${set.completed
                   ? 'bg-protein-soft text-protein ring-2 ring-protein/30'
                   : (!set.weight || !set.reps)
                     ? 'bg-muted text-faint cursor-not-allowed opacity-40'
@@ -461,7 +461,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
                 <button
                   onClick={() => removeSet(idx)}
                   aria-label={`Remove set ${idx + 1}`}
-                  className="text-faint hover:text-destructive-text p-1 min-h-11 min-w-11 flex items-center justify-center"
+                  className="relative text-faint hover:text-destructive-text p-1 flex items-center justify-center before:absolute before:-inset-2 before:content-['']"
                 >
                   <X className="w-4 h-4" />
                 </button>
