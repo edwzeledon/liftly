@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Dumbbell, Trophy, Scale, Plus, Check, X } from 'lucide-react';
 import { getInsights, updateDailyStats } from '@/lib/api';
+import SegmentedControl from '@/components/ui/SegmentedControl';
 import { LockedCard, SkeletonCard } from './ChartStates';
 import VolumeProteinCard from './VolumeProteinCard';
 import PrTimelineCard from './PrTimelineCard';
@@ -113,16 +114,11 @@ export default function InsightsView({ user, onGoLogProtein }) {
     <div className="p-6 md:p-0 space-y-6 max-w-3xl mx-auto pb-20 md:pb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center justify-between">
         <h2 className="font-display text-2xl font-bold text-foreground">Insights</h2>
-        <div className="bg-muted p-1 rounded-xl flex gap-1">
-          {RANGES.map((r) => (
-            <button key={r.weeks} onClick={() => setRange(r.weeks)}
-              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${
-                range === r.weeks ? 'bg-card text-foreground' : 'text-faint hover:text-muted-foreground'
-              }`}>
-              {r.label}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          options={RANGES.map((r) => ({ label: r.label, value: r.weeks }))}
+          value={range}
+          onChange={setRange}
+        />
       </div>
 
       <WeightEntry user={user} onSaved={() => setRefreshKey((k) => k + 1)} />

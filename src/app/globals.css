@@ -23,6 +23,7 @@
   --color-faint: #71717A;
   --color-ring-calorie: #52525B;
   --color-ring-notch: #52525B;
+  --color-ghost-sparkline: #3F3F46;
   --font-display: var(--font-barlow-condensed), ui-sans-serif, system-ui, sans-serif;
   --font-sans: var(--font-barlow), ui-sans-serif, system-ui, sans-serif;
 }
@@ -107,6 +108,7 @@
   --color-faint: #94a3b8;
   --color-ring-calorie: #334155;
   --color-ring-notch: #cbd5e1;
+  --color-ghost-sparkline: #cbd5e1;
 }
 
 @layer utilities {

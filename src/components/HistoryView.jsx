@@ -4,8 +4,11 @@ import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Utensils, Image as ImageIcon, Trash2, Edit2, Dumbbell, X } from 'lucide-react';
 import { deleteLog, deleteWorkoutLog } from '@/lib/api';
+import SegmentedControl from '@/components/ui/SegmentedControl';
 import ConfirmModal from './ConfirmModal';
 import WorkoutCard from './workout/WorkoutCard';
+
+const VIEW_MODES = [{ label: 'Meals', value: 'meals' }, { label: 'Workouts', value: 'workouts' }];
 
 export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted, onEditLog }) {
   const [viewMode, setViewMode] = useState('workouts'); // 'meals' | 'workouts'
@@ -211,28 +214,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
       <div className="flex items-center justify-between mb-6 md:mb-8">
         <h2 className="text-2xl font-bold text-foreground">History</h2>
 
-        <div className="flex bg-muted p-1 rounded-xl">
-          <button
-            onClick={() => setViewMode('meals')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              viewMode === 'meals'
-                ? 'bg-card text-training-text'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            Meals
-          </button>
-          <button
-            onClick={() => setViewMode('workouts')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              viewMode === 'workouts'
-                ? 'bg-card text-training-text'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            Workouts
-          </button>
-        </div>
+        <SegmentedControl options={VIEW_MODES} value={viewMode} onChange={setViewMode} />
       </div>
 
       {/* Edit Workout Modal */}
@@ -340,7 +322,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
               exit={{ opacity: 0, y: -20, scale: 0.95 }}
               transition={{ duration: 0.2 }}
             >
-              <h3 className="text-xs font-bold text-faint uppercase tracking-wider mb-3 sticky top-0 bg-background py-2 z-10 backdrop-blur-sm">
+              <h3 className="text-xs font-bold text-faint uppercase tracking-wider mb-3 sticky top-0 bg-background/90 backdrop-blur py-2 z-10">
                 {label}
               </h3>
 

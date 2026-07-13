@@ -20,7 +20,7 @@ export function LockedCard({ title, icon, daysLogged, daysNeeded = 7, onCta }) {
     <Card title={title} icon={icon}>
       <div className="relative h-40 flex flex-col items-center justify-center text-center">
         <svg className="absolute inset-0 w-full h-full opacity-30" viewBox="0 0 300 100" preserveAspectRatio="none" aria-hidden="true">
-          <path d="M0,80 C40,60 60,90 100,70 S180,30 220,50 S280,20 300,35" fill="none" stroke="var(--color-ring-notch)" strokeWidth="2" />
+          <path d="M0,80 C40,60 60,90 100,70 S180,30 220,50 S280,20 300,35" fill="none" stroke="var(--color-ghost-sparkline)" strokeWidth="2" />
         </svg>
         <Lock className="w-6 h-6 text-faint mb-2" />
         <p className="text-sm font-semibold text-muted-foreground">
