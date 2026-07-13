@@ -2,7 +2,7 @@ import React from 'react';
 import { Check } from 'lucide-react';
 
 const PricingCard = ({ title, price, features, recommended, onSelect }) => (
-  <div className={`relative p-8 bg-card rounded-2xl border ${recommended ? 'border-indigo-600 scale-105 z-10' : 'border-border'} flex flex-col`}>
+  <div className={`relative p-8 rounded-2xl border flex flex-col ${recommended ? 'bg-training-soft/50 border-training-soft-border scale-105 z-10' : 'bg-card border-border'}`}>
     {recommended && (
       <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-indigo-600 text-white px-4 py-1 rounded-full text-sm font-bold">
         Most Popular

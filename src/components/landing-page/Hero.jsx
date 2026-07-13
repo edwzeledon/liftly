@@ -1,170 +1,147 @@
-import React from 'react';
-import { cn } from "@/lib/utils";
-import { motion } from 'framer-motion';
+'use client';
 
-// Icon component for contact details
-const InfoIcon = ({ type }) => {
-    const icons = {
-        website: (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-training-text">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="2" x2="22" y1="12" y2="12"></line>
-                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-            </svg>
-        ),
-        phone: (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-training-text">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-            </svg>
-        ),
-        address: (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-training-text">
-                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
-                <circle cx="12" cy="10" r="3"></circle>
-            </svg>
-        ),
-    };
-    return <div className="mr-2 shrink-0">{icons[type]}</div>;
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Trophy, Beef, Brain } from 'lucide-react';
+import DeviceFrame from './DeviceFrame';
+
+const FEATURES = [
+  {
+    icon: Trophy,
+    tile: 'bg-training-soft',
+    iconClass: 'text-training-text',
+    title: 'PR detection',
+    description: 'Automatically flags new personal records the moment you log a set.',
+  },
+  {
+    icon: Beef,
+    tile: 'bg-protein-soft',
+    iconClass: 'text-protein-text',
+    title: '2-tap protein',
+    description: 'Log the protein sources you eat most in two taps, no typing required.',
+  },
+  {
+    icon: Brain,
+    tile: 'bg-ai-soft',
+    iconClass: 'text-ai',
+    title: 'Weekly AI review',
+    description: 'A once-a-week AI breakdown of how your fueling tracked with training.',
+  },
+];
+
+// Animation variants for the container to orchestrate children animations
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.12,
+      delayChildren: 0.15,
+    },
+  },
 };
 
-const HeroSection = React.forwardRef(
-  ({ className, logo, slogan, title, subtitle, callToAction, backgroundImage, contactInfo, onCtaClick, children, ...props }, ref) => {
-    
-    // Animation variants for the container to orchestrate children animations
-    const containerVariants = {
-      hidden: { opacity: 0 },
-      visible: {
-        opacity: 1,
-        transition: {
-          staggerChildren: 0.15,
-          delayChildren: 0.2,
-        },
-      },
-    };
+// Animation variants for individual text/UI elements
+const itemVariants = {
+  hidden: { y: 16, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      duration: 0.5,
+      ease: 'easeInOut',
+    },
+  },
+};
 
-    // Animation variants for individual text/UI elements
-    const itemVariants = {
-      hidden: { y: 20, opacity: 0 },
-      visible: {
-        y: 0,
-        opacity: 1,
-        transition: {
-          duration: 0.5,
-          ease: "easeInOut",
-        },
-      },
-    };
-    
-    return (
-      <motion.section
-        ref={ref}
-        className={cn(
-          "relative flex w-full flex-col overflow-hidden bg-card text-foreground md:flex-row min-h-screen",
-          className
-        )}
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-        {...props}
-      >
-        {/* Left Side: Content */}
-        <div className="grow flex w-full flex-col justify-center p-8 md:w-1/2 md:p-12 lg:w-3/5 lg:p-16 z-10">
-            {/* Top Section: Logo & Main Content */}
-            
-            <motion.header className="mb-8" variants={itemVariants}>
-                {logo && (
-                    <div className="flex items-center justify-center md:justify-start">
-                        <img src={logo.url} alt={logo.alt} className="mr-3 h-8" />
-                        <div>
-                            {logo.text && <p className="text-lg font-bold text-foreground">{logo.text}</p>}
-                            {slogan && <p className="text-xs tracking-wider text-muted-foreground">{slogan}</p>}
-                        </div>
-                    </div>
-                )}
-            </motion.header>
-
-            <motion.main variants={containerVariants} className="flex-1 flex flex-col justify-center items-center text-center md:items-start md:text-left w-full max-w-lg mx-auto md:mx-0">
-                {children ? (
-                    <motion.div 
-                        key="auth-content"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.3 }}
-                        className="w-full"
-                    >
-                        {children}
-                    </motion.div>
-                ) : (
-                    <motion.div
-                        key="hero-content"
-                        initial="hidden"
-                        animate="visible"
-                        variants={containerVariants}
-                        className="w-full"
-                    >
-                        <motion.h1 className="text-4xl font-bold leading-tight text-foreground md:text-5xl" variants={itemVariants}>
-                            {title}
-                        </motion.h1>
-                        <motion.div className="my-6 h-1 w-full md:w-20 bg-indigo-600" variants={itemVariants}></motion.div>
-                        <motion.p className="mb-8 max-w-md text-base text-muted-foreground mx-auto md:mx-0" variants={itemVariants}>
-                            {subtitle}
-                        </motion.p>
-                        <motion.button
-                            onClick={onCtaClick}
-                            className="text-lg font-bold tracking-widest text-training-text transition-colors hover:text-training-text/80 inline-flex items-center gap-2"
-                            variants={itemVariants}
-                        >
-                            {callToAction.text}
-                            <span aria-hidden="true">→</span>
-                        </motion.button>
-                    </motion.div>
-                )}
-            </motion.main>
-
-            {/* Bottom Section: Footer Info */}
-            {contactInfo && (
-                <motion.footer className="mt-12 w-full" variants={itemVariants}>
-                    <div className="grid grid-cols-1 gap-6 text-xs text-faint sm:grid-cols-3">
-                        {contactInfo.website && (
-                            <div className="flex items-center justify-center md:justify-start">
-                                <InfoIcon type="website" />
-                                <span>{contactInfo.website}</span>
-                            </div>
-                        )}
-                        {contactInfo.phone && (
-                            <div className="flex items-center justify-center md:justify-start">
-                                <InfoIcon type="phone" />
-                                <span>{contactInfo.phone}</span>
-                            </div>
-                        )}
-                        {contactInfo.address && (
-                            <div className="flex items-center justify-center md:justify-start">
-                                <InfoIcon type="address" />
-                                <span>{contactInfo.address}</span>
-                            </div>
-                        )}
-                    </div>
-                </motion.footer>
-            )}
+const HeroSection = React.forwardRef(({ onCtaClick, onSecondaryClick, children }, ref) => {
+  return (
+    <section ref={ref} className="relative w-full bg-card text-foreground">
+      <div className="max-w-7xl mx-auto px-6 pt-28 pb-20 md:pt-40 md:pb-28 grid md:grid-cols-2 gap-12 md:gap-8 items-center min-h-screen">
+        {/* Left: headline / CTA, swapped for the auth screen when active */}
+        <div className="w-full max-w-lg mx-auto md:mx-0 text-center md:text-left">
+          {children ? (
+            <motion.div
+              key="auth-content"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="w-full flex justify-center md:justify-start"
+            >
+              {children}
+            </motion.div>
+          ) : (
+            <motion.div
+              key="hero-content"
+              initial="hidden"
+              animate="visible"
+              variants={containerVariants}
+            >
+              <motion.h1
+                variants={itemVariants}
+                className="font-display font-bold uppercase leading-[0.95] text-5xl md:text-7xl text-foreground"
+              >
+                Train hard.
+                <br />
+                <span className="text-protein">Fuel right.</span>
+              </motion.h1>
+              <motion.p
+                variants={itemVariants}
+                className="mt-4 text-lg text-muted-foreground max-w-md mx-auto md:mx-0"
+              >
+                The lifting app where nutrition serves your training. Log protein in two taps, see how fuel drives your PRs.
+              </motion.p>
+              <motion.div
+                variants={itemVariants}
+                className="mt-8 flex flex-wrap justify-center md:justify-start gap-4"
+              >
+                <button
+                  onClick={onCtaClick}
+                  className="bg-training text-white font-bold rounded-xl px-6 py-3 transition-colors hover:bg-training/90"
+                >
+                  Start training
+                </button>
+                <button
+                  onClick={onSecondaryClick}
+                  className="bg-muted text-foreground font-bold rounded-xl px-6 py-3 transition-colors hover:bg-muted/80"
+                >
+                  See how it works
+                </button>
+              </motion.div>
+            </motion.div>
+          )}
         </div>
 
-        {/* Right Side: Image with Clip Path Animation */}
-        <motion.div 
-          className="hidden md:block w-full min-h-[300px] bg-cover bg-center md:w-1/2 md:min-h-full lg:w-2/5 absolute right-0 top-0 bottom-0 md:relative"
-          style={{ 
-            backgroundImage: `url(${backgroundImage})`,
-          }}
-          initial={{ clipPath: 'polygon(100% 0, 100% 0, 100% 100%, 100% 100%)' }}
-          animate={{ clipPath: 'polygon(25% 0, 100% 0, 100% 100%, 0% 100%)' }}
-          transition={{ duration: 1.2, ease: "easeInOut" }}
+        {/* Right: static product hero art */}
+        <motion.div
+          className="flex justify-center mt-4 md:mt-0"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, ease: 'easeInOut', delay: 0.1 }}
         >
+          <DeviceFrame />
         </motion.div>
-      </motion.section>
-    );
-  }
-);
+      </div>
 
-HeroSection.displayName = "HeroSection";
+      {/* Feature strip */}
+      <div id="features" className="max-w-7xl mx-auto px-6 pb-24">
+        <div className="grid sm:grid-cols-3 gap-5">
+          {FEATURES.map(({ icon: Icon, tile, iconClass, title, description }) => (
+            <div key={title} className="bg-card border border-border rounded-2xl p-5">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 ${tile}`}>
+                <Icon className={`w-5 h-5 ${iconClass}`} />
+              </div>
+              <h3 className="font-display font-bold text-lg text-foreground mb-1">{title}</h3>
+              <p className="text-sm text-muted-foreground">{description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+});
+
+HeroSection.displayName = 'HeroSection';
 
 export { HeroSection };

@@ -4,11 +4,14 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { HeroSection } from './Hero';
 import AuthScreen from '../AuthScreen';
-import { Utensils } from 'lucide-react';
 
 export default function LandingPage() {
   const router = useRouter();
   const [showAuth, setShowAuth] = useState(false);
+
+  const scrollToFeatures = () => {
+    document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   return (
     <div className="min-h-screen bg-card">
@@ -36,19 +39,8 @@ export default function LandingPage() {
 
       {/* Hero Section */}
       <HeroSection
-        title={
-          <>
-            Train Hard. <br />
-            <span className="text-training-text">Fuel Right.</span>
-          </>
-        }
-        subtitle="Track workouts with built-in PR detection, logging meals instantly via AI scanning. Training-day aware nutrition targets keep you fueled for the next session."
-        callToAction={{
-          text: "Start Tracking Free",
-          href: "#"
-        }}
         onCtaClick={() => setShowAuth(true)}
-        backgroundImage="https://images.unsplash.com/photo-1498837167922-ddd27525d352?q=80&w=2670&auto=format&fit=crop"
+        onSecondaryClick={scrollToFeatures}
       >
         {showAuth && (
           <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-500">
