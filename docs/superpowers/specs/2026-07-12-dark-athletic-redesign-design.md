@@ -105,4 +105,6 @@ Big-bang on `dark-athletic-redesign`, structured commits: (a) tokens + semantic 
 **Verification:** jest (25 tests) green at every commit; `npm run build` per commit; final manual pass at 375px + desktop against the §1 contrast table (spot-check every text-bearing pair); `prefers-reduced-motion` on ring/counter/sheets; keyboard pass on nav dock, SegmentedControl, sheets; Lighthouse a11y run on Today + Train.
 
 ### Out of scope
-Light-theme shipping/toggle (tokens parked only), IA/nav-order changes, new features, TypeScript, chart-rule changes, athlete photography.
+Light-theme shipping/toggle (tokens parked only), IA/nav-order changes, new features, TypeScript, chart-rule changes, ~~athlete photography~~.
+
+> **Amendment (2026-07-12):** after seeing the shipped R10 landing, the owner reversed the landing-art decision — athlete photography returns and the DeviceFrame product mock is removed. See [`2026-07-12-landing-photo-hero-design.md`](2026-07-12-landing-photo-hero-design.md), which supersedes this spec's landing section.
