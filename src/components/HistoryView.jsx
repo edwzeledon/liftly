@@ -71,6 +71,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
       title: 'Delete Entry',
       message: 'Are you sure you want to delete this entry? This cannot be undone.',
       isDestructive: true,
+      confirmLabel: 'Delete',
       onConfirm: async () => {
         setConfirmModal(prev => ({ ...prev, isOpen: false }));
 
@@ -105,6 +106,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
       title: 'Delete Workout Session',
       message: 'Are you sure you want to delete this entire workout session? All exercises will be removed.',
       isDestructive: true,
+      confirmLabel: 'Delete',
       onConfirm: async () => {
         setConfirmModal(prev => ({ ...prev, isOpen: false }));
         
@@ -149,6 +151,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
       title: 'Delete Day Logs',
       message: 'Are you sure you want to delete all meal logs for this day?',
       isDestructive: true,
+      confirmLabel: 'Delete',
       onConfirm: async () => {
         setConfirmModal(prev => ({ ...prev, isOpen: false }));
         
@@ -302,7 +305,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
                         </div>
                         <div>
                           <p className="font-medium text-foreground">{log.food_item}</p>
-                          <p className="text-xs font-display font-semibold tabular-nums text-muted-foreground">{log.calories} cal</p>
+                          <p className="text-xs font-display font-semibold tabular-nums text-muted-foreground">{log.calories} kcal</p>
                         </div>
                      </div>
                      <div className="flex items-center gap-2">
@@ -423,7 +426,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
                     <div>
                       <h4 className="font-bold text-foreground text-lg">Daily Nutrition</h4>
                       <p className="text-xs text-muted-foreground">
-                        {dayLogs.length} Meals • {dayLogs.reduce((sum, item) => sum + (parseInt(item.calories)||0), 0)} Calories
+                        {dayLogs.length} Meals • {dayLogs.reduce((sum, item) => sum + (parseInt(item.calories)||0), 0)} kcal
                       </p>
                     </div>
                     <div className="flex gap-1">
@@ -459,7 +462,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
                                  <>
                                    <span className="text-faint">•</span>
                                    <span className="flex gap-1">
-                                     {log.protein > 0 && <span className="text-deficit font-medium">P:{log.protein}</span>}
+                                     {log.protein > 0 && <span className="text-protein-text font-medium">P:{log.protein}</span>}
                                      {log.carbs > 0 && <span className="text-carb font-medium">C:{log.carbs}</span>}
                                      {log.fats > 0 && <span className="text-fat font-medium">F:{log.fats}</span>}
                                    </span>
@@ -469,7 +472,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
                            </div>
                         </div>
                         <div className="text-right">
-                          <span className="font-display text-sm font-semibold tabular-nums text-foreground">{log.calories} cal</span>
+                          <span className="font-display text-sm font-semibold tabular-nums text-foreground">{log.calories} kcal</span>
                         </div>
                       </div>
                     ))}
@@ -481,13 +484,14 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
           </AnimatePresence>
         </div>
       )}
-      <ConfirmModal 
+      <ConfirmModal
         isOpen={confirmModal.isOpen}
         title={confirmModal.title}
         message={confirmModal.message}
         onConfirm={confirmModal.onConfirm}
         onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
         isDestructive={confirmModal.isDestructive}
+        confirmLabel={confirmModal.confirmLabel}
       />
       {toastEl}
     </div>

@@ -343,7 +343,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
         <div>
           <h3 className="font-bold text-foreground">{log.exercise_name || log.exercise}</h3>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-faint uppercase tracking-wider">{log.category}</span>
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{log.category}</span>
           </div>
         </div>
       </div>
@@ -379,7 +379,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
 
     {/* Inline Sets Editor */}
     <div className="space-y-3">
-      <div className="grid grid-cols-10 gap-2 px-2 text-[10px] font-bold text-faint uppercase tracking-wider text-center">
+      <div className="grid grid-cols-10 gap-2 px-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider text-center">
         <div className="col-span-1">Set</div>
         <div className="col-span-3">Lbs</div>
         <div className="col-span-3">Reps</div>

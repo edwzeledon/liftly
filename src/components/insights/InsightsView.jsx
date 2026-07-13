@@ -70,7 +70,7 @@ function WeightEntry({ user, onSaved }) {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="p-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-60"
+            className="p-2.5 bg-training text-white rounded-xl hover:bg-training/90 transition-colors disabled:opacity-60"
             aria-label="Save weight"
           >
             <Check className="w-4 h-4" />
@@ -136,7 +136,7 @@ export default function InsightsView({ user, onGoLogProtein }) {
           <p className="text-sm text-muted-foreground mb-3">Couldn&apos;t load insights.</p>
           <button
             onClick={() => { setState('loading'); setRefreshKey((k) => k + 1); }}
-            className="px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-xl">
+            className="px-4 py-2 bg-training text-white text-sm font-bold rounded-xl">
             Retry
           </button>
         </div>

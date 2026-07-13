@@ -433,6 +433,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       title: 'Delete Template',
       message: 'Are you sure you want to delete this workout template? This cannot be undone.',
       isDestructive: true,
+      confirmLabel: 'Delete',
       onConfirm: async () => {
         setConfirmModal(prev => ({ ...prev, isOpen: false }));
         
@@ -468,6 +469,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       title: 'Remove Exercise',
       message: 'Are you sure you want to remove this exercise from your workout?',
       isDestructive: true,
+      confirmLabel: 'Remove',
       onConfirm: async () => {
         setConfirmModal(prev => ({ ...prev, isOpen: false }));
         
@@ -718,7 +720,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
         title: 'Incomplete Sets',
         message: 'Any incomplete sets will be discarded. Are you sure you want to finish?',
         isDestructive: false,
-        confirmText: 'Finish Anyway',
+        confirmLabel: 'Finish Anyway',
         onConfirm: async () => {
           await submitWorkout();
         }
@@ -730,7 +732,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
         title: 'Finish Workout',
         message: 'Great job! Are you ready to finish this workout?',
         isDestructive: false,
-        confirmText: 'Finish',
+        confirmLabel: 'Finish',
         onConfirm: async () => {
           await submitWorkout();
         }
@@ -753,6 +755,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       title: 'Discard Workout',
       message: "Are you sure you want to discard today's entire workout? This cannot be undone.",
       isDestructive: true,
+      confirmLabel: 'Discard',
       onConfirm: async () => {
         setConfirmModal(prev => ({ ...prev, isOpen: false }));
         
@@ -817,7 +820,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
         onConfirm={confirmModal.onConfirm}
         onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
         isDestructive={confirmModal.isDestructive}
-        confirmText={confirmModal.confirmText}
+        confirmLabel={confirmModal.confirmLabel}
         isLoading={isFinishing}
       />
 
@@ -896,7 +899,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
               <button 
                 onClick={handleSaveTemplate}
                 disabled={!templateName.trim() || isSavingTemplate}
-                className="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-medium disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 py-3 bg-training text-white rounded-xl font-medium disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {isSavingTemplate ? (
                   <>
@@ -1000,7 +1003,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
           <div className="flex flex-col">
             <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
               <Dumbbell className="w-6 h-6 text-training-text" />
-              Lifting Log
+              Train
             </h2>
           </div>
         </div>
@@ -1026,7 +1029,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
                  <div className="flex flex-col gap-3 w-full">
                    <button
                      onClick={() => setShowPicker(true)}
-                     className="w-full px-4 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all active:scale-95 flex items-center justify-center gap-2"
+                     className="w-full px-4 py-3 bg-training text-white rounded-xl font-bold hover:bg-training/90 transition-all active:scale-95 flex items-center justify-center gap-2"
                    >
                      <Plus className="w-5 h-5" />
                      Add Exercise

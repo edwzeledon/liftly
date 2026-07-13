@@ -75,7 +75,7 @@ export default function MealFeed({ logs, onEditLog, onDeleteLog, onAnalyzeDay, o
                       {/* Macros (Compact) */}
                       {(log.protein > 0 || log.carbs > 0 || log.fats > 0) && (
                         <div className="flex items-center gap-2 mt-1 text-xs font-medium">
-                          {log.protein > 0 && <span className="text-deficit">P:{log.protein}</span>}
+                          {log.protein > 0 && <span className="text-protein-text">P:{log.protein}</span>}
                           {log.carbs > 0 && <span className="text-carb">C:{log.carbs}</span>}
                           {log.fats > 0 && <span className="text-fat">F:{log.fats}</span>}
                         </div>
@@ -85,7 +85,7 @@ export default function MealFeed({ logs, onEditLog, onDeleteLog, onAnalyzeDay, o
 
                 {/* Calories */}
                 <div className="flex items-center gap-3 shrink-0 pl-2">
-                  <span className="font-display font-semibold tabular-nums text-ai text-base whitespace-nowrap">{log.calories} kcal</span>
+                  <span className="font-display font-semibold tabular-nums text-foreground text-base whitespace-nowrap">{log.calories} kcal</span>
 
                   {/* Menu */}
                   <div className="relative">

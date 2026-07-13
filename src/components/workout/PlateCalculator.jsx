@@ -69,11 +69,6 @@ export default function PlateCalculator({ isOpen, onClose, onApply }) {
             </p>
           </div>
           
-          {/* Background decoration */}
-          <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-             <div className="absolute -right-5 -top-5 w-32 h-32 bg-training rounded-full blur-3xl"></div>
-             <div className="absolute -left-5 -bottom-5 w-32 h-32 bg-deficit rounded-full blur-3xl"></div>
-          </div>
         </div>
 
         {/* Bar Weight Toggle */}
@@ -134,7 +129,7 @@ export default function PlateCalculator({ isOpen, onClose, onApply }) {
           </button>
           <button 
             onClick={() => onApply(calculateTotal())}
-            className="flex-1 py-4 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 active:scale-95 transition-all flex items-center justify-center gap-2"
+            className="flex-1 py-4 bg-training text-white rounded-xl font-bold hover:bg-training/90 active:scale-95 transition-all flex items-center justify-center gap-2"
           >
             <Check className="w-5 h-5" />
             Use Weight

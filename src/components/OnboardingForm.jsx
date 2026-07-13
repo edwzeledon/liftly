@@ -135,7 +135,7 @@ export default function OnboardingForm({ onComplete, onCancel, isEditing = false
                     {/* Progress Bar */}
                     <div className="flex gap-2 mb-8">
                         {[1, 2, 3, 4].map(i => (
-                            <div key={i} className={`h-1.5 flex-1 rounded-full transition-colors ${i <= step ? 'bg-indigo-600' : 'bg-muted'} ${i === 4 && formData.goal === 'maintain' ? 'hidden' : ''}`} />
+                            <div key={i} className={`h-1.5 flex-1 rounded-full transition-colors ${i <= step ? 'bg-training' : 'bg-muted'} ${i === 4 && formData.goal === 'maintain' ? 'hidden' : ''}`} />
                         ))}
                     </div>
 
@@ -421,7 +421,7 @@ export default function OnboardingForm({ onComplete, onCancel, isEditing = false
                                     )) ||
                                     (step === 4 && (!formData.goalWeight || !formData.targetDate))
                                     ? 'bg-muted cursor-not-allowed'
-                                    : 'bg-indigo-600 hover:bg-indigo-700'
+                                    : 'bg-training hover:bg-training/90'
                                 }`}
                         >
                             {step === 4 || (step === 3 && formData.goal === 'maintain') ? (

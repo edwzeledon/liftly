@@ -2,7 +2,7 @@ import React from 'react';
 import { AlertTriangle, Loader2 } from 'lucide-react';
 import { useModalBehavior } from '@/hooks/useModalBehavior';
 
-export default function ConfirmModal({ isOpen, title, message, onConfirm, onCancel, confirmText = 'Delete', cancelText = 'Cancel', isDestructive = true, isLoading = false }) {
+export default function ConfirmModal({ isOpen, title, message, onConfirm, onCancel, confirmLabel, cancelText = 'Cancel', isDestructive = true, isLoading = false }) {
   // Always-rendered by parents (WorkoutView), gated by isOpen — pass the boolean.
   // Escape is loading-guarded like the Cancel button and backdrop: the hook
   // ref-stabilizes this inline arrow (re-captured every render), so it always
@@ -33,9 +33,9 @@ export default function ConfirmModal({ isOpen, title, message, onConfirm, onCanc
           <button 
             onClick={onConfirm}
             disabled={isLoading}
-            className={`flex-1 py-3 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2 ${isDestructive ? 'bg-destructive hover:bg-destructive/90' : 'bg-indigo-600 hover:bg-indigo-700'} disabled:opacity-50 disabled:cursor-not-allowed`}
+            className={`flex-1 py-3 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2 ${isDestructive ? 'bg-destructive hover:bg-destructive/90' : 'bg-training hover:bg-training/90'} disabled:opacity-50 disabled:cursor-not-allowed`}
           >
-            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : confirmText}
+            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : confirmLabel}
           </button>
         </div>
       </div>

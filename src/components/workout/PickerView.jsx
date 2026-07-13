@@ -59,7 +59,7 @@ export default function PickerView({ onBack, onAddExercise, exercises = [] }) {
                 onClick={() => setSelectedCategory(cat)}
                 className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-colors ${
                   selectedCategory === cat
-                    ? 'bg-indigo-600 text-white'
+                    ? 'bg-training text-white'
                     : 'bg-muted text-muted-foreground hover:bg-muted/80'
                 }`}
               >
@@ -78,7 +78,7 @@ export default function PickerView({ onBack, onAddExercise, exercises = [] }) {
               >
                 <div>
                   <h4 className="font-bold text-foreground">{ex.name}</h4>
-                  <span className="text-xs font-bold text-faint uppercase tracking-wider">{ex.category}</span>
+                  <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{ex.category}</span>
                 </div>
                 <div className="w-8 h-8 rounded-full bg-training-soft text-training-text flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   <Plus className="w-5 h-5" />

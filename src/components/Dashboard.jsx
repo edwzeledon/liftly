@@ -274,7 +274,7 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percen
                   </button>
                   <button 
                     onClick={performAiAction}
-                    className="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 active:scale-95 transition-all"
+                    className="flex-1 py-3 bg-training text-white rounded-xl font-medium hover:bg-training/90 active:scale-95 transition-all"
                   >
                     Generate
                   </button>

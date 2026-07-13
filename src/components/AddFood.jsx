@@ -318,7 +318,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                       : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                {scanCount >= MAX_DAILY_SCANS ? `Scan Limit (${MAX_DAILY_SCANS}/${MAX_DAILY_SCANS})` : `AI Scan (${MAX_DAILY_SCANS - scanCount} left)`}
+                {scanCount >= MAX_DAILY_SCANS ? `AI Scan (0 of ${MAX_DAILY_SCANS} left)` : `AI Scan (${MAX_DAILY_SCANS - scanCount} of ${MAX_DAILY_SCANS} left)`}
               </button>
               <button 
                 onClick={() => { 
@@ -393,7 +393,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                       className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-3 transition-colors ${
                         scanCount >= MAX_DAILY_SCANS
                           ? 'bg-muted text-faint cursor-not-allowed'
-                          : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                          : 'bg-training text-white hover:bg-training/90'
                       }`}
                     >
                       <Camera className="w-6 h-6" />
@@ -429,7 +429,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                       onClick={captureImage}
                       className="w-16 h-16 bg-card rounded-full border-4 border-training-text flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
                     >
-                      <div className="w-12 h-12 bg-indigo-600 rounded-full"></div>
+                      <div className="w-12 h-12 bg-training rounded-full"></div>
                     </button>
                   </div>
                 )}
@@ -446,7 +446,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                     </button>
                     <button 
                       onClick={confirmImage}
-                      className="flex-1 max-w-xs py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-all flex items-center justify-center gap-2"
+                      className="flex-1 max-w-xs py-3 bg-training text-white font-bold rounded-xl hover:bg-training/90 transition-all flex items-center justify-center gap-2"
                     >
                       <Check className="w-5 h-5" />
                       Analyze
@@ -491,7 +491,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                       onClick={() => setForm({...form, mealType: type})}
                       className={`py-2 rounded-xl text-xs font-bold uppercase transition-all ${
                         form.mealType === type
-                          ? 'bg-indigo-600 text-white'
+                          ? 'bg-training text-white'
                           : 'bg-muted text-faint hover:bg-muted/80'
                       }`}
                     >
@@ -532,7 +532,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                     value={form.protein}
                     onChange={e => setForm({...form, protein: e.target.value})}
                     placeholder="0"
-                    className="w-full px-3 py-2 rounded-xl border border-border focus:border-deficit focus:ring-2 focus:ring-ring outline-none transition-all"
+                    className="w-full px-3 py-2 rounded-xl border border-border focus:border-protein focus:ring-2 focus:ring-ring outline-none transition-all"
                   />
                 </div>
                 <div>
@@ -562,7 +562,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
               <button
                 type="submit"
                 disabled={isSaving}
-                className="w-full py-4 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 active:scale-95 transition-all mt-4 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                className="w-full py-4 bg-training text-white font-bold rounded-2xl hover:bg-training/90 active:scale-95 transition-all mt-4 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}
                 {isSaving ? 'Saving...' : 'Save Entry'}

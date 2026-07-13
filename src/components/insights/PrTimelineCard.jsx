@@ -30,7 +30,7 @@ export default function PrTimelineCard({ data }) {
             <CartesianGrid {...gridProps} />
             <XAxis dataKey="date" tickFormatter={fmtDay} axisLine={false} tickLine={false} tick={AXIS_TICK} minTickGap={30} />
             <YAxis hide />
-            <Tooltip content={<InsightTooltip formatter={(e) => `Calories: ${e.value}`} />} labelFormatter={fmtDay} />
+            <Tooltip content={<InsightTooltip formatter={(e) => `Calories: ${e.value} kcal`} />} labelFormatter={fmtDay} />
             <Line dataKey="calories" name="Calories" stroke={SERIES.caloriesContext} strokeWidth={1.5} dot={false} isAnimationActive={false} />
             {/* Anchor each dot to the plotted series value for its date; PRs with no
                 plottable calories stay list-only (the accessible PR list covers them). */}

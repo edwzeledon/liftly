@@ -15,6 +15,7 @@ const SECTIONS = [
 
 export default function WeeklyReviewCard() {
   const weekStart = startOfWeek(new Date().toLocaleDateString('en-CA'));
+  const weekStartLabel = new Date(weekStart + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   const readKey = 'snapcal_review_read_' + weekStart;
   const [read, setRead] = useState(false);
   const [open, setOpen] = useState(false);
@@ -44,7 +45,7 @@ export default function WeeklyReviewCard() {
         <button onClick={openReview}
           className="w-full h-12 bg-card rounded-2xl border border-border flex items-center gap-2 px-4 text-sm font-semibold text-muted-foreground hover:text-foreground">
           <Sparkles className="w-4 h-4 text-ai" />
-          Week of {weekStart} review · Read again
+          Week of {weekStartLabel} review · Read again
         </button>
       ) : (
         <div className="bg-card rounded-2xl p-4 border border-border border-l-4 border-l-ai">
@@ -54,17 +55,17 @@ export default function WeeklyReviewCard() {
             </div>
             <div className="flex-1">
               <h3 className="font-display text-lg font-bold text-foreground">Your Week in Review</h3>
-              <p className="text-xs text-faint">Training + nutrition, one AI summary per week</p>
+              <p className="text-xs text-muted-foreground">Training + nutrition, one AI summary per week</p>
             </div>
             <button onClick={openReview}
-              className="px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-xl hover:bg-indigo-700 active:scale-95 transition-all">
+              className="px-4 py-2 bg-training text-white text-sm font-bold rounded-xl hover:bg-training/90 active:scale-95 transition-all">
               Read review
             </button>
           </div>
         </div>
       )}
 
-      <Sheet open={open} onClose={() => setOpen(false)} title={`Week of ${weekStart}`}>
+      <Sheet open={open} onClose={() => setOpen(false)} title={`Week of ${weekStartLabel}`}>
         {state === 'loading' && (
           <div className="space-y-4">
             {SECTIONS.map((s) => (
@@ -81,7 +82,7 @@ export default function WeeklyReviewCard() {
         {state === 'error' && (
           <div className="text-center">
             <p className="text-sm text-muted-foreground mb-3">Could not generate - try again.</p>
-            <button onClick={openReview} className="px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-xl">Retry</button>
+            <button onClick={openReview} className="px-4 py-2 bg-training text-white text-sm font-bold rounded-xl">Retry</button>
           </div>
         )}
         {state === 'ready' && review && (

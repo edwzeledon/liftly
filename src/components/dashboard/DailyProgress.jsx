@@ -40,7 +40,7 @@ const DualRing = ({ protein, proteinGoal, calories, calorieGoal, baseCalorieGoal
         aria-label={`Protein ${protein} of ${proteinGoal} grams. Edit goal.`}>
         <CountUp value={protein} className="font-display text-6xl md:text-7xl font-black text-foreground tabular-nums leading-none" />
         <span className="text-sm font-semibold text-protein-text tabular-nums">/ {proteinGoal} g protein</span>
-        <span className="text-xs text-faint tabular-nums mt-1">{calories} / {calorieGoal} kcal</span>
+        <span className="text-sm text-muted-foreground tabular-nums mt-1">{calories} / {calorieGoal} kcal · {Math.max(0, calorieGoal - calories)} left</span>
       </button>
     </div>
   );
@@ -171,7 +171,7 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
                     </button>
                     <button
                       onClick={() => { setShowBumpPopover(false); onToggleBumpSkip && onToggleBumpSkip(); }}
-                      className="flex-1 py-2 text-xs font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors">
+                      className="flex-1 py-2 text-xs font-bold bg-training text-white rounded-xl hover:bg-training/90 transition-colors">
                       {trainingDay ? 'Skip today' : 'Re-apply'}
                     </button>
                   </div>
@@ -248,7 +248,7 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
                     <button onClick={() => setEditingGoal(null)} className="flex-1 py-3 bg-muted text-muted-foreground font-bold rounded-xl hover:bg-muted/80 transition-colors">
                         Cancel
                     </button>
-                    <button onClick={handleSaveGoal} disabled={Number.isNaN(parseInt(tempGoalValue))} className={`flex-1 py-3 font-bold rounded-xl transition-colors ${Number.isNaN(parseInt(tempGoalValue)) ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-40' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}>
+                    <button onClick={handleSaveGoal} disabled={Number.isNaN(parseInt(tempGoalValue))} className={`flex-1 py-3 font-bold rounded-xl transition-colors ${Number.isNaN(parseInt(tempGoalValue)) ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-40' : 'bg-training text-white hover:bg-training/90'}`}>
                         Save
                     </button>
                 </div>
@@ -268,7 +268,7 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
           }`}
         >
           <Sparkles className="w-4 h-4" />
-          {remaining > 0 ? "Chef's Suggestion" : "Diet Rescue"} {suggestionDisabled ? "(0/1)" : "(1/1)"}
+          {remaining > 0 ? "Chef's Suggestion" : "Diet Rescue"} ({suggestionDisabled ? 0 : 1} of 1 left)
         </button>
         <button
           onClick={onAnalyzeDay}
@@ -280,7 +280,7 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
           }`}
         >
           <Brain className="w-4 h-4" />
-          Daily Overview {overviewDisabled ? "(0/1)" : "(1/1)"}
+          Daily Overview ({overviewDisabled ? 0 : 1} of 1 left)
         </button>
       </div>
     </div>

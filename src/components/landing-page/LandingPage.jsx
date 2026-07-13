@@ -6,6 +6,7 @@ import PhotoBackdrop from './PhotoBackdrop';
 import HeroContent from './HeroContent';
 import Sections from './sections';
 import AuthView from './AuthView';
+import Logo from '../ui/Logo';
 
 export default function LandingPage() {
   const [showAuth, setShowAuth] = useState(false);
@@ -27,13 +28,7 @@ export default function LandingPage() {
       {!showAuth && (
         <nav className="absolute top-0 left-0 right-0 z-50 p-6 flex justify-between items-center max-w-7xl mx-auto w-full">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => setShowAuth(false)}>
-            <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-indigo-600">
-              <svg width="20" height="20" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M 75 18 H 35 C 22 18, 15 25, 15 38 V 62 C 15 75, 22 82, 35 82 H 65 C 78 82, 85 75, 85 62 V 38" stroke="#EBE9E4" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
-                <circle cx="56" cy="50" r="14" fill="#EBE9E4" style={{ opacity: 0.25 }} />
-                <circle cx="50" cy="50" r="14" fill="#EBE9E4" />
-              </svg>
-            </div>
+            <Logo size={36} />
             <span className="text-xl font-bold text-training-text">Liftly</span>
           </div>
           <button

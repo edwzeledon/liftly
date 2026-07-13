@@ -3,6 +3,7 @@
 import { motion, useReducedMotion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import AuthScreen from '../AuthScreen';
+import Logo from '../ui/Logo';
 
 export default function AuthView({ onBack }) {
   const reduce = useReducedMotion();
@@ -19,13 +20,7 @@ export default function AuthView({ onBack }) {
         </button>
         <button onClick={onBack} aria-label="Liftly — back to landing"
           className="flex items-center gap-2 min-h-11 px-2 cursor-pointer hover:bg-muted/50 rounded-xl transition-colors">
-          <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-indigo-600">
-            <svg width="20" height="20" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M 75 18 H 35 C 22 18, 15 25, 15 38 V 62 C 15 75, 22 82, 35 82 H 65 C 78 82, 85 75, 85 62 V 38" stroke="#EBE9E4" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
-              <circle cx="56" cy="50" r="14" fill="#EBE9E4" style={{ opacity: 0.25 }} />
-              <circle cx="50" cy="50" r="14" fill="#EBE9E4" />
-            </svg>
-          </div>
+          <Logo size={36} />
           <span className="text-xl font-bold text-training-text">Liftly</span>
         </button>
       </div>
