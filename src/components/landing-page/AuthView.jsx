@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, useReducedMotion } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
+import { X } from 'lucide-react';
 import AuthScreen from '../AuthScreen';
 import Logo from '../ui/Logo';
 
@@ -11,17 +11,16 @@ export default function AuthView({ onBack }) {
     <motion.div key="auth" initial={{ opacity: 0, y: reduce ? 0 : 16 }} animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: reduce ? 0 : 16 }} transition={{ duration: 0.25 }}
       className="relative z-10 h-dvh flex flex-col">
-      {/* Top row: AuthView owns its top bar — Back (left) + logo (right). The landing nav is hidden while auth is open. */}
+      {/* Top row: AuthView owns its top bar — logo (left, matches landing nav) + close (right). The landing nav is hidden while auth is open. */}
       <div className="flex items-center justify-between p-4 pt-6">
-        <button onClick={onBack} aria-label="Back to landing"
-          className="flex items-center gap-2 min-h-11 px-3 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors">
-          <ArrowLeft className="w-5 h-5" />
-          <span className="text-sm font-semibold">Back</span>
-        </button>
         <button onClick={onBack} aria-label="Liftly — back to landing"
           className="flex items-center gap-2 min-h-11 px-2 cursor-pointer hover:bg-muted/50 rounded-xl transition-colors">
           <Logo size={36} />
           <span className="text-xl font-bold text-training-text">Liftly</span>
+        </button>
+        <button onClick={onBack} aria-label="Close sign in"
+          className="flex items-center justify-center min-h-11 min-w-11 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors">
+          <X className="w-5 h-5" />
         </button>
       </div>
       {/* Keyboard-safety valve: no scroll at rest; scrolls only when the keyboard shrinks dvh */}

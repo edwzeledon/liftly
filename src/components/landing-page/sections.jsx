@@ -3,6 +3,7 @@
 import { motion, useReducedMotion } from 'framer-motion';
 import { Trophy, Beef, Brain } from 'lucide-react';
 import { makeVariants } from './motionVariants';
+import Logo from '../ui/Logo';
 
 const FEATURES = [
   { icon: Trophy, tile: 'bg-training-soft', iconClass: 'text-training-text', stat: 'every PR',
@@ -56,6 +57,15 @@ export default function Sections({ onCtaClick }) {
           </motion.button>
         </motion.div>
       </section>
+
+      <footer className="max-w-7xl mx-auto px-6 py-10 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground border-t border-border">
+        <div className="flex items-center gap-2"><Logo size={28} /><span>© 2026 Liftly</span></div>
+        <div className="flex items-center gap-6">
+          <a href="/privacy" className="hover:text-foreground">Privacy</a>
+          <a href="/terms" className="hover:text-foreground">Terms</a>
+          <span className="text-faint">Photo: Sven Mieke / Unsplash</span>
+        </div>
+      </footer>
     </>
   );
 }

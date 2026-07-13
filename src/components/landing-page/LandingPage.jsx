@@ -1,12 +1,38 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import PhotoBackdrop from './PhotoBackdrop';
 import HeroContent from './HeroContent';
 import Sections from './sections';
 import AuthView from './AuthView';
 import Logo from '../ui/Logo';
+
+// useSearchParams must live under Suspense (Next 15). Isolated here so the
+// rest of LandingPage doesn't bail out of static rendering. Opens auth once
+// per param appearance (ref latch) and cleans the URL immediately after.
+function AuthParamListener({ onOpen }) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const openedRef = useRef(false);
+
+  useEffect(() => {
+    const auth = searchParams.get('auth');
+    if (auth === '1' && !openedRef.current) {
+      openedRef.current = true;
+      onOpen();
+      router.replace('/', { scroll: false });
+    }
+    if (auth !== '1') {
+      // Param is gone (cleaned, or never present) — re-arm the latch so a
+      // future ?auth=1 navigation (e.g. another /auth visit) can open again.
+      openedRef.current = false;
+    }
+  }, [searchParams, onOpen, router]);
+
+  return null;
+}
 
 export default function LandingPage() {
   const [showAuth, setShowAuth] = useState(false);
@@ -24,6 +50,9 @@ export default function LandingPage() {
 
   return (
     <div className={`bg-background text-foreground ${showAuth ? 'h-dvh overflow-hidden' : 'min-h-screen'}`}>
+      <Suspense fallback={null}>
+        <AuthParamListener onOpen={() => setShowAuth(true)} />
+      </Suspense>
       {/* Nav hidden entirely during auth — AuthView owns its own top bar (Back + logo) */}
       {!showAuth && (
         <nav className="absolute top-0 left-0 right-0 z-50 p-6 flex justify-between items-center max-w-7xl mx-auto w-full">
