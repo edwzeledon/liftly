@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Utensils, User, Mail, Lock, ArrowRight, Loader2, Eye, EyeOff } from 'lucide-react';
+import { User, Mail, Lock, ArrowRight, Loader2, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
 import Logo from './ui/Logo';
@@ -164,7 +164,7 @@ export default function AuthScreen({ embedded = false, compact = false }) {
         {!isRegistering && (
           <button
             type="button"
-            onClick={() => setMode('reset')}
+            onClick={() => { setError(''); setMode('reset'); }}
             className="text-protein-text text-sm text-left -mt-2 mb-4 hover:underline self-start"
           >
             Forgot password?
@@ -197,7 +197,7 @@ export default function AuthScreen({ embedded = false, compact = false }) {
         <p className="text-muted-foreground text-sm">
           {isRegistering ? 'Already have an account?' : "Don't have an account?"}
           <button
-            onClick={() => setIsRegistering(!isRegistering)}
+            onClick={() => { setError(''); setIsRegistering(!isRegistering); }}
             className="text-protein-text font-bold ml-1 hover:underline"
           >
             {isRegistering ? 'Login' : 'Sign Up'}

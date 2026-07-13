@@ -53,7 +53,7 @@ export default function LandingPage() {
       <Suspense fallback={null}>
         <AuthParamListener onOpen={() => setShowAuth(true)} />
       </Suspense>
-      {/* Nav hidden entirely during auth — AuthView owns its own top bar (Back + logo) */}
+      {/* Nav hidden entirely during auth — AuthView owns its own top bar (logo left, close right) */}
       {!showAuth && (
         <nav className="absolute top-0 left-0 right-0 z-50 p-6 flex justify-between items-center max-w-7xl mx-auto w-full">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => setShowAuth(false)}>
