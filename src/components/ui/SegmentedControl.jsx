@@ -21,7 +21,7 @@ export default function SegmentedControl({ options, value, onChange, className =
           aria-checked={o.value === value}
           tabIndex={o.value === value ? 0 : -1}
           onClick={() => onChange(o.value)}
-          className={`px-3 py-1.5 min-h-9 text-xs font-bold rounded-lg transition-colors ${
+          className={`px-3 py-1.5 min-h-11 text-xs font-bold rounded-lg transition-colors ${
             o.value === value ? 'bg-card text-foreground' : 'text-muted-foreground hover:text-foreground'
           }`}
         >
