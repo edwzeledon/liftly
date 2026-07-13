@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, Utensils, LogOut, Home, Plus, Calendar, Settings, Dumbbell, BarChart3 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { getLogs, getUserSettings, updateUserSettings, updateLog, getDailyStats, updateDailyStats, getWorkoutLogs, getActiveWorkoutLogs } from '@/lib/api';
@@ -16,6 +15,7 @@ import WorkoutView from '@/components/workout/WorkoutView';
 import InsightsView from '@/components/insights/InsightsView';
 
 import SettingsView from '@/components/SettingsView';
+import Sheet from '@/components/ui/Sheet';
 
 const NavButton = ({ active, onClick, icon: Icon, label }) => (
   <button 
@@ -493,64 +493,41 @@ export default function App() {
         )}
 
         {/* Log Action Sheet */}
-        <AnimatePresence>
-        {showActionSheet && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center sm:justify-center">
-            {/* Backdrop */}
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-              onClick={() => setShowActionSheet(false)}
-            />
+        <Sheet open={showActionSheet} onClose={() => setShowActionSheet(false)}>
+          <h3 className="text-lg sm:text-xl font-bold text-foreground mb-5 sm:mb-6 text-center">Quick Log</h3>
 
-            {/* Menu */}
-            <motion.div 
-              initial={{ opacity: 0, y: 100, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 100, scale: 0.95 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="relative w-full sm:w-auto sm:min-w-[400px] sm:max-w-md bg-card rounded-t-3xl sm:rounded-2xl p-6 sm:p-8">
-              <div className="w-12 h-1.5 bg-muted rounded-full mx-auto mb-4 sm:hidden" />
-              <h3 className="text-lg sm:text-xl font-bold text-foreground mb-5 sm:mb-6 text-center">Quick Log</h3>
-
-              <div className="grid grid-cols-2 gap-4 sm:gap-5">
-                {/* Log Workout */}
-                <button
-                  onClick={() => {
-                    setShowActionSheet(false);
-                    setActiveTab('workouts');
-                  }}
-                  className="flex flex-col items-center gap-3 sm:gap-4 p-6 sm:p-8 rounded-2xl bg-training-soft border-2 border-training-soft-border hover:bg-training-soft-border hover:border-training-soft-border transition-all active:scale-95"
-                >
-                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-training flex items-center justify-center text-white">
-                    <Dumbbell className="w-7 h-7 sm:w-8 sm:h-8" />
-                  </div>
-                  <span className="font-semibold text-foreground text-base sm:text-lg">Log Workout</span>
-                  <span className="text-xs sm:text-sm text-muted-foreground text-center">Track exercises</span>
-                </button>
-
-                {/* Log Meal */}
-                <button
-                  onClick={() => {
-                    setShowActionSheet(false);
-                    setActiveTab('add');
-                  }}
-                  className="flex flex-col items-center gap-3 sm:gap-4 p-6 sm:p-8 rounded-2xl bg-ai-soft border-2 border-ai-soft-border hover:bg-ai-soft-border hover:border-ai/20 transition-all active:scale-95"
-                >
-                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-ai flex items-center justify-center text-white">
-                    <Utensils className="w-7 h-7 sm:w-8 sm:h-8" />
-                  </div>
-                  <span className="font-semibold text-foreground text-base sm:text-lg">Log Meal</span>
-                  <span className="text-xs sm:text-sm text-muted-foreground text-center">Scan or add food</span>
-                </button>
+          <div className="grid grid-cols-2 gap-4 sm:gap-5">
+            {/* Log Workout */}
+            <button
+              onClick={() => {
+                setShowActionSheet(false);
+                setActiveTab('workouts');
+              }}
+              className="flex flex-col items-center gap-3 sm:gap-4 p-6 sm:p-8 rounded-2xl bg-training-soft border-2 border-training-soft-border hover:bg-training-soft-border hover:border-training-soft-border transition-all active:scale-95"
+            >
+              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-training flex items-center justify-center text-white">
+                <Dumbbell className="w-7 h-7 sm:w-8 sm:h-8" />
               </div>
-            </motion.div>
+              <span className="font-semibold text-foreground text-base sm:text-lg">Log Workout</span>
+              <span className="text-xs sm:text-sm text-muted-foreground text-center">Track exercises</span>
+            </button>
+
+            {/* Log Meal */}
+            <button
+              onClick={() => {
+                setShowActionSheet(false);
+                setActiveTab('add');
+              }}
+              className="flex flex-col items-center gap-3 sm:gap-4 p-6 sm:p-8 rounded-2xl bg-ai-soft border-2 border-ai-soft-border hover:bg-ai-soft-border hover:border-ai/20 transition-all active:scale-95"
+            >
+              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-ai flex items-center justify-center text-white">
+                <Utensils className="w-7 h-7 sm:w-8 sm:h-8" />
+              </div>
+              <span className="font-semibold text-foreground text-base sm:text-lg">Log Meal</span>
+              <span className="text-xs sm:text-sm text-muted-foreground text-center">Scan or add food</span>
+            </button>
           </div>
-        )}
-        </AnimatePresence>
+        </Sheet>
 
       </div>
     </div>

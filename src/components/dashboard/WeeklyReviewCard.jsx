@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Dumbbell, Beef, Trophy, Target, X } from 'lucide-react';
+import { Sparkles, Dumbbell, Beef, Trophy, Target } from 'lucide-react';
 import { getWeeklyReview } from '@/lib/api';
 import { startOfWeek } from '@/lib/workoutStats';
+import Sheet from '@/components/ui/Sheet';
 
 const SECTIONS = [
   { key: 'training', label: 'Training', icon: Dumbbell, tint: 'text-training-text bg-training-soft' },
@@ -64,58 +64,42 @@ export default function WeeklyReviewCard() {
         </div>
       )}
 
-      <AnimatePresence>
-        {open && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center sm:justify-center">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setOpen(false)} />
-            <motion.div
-              initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 100 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="relative w-full sm:max-w-lg bg-card rounded-t-3xl sm:rounded-2xl p-6 max-h-[85vh] overflow-y-auto">
-              <div className="w-12 h-1.5 bg-muted rounded-full mx-auto mb-4 sm:hidden" />
-              <button onClick={() => setOpen(false)} aria-label="Close"
-                className="absolute top-4 right-4 p-2 bg-muted rounded-full text-muted-foreground"><X className="w-4 h-4" /></button>
-              <h3 className="font-display text-xl font-bold text-foreground mb-4">Week of {weekStart}</h3>
-
-              {state === 'loading' && (
-                <div className="space-y-4">
-                  {SECTIONS.map((s) => (
-                    <div key={s.key} className="animate-pulse space-y-2">
-                      <div className="h-3 bg-muted rounded w-1/4" />
-                      <div className="h-2 bg-muted rounded w-full" />
-                      <div className="h-2 bg-muted rounded w-3/4" />
-                    </div>
-                  ))}
-                  <p className="text-xs text-faint text-center">Reviewing your week...</p>
-                </div>
-              )}
-              {state === 'nodata' && <p className="text-sm text-muted-foreground">Log a few more days this week to get your review.</p>}
-              {state === 'error' && (
-                <div className="text-center">
-                  <p className="text-sm text-muted-foreground mb-3">Could not generate - try again.</p>
-                  <button onClick={openReview} className="px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-xl">Retry</button>
-                </div>
-              )}
-              {state === 'ready' && review && (
-                <div className="space-y-5">
-                  {SECTIONS.map(({ key, label, icon: Icon, tint }) => review[key] ? (
-                    <div key={key} className="flex gap-3">
-                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${tint}`}>
-                        <Icon className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-faint uppercase tracking-wide">{label}</p>
-                        <p className="text-sm text-foreground leading-relaxed">{review[key]}</p>
-                      </div>
-                    </div>
-                  ) : null)}
-                </div>
-              )}
-            </motion.div>
+      <Sheet open={open} onClose={() => setOpen(false)} title={`Week of ${weekStart}`}>
+        {state === 'loading' && (
+          <div className="space-y-4">
+            {SECTIONS.map((s) => (
+              <div key={s.key} className="animate-pulse space-y-2">
+                <div className="h-3 bg-muted rounded w-1/4" />
+                <div className="h-2 bg-muted rounded w-full" />
+                <div className="h-2 bg-muted rounded w-3/4" />
+              </div>
+            ))}
+            <p className="text-xs text-faint text-center">Reviewing your week...</p>
           </div>
         )}
-      </AnimatePresence>
+        {state === 'nodata' && <p className="text-sm text-muted-foreground">Log a few more days this week to get your review.</p>}
+        {state === 'error' && (
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground mb-3">Could not generate - try again.</p>
+            <button onClick={openReview} className="px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-xl">Retry</button>
+          </div>
+        )}
+        {state === 'ready' && review && (
+          <div className="space-y-5">
+            {SECTIONS.map(({ key, label, icon: Icon, tint }) => review[key] ? (
+              <div key={key} className="flex gap-3">
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${tint}`}>
+                  <Icon className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-faint uppercase tracking-wide">{label}</p>
+                  <p className="text-sm text-foreground leading-relaxed">{review[key]}</p>
+                </div>
+              </div>
+            ) : null)}
+          </div>
+        )}
+      </Sheet>
     </>
   );
 }

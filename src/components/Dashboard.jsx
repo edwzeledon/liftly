@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Brain, Loader2, X } from 'lucide-react';
+import { Sparkles, Brain, Loader2 } from 'lucide-react';
 import { callGeminiText, deleteLog, getDailyStats, updateDailyStats } from '@/lib/api';
 import DailyProgress from './dashboard/DailyProgress';
 import WeeklyTrend from './dashboard/WeeklyTrend';
@@ -9,6 +9,7 @@ import HydrationTracker from './dashboard/HydrationTracker';
 import MealFeed from './dashboard/MealFeed';
 import QuickProtein from './dashboard/QuickProtein';
 import WeeklyReviewCard from './dashboard/WeeklyReviewCard';
+import Sheet from './ui/Sheet';
 
 export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percentComplete, weeklyData, todaysLogs, user, onLogDeleted, onUpdateGoal, onEditLog, onLogAdded, onAddMeal, streak, streakStatus, trainingDay = false, calorieOffset = 0, trainingOffset = 250, offsetSkipped = false, onToggleBumpSkip }) {
   const effectiveGoal = dailyGoal + calorieOffset;
@@ -186,17 +187,7 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percen
       </div>
 
       {/* AI Modal */}
-      {aiModal.open && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center pointer-events-none p-4 pb-24 sm:pb-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm pointer-events-auto transition-opacity" onClick={() => setAiModal({ ...aiModal, open: false })} />
-          <div className="bg-card w-full max-w-sm rounded-2xl p-6 pointer-events-auto transform transition-all animate-in slide-in-from-bottom-10 relative">
-            <button
-              onClick={() => setAiModal({ ...aiModal, open: false })}
-              className="absolute top-4 right-4 p-2 bg-muted rounded-full text-muted-foreground hover:bg-muted/80"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
+      <Sheet open={aiModal.open} onClose={() => setAiModal({ ...aiModal, open: false })}>
             <div className="flex flex-col items-center text-center">
               <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${
                 aiModal.type === 'suggestion' ? 'bg-training-soft-border text-training-text' : 'bg-ai-soft-border text-ai'
@@ -258,9 +249,7 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percen
                 </div>
               )}
             </div>
-          </div>
-        </div>
-      )}
+      </Sheet>
 
     </div>
   );
