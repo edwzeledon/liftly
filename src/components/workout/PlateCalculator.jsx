@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { X, Check, RotateCcw, Minus, Plus } from 'lucide-react';
+import { useModalBehavior } from '@/hooks/useModalBehavior';
 
 export default function PlateCalculator({ isOpen, onClose, onApply }) {
+  // Always-rendered (key-remounted) with an isOpen gate — pass the boolean.
+  const { closeRef } = useModalBehavior(isOpen, onClose);
   const [barWeight, setBarWeight] = useState(45);
   const [plates, setPlates] = useState({
     45: 0,
@@ -41,11 +44,11 @@ export default function PlateCalculator({ isOpen, onClose, onApply }) {
   };
 
   return (
-    <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-      <div className="bg-card rounded-2xl p-6 w-full max-w-sm animate-in zoom-in-95">
+    <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in" onClick={onClose}>
+      <div className="bg-card rounded-2xl p-6 w-full max-w-sm animate-in zoom-in-95" onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-xl font-bold text-foreground">Plate Calculator</h3>
-          <button onClick={onClose} className="p-2 hover:bg-muted rounded-full transition-colors">
+          <button ref={closeRef} onClick={onClose} className="p-2 hover:bg-muted rounded-full transition-colors">
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>

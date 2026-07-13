@@ -8,6 +8,7 @@ import ConfirmModal from '../ConfirmModal';
 import { getExercises } from '@/lib/api';
 import { logsVolume } from '@/lib/workoutStats';
 import { useToast } from '@/hooks/useToast';
+import { useModalBehavior } from '@/hooks/useModalBehavior';
 
 export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [], onUpdateLogs }) {
   // Use props for logs if available, otherwise fallback to local state (though props should always be there now)
@@ -51,6 +52,14 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
   const [isSavingTemplate, setIsSavingTemplate] = useState(false);
   const [templateName, setTemplateName] = useState('');
   const [templates, setTemplates] = useState([]);
+
+  // Escape/scroll-lock/focus for the three inline overlays. Always-mounted
+  // component with per-overlay open booleans; the close handlers are referenced
+  // via inline arrows so these can sit above their definitions. Only one of the
+  // three is ever open at a time, so their Escape listeners never overlap.
+  const { closeRef: summaryCloseRef } = useModalBehavior(showSummary, () => closeSummary());
+  const { closeRef: saveTemplateCloseRef } = useModalBehavior(showSaveTemplate, () => setShowSaveTemplate(false));
+  const { closeRef: loadTemplateCloseRef } = useModalBehavior(showLoadTemplate, () => setShowLoadTemplate(false));
 
   // Fetch Logs
   const fetchLogs = async () => {
@@ -814,8 +823,8 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
 
       {/* Summary Modal */}
       {showSummary && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-card rounded-2xl p-6 w-full max-w-sm animate-in zoom-in-95 flex flex-col items-center text-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in" onClick={closeSummary}>
+          <div className="bg-card rounded-2xl p-6 w-full max-w-sm animate-in zoom-in-95 flex flex-col items-center text-center" onClick={(e) => e.stopPropagation()}>
             <div className="w-20 h-20 bg-streak-soft rounded-full flex items-center justify-center mb-4">
               <Trophy className="w-10 h-10 text-streak" />
             </div>
@@ -854,6 +863,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
             )}
 
             <button
+              ref={summaryCloseRef}
               onClick={closeSummary}
               className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-bold hover:bg-primary/90 active:scale-95 transition-all"
             >
@@ -865,16 +875,16 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
 
       {/* Save Template Modal */}
       {showSaveTemplate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-card rounded-2xl p-6 w-full max-w-sm animate-in zoom-in-95">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in" onClick={() => setShowSaveTemplate(false)}>
+          <div className="bg-card rounded-2xl p-6 w-full max-w-sm animate-in zoom-in-95" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-xl font-bold text-foreground mb-4">Save Routine</h3>
             <input
+              ref={saveTemplateCloseRef}
               type="text"
               placeholder="Routine Name (e.g., Leg Day)"
               value={templateName}
               onChange={e => setTemplateName(e.target.value)}
               className="w-full px-4 py-3 rounded-xl border border-border mb-4 focus:border-ring outline-none"
-              autoFocus
             />
             <div className="flex gap-2">
               <button
@@ -904,11 +914,11 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
 
       {/* Load Template Modal */}
       {showLoadTemplate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-card rounded-2xl p-6 w-full max-w-sm animate-in zoom-in-95 max-h-[80vh] flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in" onClick={() => setShowLoadTemplate(false)}>
+          <div className="bg-card rounded-2xl p-6 w-full max-w-sm animate-in zoom-in-95 max-h-[80vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-bold text-foreground">My Routines</h3>
-              <button onClick={() => setShowLoadTemplate(false)} className="p-2 bg-muted rounded-full text-muted-foreground">
+              <button ref={loadTemplateCloseRef} onClick={() => setShowLoadTemplate(false)} className="p-2 bg-muted rounded-full text-muted-foreground">
                 <X className="w-4 h-4" />
               </button>
             </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Flame, Sparkles, Brain } from 'lucide-react';
 import CountUp from './CountUp';
+import { useModalBehavior } from '@/hooks/useModalBehavior';
 
 const DualRing = ({ protein, proteinGoal, calories, calorieGoal, baseCalorieGoal, onEditProtein }) => {
   const [mounted, setMounted] = useState(false);
@@ -65,6 +66,13 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
   const bumpRef = useRef(null);
   const bumpTriggerRef = useRef(null);
 
+  // Goal-editor overlay: Escape-to-close, scroll lock, focus capture/restore.
+  // The training-bump popover below has its own Escape/outside-click effect, but
+  // the two are mutually exclusive — opening the editor from the popover's Adjust
+  // button first sets showBumpPopover=false, so the popover's keydown listener is
+  // unregistered before this one runs. No Escape double-handling can occur.
+  const { closeRef: goalCloseRef } = useModalBehavior(!!editingGoal, () => setEditingGoal(null));
+
   // Close the training-bump popover on outside click or Escape
   useEffect(() => {
     if (!showBumpPopover) return;
@@ -114,17 +122,7 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
     setTempGoalValue(value.toString());
   };
 
-  // Lock body scroll when editing
-  useEffect(() => {
-    if (editingGoal) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [editingGoal]);
+  // (Body scroll lock for the goal editor is now handled by useModalBehavior.)
 
   const handleSaveGoal = () => {
     if (editingGoal === 'calories') {
@@ -226,8 +224,8 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
 
       {/* Edit Goal Overlay */}
       {editingGoal && (
-        <div className="fixed inset-0 z-100 bg-card/95 backdrop-blur-sm flex items-center justify-center p-6 animate-in fade-in duration-200">
-            <div className="w-full max-w-sm">
+        <div className="fixed inset-0 z-100 bg-card/95 backdrop-blur-sm flex items-center justify-center p-6 animate-in fade-in duration-200" onClick={() => setEditingGoal(null)}>
+            <div className="w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
                 <h3 className="text-xl font-bold text-foreground mb-2 text-center capitalize">Update {editLabel}{editingGoal === 'trainingOffset' ? '' : ' Goal'}</h3>
                 <p className="text-faint text-sm text-center mb-6">
                   {editingGoal === 'trainingOffset' ? 'Extra calories added on training days' : 'Enter your new daily target'}
@@ -235,11 +233,11 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
 
                 <div className="flex gap-3">
                     <input
+                        ref={goalCloseRef}
                         type="number"
                         value={tempGoalValue}
                         onChange={e => setTempGoalValue(e.target.value)}
                         className="flex-1 px-4 py-3 rounded-2xl border-2 border-training-soft-border text-2xl font-bold text-center text-foreground focus:border-ring focus:ring-4 focus:ring-ring/20 outline-none transition-all"
-                        autoFocus
                         placeholder="0"
                         onKeyDown={(e) => e.key === 'Enter' && handleSaveGoal()}
                     />

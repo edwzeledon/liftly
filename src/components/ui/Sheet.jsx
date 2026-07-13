@@ -1,7 +1,8 @@
 'use client';
-import React, { useEffect, useRef } from 'react';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import React from 'react';
+import { motion, AnimatePresence, useReducedMotion, useDragControls } from 'framer-motion';
 import { X } from 'lucide-react';
+import { useModalBehavior } from '@/hooks/useModalBehavior';
 
 export default function Sheet({ open, onClose, title, children }) {
   // Framer Motion's `initial`/`animate`/`exit`/`transition` props are JS-driven
@@ -10,42 +11,11 @@ export default function Sheet({ open, onClose, title, children }) {
   // Read the OS setting explicitly so reduced-motion truly drops the spring
   // slide-up and leaves only an opacity fade, per the redesign's motion spec.
   const prefersReducedMotion = useReducedMotion();
-  const closeRef = useRef(null);
-  const prevFocusRef = useRef(null);
-  // Keep the latest onClose in a ref so the effects below key on [open] only —
-  // consumers pass inline arrows, and re-running these effects on every parent
-  // re-render would yank focus out of the open dialog.
-  const onCloseRef = useRef(onClose);
-  useEffect(() => {
-    onCloseRef.current = onClose;
-  }, [onClose]);
-
-  // Escape-to-close + body scroll lock.
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e) => e.key === 'Escape' && onCloseRef.current();
-    document.addEventListener('keydown', onKey);
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      document.body.style.overflow = 'unset';
-    };
-  }, [open]);
-
-  // Focus management: capture the previously-focused element, move focus into
-  // the sheet (the close button is a safe, always-present target), and restore
-  // it on close — only if the captured element is still in the document.
-  useEffect(() => {
-    if (!open) return;
-    prevFocusRef.current = document.activeElement;
-    closeRef.current?.focus();
-    return () => {
-      const prev = prevFocusRef.current;
-      if (prev && prev.isConnected && typeof prev.focus === 'function') {
-        prev.focus();
-      }
-    };
-  }, [open]);
+  // Escape-to-close, body scroll lock, and focus capture/restore — shared hook.
+  const { closeRef } = useModalBehavior(open, onClose);
+  // Swipe-to-dismiss is initiated only from the grab handle (below), not the
+  // whole panel, so dragging never hijacks scroll inside the max-h panel body.
+  const dragControls = useDragControls();
 
   return (
     <AnimatePresence>
@@ -59,9 +29,24 @@ export default function Sheet({ open, onClose, title, children }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: prefersReducedMotion ? 0 : 100 }}
             transition={prefersReducedMotion ? { duration: 0.15 } : { type: 'spring', damping: 25, stiffness: 300 }}
+            drag={prefersReducedMotion ? false : 'y'}
+            dragControls={dragControls}
+            dragListener={false}
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={{ top: 0, bottom: 0.6 }}
+            onDragEnd={(e, info) => { if (info.offset.y > 80 || info.velocity.y > 500) onClose(); }}
             className="relative w-full sm:max-w-lg bg-card rounded-t-3xl sm:rounded-2xl p-6 max-h-[85vh] overflow-y-auto motion-reduce:transition-none"
           >
-            <div className="w-12 h-1.5 bg-muted rounded-full mx-auto mb-4 sm:hidden" />
+            {/* Grab handle — the only drag initiator (mobile-only via sm:hidden).
+                The transparent pt/pb enlarges the touch target while -mt-2/mb-2
+                keep the visible pill at its original position; touch-none lets
+                the pointer drive the drag instead of scrolling the body. */}
+            <div
+              onPointerDown={(e) => { if (!prefersReducedMotion) dragControls.start(e); }}
+              className="sm:hidden flex justify-center -mt-2 pt-2 pb-2 mb-2 touch-none cursor-grab active:cursor-grabbing"
+            >
+              <div className="w-12 h-1.5 bg-muted rounded-full" />
+            </div>
             <button ref={closeRef} onClick={onClose} aria-label="Close"
               className="absolute top-4 right-4 p-2 bg-muted rounded-full text-muted-foreground hover:text-foreground">
               <X className="w-4 h-4" />

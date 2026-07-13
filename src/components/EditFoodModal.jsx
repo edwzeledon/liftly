@@ -3,8 +3,12 @@
 import React, { useState } from 'react';
 import { X, Edit2, Loader2, Save } from 'lucide-react';
 import { updateLog } from '@/lib/api';
+import { useModalBehavior } from '@/hooks/useModalBehavior';
 
 export default function EditFoodModal({ log, onClose, onUpdate }) {
+  // Conditionally mounted (parent renders only while editing) — pass `true`;
+  // unmount cleanup restores focus and scroll lock.
+  const { closeRef } = useModalBehavior(true, onClose);
   const [form, setForm] = useState({
     foodItem: log.food_item,
     calories: log.calories,
@@ -23,9 +27,9 @@ export default function EditFoodModal({ log, onClose, onUpdate }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-card w-full max-w-sm rounded-2xl p-6 relative animate-in zoom-in-95 duration-200">
-        <button onClick={onClose} className="absolute top-4 right-4 p-2 bg-muted rounded-full text-muted-foreground hover:bg-muted/80 transition-colors">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose}>
+      <div className="bg-card w-full max-w-sm rounded-2xl p-6 relative animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+        <button ref={closeRef} onClick={onClose} className="absolute top-4 right-4 p-2 bg-muted rounded-full text-muted-foreground hover:bg-muted/80 transition-colors">
           <X className="w-4 h-4" />
         </button>
 
