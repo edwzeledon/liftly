@@ -35,7 +35,7 @@ export default function MealFeed({ logs, onEditLog, onDeleteLog, onAnalyzeDay, o
 
       {logs.length === 0 ? (
         <div className="text-center py-12 border border-dashed border-border rounded-2xl">
-          <p className="text-faint text-sm">No meals logged today yet.</p>
+          <p className="text-muted-foreground text-sm">No meals logged today yet.</p>
         </div>
       ) : (
         <div className="space-y-1">

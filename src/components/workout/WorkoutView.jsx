@@ -767,7 +767,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       {/* Celebration Overlay */}
       {completedAnimation && (
         <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-card/90 backdrop-blur-sm animate-in fade-in duration-500">
-          <Trophy className="w-24 h-24 text-streak mb-4 animate-bounce" />
+          <Trophy className="w-24 h-24 text-streak mb-4 animate-bounce motion-reduce:animate-none" />
           <h2 className="text-3xl font-bold text-foreground">Workout Complete!</h2>
           <p className="text-muted-foreground">Great job crushing your goals today.</p>
         </div>

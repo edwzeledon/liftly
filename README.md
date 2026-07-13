@@ -39,7 +39,7 @@ Liftly integrates training and nutrition into a unified app designed for strengt
 
 ## What's next for Liftly
 *   **Adaptive TDEE Coaching:** Track calorie vs. weight trends and auto-adjust TDEE targets to keep weight progress on track week-over-week.
-*   **Quick Protein in FAB:** Mirror Quick Protein presets into a floating action button for one-tap logging from anywhere in the app.
+*   **Quick Protein Chips in Quick-Log Sheet:** Mirror Quick Protein chips into the quick-log sheet for streamlined meal logging.
 *   **Wearable Integration:** Sync with Apple Health and Oura for sleep/HRV context on recovery and training readiness.
 
 ---

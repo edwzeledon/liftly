@@ -246,7 +246,7 @@ export default function QuickProtein({ user, onLogAdded }) {
             {!toast.error && (
               <button onClick={undo} className="font-bold text-protein-text ml-3">Undo</button>
             )}
-            <button onClick={() => { clearTimeout(toastTimer.current); setToast(null); }} aria-label="Dismiss" className="ml-3 text-faint">
+            <button onClick={() => { clearTimeout(toastTimer.current); setToast(null); }} aria-label="Dismiss" className="ml-3 text-muted-foreground">
               <X className="w-4 h-4" />
             </button>
           </motion.div>

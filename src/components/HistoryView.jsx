@@ -292,7 +292,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
                 ))
               )}
               {editingDay.logs.length === 0 && (
-                <div className="text-center py-12 text-faint">
+                <div className="text-center py-12 text-muted-foreground">
                   <p>No entries left in this session.</p>
                 </div>
               )}
@@ -302,7 +302,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
       )}
 
       {groupedLogs.length === 0 ? (
-         <div className="flex flex-col items-center justify-center h-64 text-faint bg-card rounded-2xl border border-border">
+         <div className="flex flex-col items-center justify-center h-64 text-muted-foreground bg-card rounded-2xl border border-border">
            {viewMode === 'meals' ? (
              <Utensils className="w-12 h-12 mb-2 opacity-20" />
            ) : (
@@ -322,7 +322,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
               exit={{ opacity: 0, y: -20, scale: 0.95 }}
               transition={{ duration: 0.2 }}
             >
-              <h3 className="text-xs font-bold text-faint uppercase tracking-wider mb-3 sticky top-0 bg-background/90 backdrop-blur py-2 z-10">
+              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3 sticky top-0 bg-background/90 backdrop-blur py-2 z-10">
                 {label}
               </h3>
 
@@ -369,7 +369,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="text-xs text-faint uppercase font-bold tracking-wider mb-0.5">Best Set</p>
+                            <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider mb-0.5">Best Set</p>
                             <p className="font-display text-sm font-semibold tabular-nums text-foreground">
                               {bestSet ? `${bestSet.weight}lbs × ${bestSet.reps}` : '-'}
                             </p>
