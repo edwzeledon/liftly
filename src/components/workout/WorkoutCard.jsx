@@ -187,8 +187,14 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
 
     const newSets = [...sets];
     newSets[index][field] = value;
+
+    // Invariant: completed ⇒ weight and reps non-empty; clearing either field un-completes the set.
+    if (newSets[index].completed && (!newSets[index].weight || !newSets[index].reps)) {
+      newSets[index].completed = false;
+    }
+
     setSets(newSets);
-    
+
     // Track that this set has been edited by the user
     userEditedSetsRef.current.add(index);
     
