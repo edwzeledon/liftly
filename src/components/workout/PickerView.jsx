@@ -1,12 +1,9 @@
 import React, { useState } from 'react';
 import { ChevronLeft, Search, Plus, Loader2 } from 'lucide-react';
 
-export default function PickerView({ onBack, onAddExercise, exercises = [] }) {
+export default function PickerView({ onBack, onAddExercise, exercises = [], loading = false, error = null, onRetry }) {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
-  
-  // Use passed exercises or empty array
-  const loading = exercises.length === 0;
 
   const categories = ['All', ...new Set(exercises.map(ex => ex.category))];
 
@@ -49,6 +46,16 @@ export default function PickerView({ onBack, onAddExercise, exercises = [] }) {
         <div className="flex-1 flex items-center justify-center">
           <Loader2 className="w-8 h-8 text-training-text animate-spin" />
         </div>
+      ) : error ? (
+        <div className="flex-1 flex flex-col items-center justify-center text-center gap-4 p-6">
+          <p className="text-muted-foreground text-sm">{error}</p>
+          <button
+            onClick={onRetry}
+            className="px-5 py-2.5 bg-training text-white rounded-xl font-bold hover:bg-training/90 active:scale-95 transition-all"
+          >
+            Retry
+          </button>
+        </div>
       ) : (
         <>
           {/* Categories */}
@@ -70,21 +77,25 @@ export default function PickerView({ onBack, onAddExercise, exercises = [] }) {
 
           {/* List */}
           <div className="flex-1 overflow-y-auto space-y-2 pb-4">
-            {filteredExercises().map((ex) => (
-              <button
-                key={ex.id || ex.name}
-                onClick={() => onAddExercise(ex)}
-                className="w-full p-4 bg-card border border-border rounded-xl flex items-center justify-between hover:border-training-soft-border transition-all group text-left"
-              >
-                <div>
-                  <h4 className="font-bold text-foreground">{ex.name}</h4>
-                  <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{ex.category}</span>
-                </div>
-                <div className="w-8 h-8 rounded-full bg-training-soft text-training-text flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Plus className="w-5 h-5" />
-                </div>
-              </button>
-            ))}
+            {filteredExercises().length === 0 ? (
+              <p className="text-center text-faint py-8">No exercises match &lsquo;{searchQuery}&rsquo;</p>
+            ) : (
+              filteredExercises().map((ex) => (
+                <button
+                  key={ex.id || ex.name}
+                  onClick={() => onAddExercise(ex)}
+                  className="w-full p-4 bg-card border border-border rounded-xl flex items-center justify-between hover:border-training-soft-border transition-all group text-left"
+                >
+                  <div>
+                    <h4 className="font-bold text-foreground">{ex.name}</h4>
+                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{ex.category}</span>
+                  </div>
+                  <div className="w-8 h-8 rounded-full bg-training-soft text-training-text flex items-center justify-center md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                    <Plus className="w-5 h-5" />
+                  </div>
+                </button>
+              ))
+            )}
           </div>
         </>
       )}

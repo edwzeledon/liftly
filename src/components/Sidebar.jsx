@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Home, Plus, Calendar, LogOut, Settings, Dumbbell, BarChart3 } from 'lucide-react';
 import Logo from './ui/Logo';
 
@@ -8,7 +8,7 @@ export default function Sidebar({ activeTab, setActiveTab, onLogout, onOpenLog }
   return (
     <div className="hidden md:flex flex-col w-64 bg-card border-r border-border p-6 h-full shrink-0">
       <div className="flex items-center gap-2 mb-10">
-        <Logo size={40} />
+        <Logo size={40} className="rounded-xl" />
         <h1 className="text-xl font-bold text-training-text">
           Liftly
         </h1>

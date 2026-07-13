@@ -120,6 +120,10 @@
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom);
   }
+
+  .pt-safe { padding-top: env(safe-area-inset-top); }
+  .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
 }
 
 @theme inline {

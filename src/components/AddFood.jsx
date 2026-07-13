@@ -6,6 +6,13 @@ import { analyzeImageWithGemini, addLog, getDailyStats } from '@/lib/api';
 
 const MAX_DAILY_SCANS = 5;
 
+const MEAL_TYPES = [
+  { value: 'breakfast', label: 'Breakfast' },
+  { value: 'lunch', label: 'Lunch' },
+  { value: 'dinner', label: 'Dinner' },
+  { value: 'snack', label: 'Snack' },
+];
+
 const formatBase64 = (file) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -397,7 +404,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                       }`}
                     >
                       <Camera className="w-6 h-6" />
-                      {scanCount >= MAX_DAILY_SCANS ? 'Daily Limit Reached' : `Use Camera (${MAX_DAILY_SCANS - scanCount} left)`}
+                      {scanCount >= MAX_DAILY_SCANS ? 'Daily Limit Reached' : `Use Camera (${MAX_DAILY_SCANS - scanCount} of ${MAX_DAILY_SCANS} left)`}
                     </button>
                     <div className="relative flex py-1 items-center">
                       <div className="grow border-t border-training-soft-border"></div>
@@ -465,6 +472,14 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                 )}
               </div>
 
+              {/* Camera/upload errors (e.g. permission denied) were previously only
+                  shown in the manual/preview form pane, which never mounts while
+                  mode==='scan' && !preview — so scan-mode failures were silently
+                  swallowed. Surface them here too, directly under the buttons. */}
+              {mode === 'scan' && !preview && error && (
+                <p className="text-destructive-text text-sm mt-3 text-center">{error}</p>
+              )}
+
               <canvas ref={canvasRef} className="hidden" />
               <input 
                 type="file" 
@@ -484,18 +499,18 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">Meal Type</label>
                 <div className="grid grid-cols-4 gap-2">
-                  {['Breakfast', 'Lunch', 'Dinner', 'Snack'].map(type => (
+                  {MEAL_TYPES.map(({ value, label }) => (
                     <button
-                      key={type}
+                      key={value}
                       type="button"
-                      onClick={() => setForm({...form, mealType: type})}
+                      onClick={() => setForm({...form, mealType: value})}
                       className={`py-2 rounded-xl text-xs font-bold uppercase transition-all ${
-                        form.mealType === type
+                        form.mealType?.toLowerCase() === value
                           ? 'bg-training text-white'
                           : 'bg-muted text-faint hover:bg-muted/80'
                       }`}
                     >
-                      {type}
+                      {label}
                     </button>
                   ))}
                 </div>

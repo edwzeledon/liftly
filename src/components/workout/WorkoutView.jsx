@@ -3,6 +3,7 @@ import { Dumbbell, Plus, Download, Folder, Save, Ban, Check, Trophy, X, Play, Tr
 import confetti from 'canvas-confetti';
 import WorkoutCard from './WorkoutCard';
 import PickerView from './PickerView';
+import SessionTimer from './SessionTimer';
 import ConfirmModal from '../ConfirmModal';
 
 import { getExercises } from '@/lib/api';
@@ -32,9 +33,28 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
   const [showPicker, setShowPicker] = useState(false);
   const [completedAnimation, setCompletedAnimation] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
-  const [elapsedTime, setElapsedTime] = useState(0);
-  const [timerInterval, setTimerInterval] = useState(null);
   const [allExercises, setAllExercises] = useState([]);
+  const [exercisesLoading, setExercisesLoading] = useState(true);
+  const [exercisesError, setExercisesError] = useState(null);
+
+  // Session start timestamp for the sticky-header timer. A ref, not state:
+  // SessionTimer now owns its own 1s tick internally (see SessionTimer.jsx), so
+  // WorkoutView no longer needs to re-render every second just to show elapsed
+  // time. Derived synchronously in render (not an effect) from workoutLogs[0]'s
+  // persisted date — same source the old ticking-state version used — so the
+  // very first render that shows the sticky header already has a valid
+  // startedAt; an effect would run one tick after the render and could leave
+  // SessionTimer reading a stale/null value until some unrelated re-render.
+  // No pause/resume/accumulated-offset state existed in the prior
+  // implementation — elapsed time was always freshly derived from the first
+  // log's timestamp (that's what gave it reload/cross-device persistence), so
+  // there is nothing to preserve beyond that derivation.
+  const sessionStartRef = useRef(null);
+  if (workoutLogs.length > 0 && !showSummary) {
+    sessionStartRef.current = new Date(workoutLogs[0].date).getTime();
+  } else if (workoutLogs.length === 0) {
+    sessionStartRef.current = null;
+  }
   
   // Confirmation Modal State
   const [confirmModal, setConfirmModal] = useState({
@@ -75,44 +95,6 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       console.error("Error fetching logs", e);
     }
   };
-
-  // Timer Logic
-  useEffect(() => {
-    if (workoutLogs.length > 0 && !showSummary) {
-      // Use the timestamp of the first exercise as the start time
-      // This ensures persistence across reloads/devices
-      const startTime = new Date(workoutLogs[0].date).getTime();
-      
-      const updateTimer = () => {
-        const now = Date.now();
-        const seconds = Math.floor((now - startTime) / 1000);
-        setElapsedTime(seconds > 0 ? seconds : 0);
-      };
-
-      updateTimer(); // Immediate update
-      
-      // Clear any existing interval
-      if (timerInterval) clearInterval(timerInterval);
-
-      const interval = setInterval(updateTimer, 1000);
-      setTimerInterval(interval);
-
-      return () => clearInterval(interval);
-    } else if (showSummary) {
-      // Stop timer but keep elapsed time for summary display
-      if (timerInterval) {
-        clearInterval(timerInterval);
-        setTimerInterval(null);
-      }
-    } else {
-      // Reset if no logs and not showing summary
-      setElapsedTime(0);
-      if (timerInterval) {
-        clearInterval(timerInterval);
-        setTimerInterval(null);
-      }
-    }
-  }, [workoutLogs, showSummary]);
 
   const formatTime = (seconds) => {
     const hrs = Math.floor(seconds / 3600);
@@ -156,19 +138,23 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
   };
 
   const fetchExercises = async () => {
+    setExercisesLoading(true);
+    setExercisesError(null);
+
     const cacheKey = 'snapcal_exercises_list';
     const cached = localStorage.getItem(cacheKey);
-    
+
     // Use cache if available
     if (cached) {
       try {
         setAllExercises(JSON.parse(cached));
+        setExercisesLoading(false);
         return;
       } catch (e) {
         console.error("Error parsing cached exercises", e);
       }
     }
-    
+
     // Fetch from API and cache
     try {
       const data = await getExercises();
@@ -176,6 +162,9 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       localStorage.setItem(cacheKey, JSON.stringify(data));
     } catch (error) {
       console.error("Failed to load exercises", error);
+      setExercisesError("Couldn't load exercises. Check your connection and try again.");
+    } finally {
+      setExercisesLoading(false);
     }
   };
 
@@ -488,13 +477,9 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
         setWorkoutLogs(newLogs);
 
         // If this was the last exercise, clean up session state locally
+        // (sessionStartRef resets itself on the next render once workoutLogs is empty)
         if (newLogs.length === 0) {
             localStorage.removeItem('snapcal_activeWorkoutLogs');
-            setElapsedTime(0);
-            if (timerInterval) {
-                clearInterval(timerInterval);
-                setTimerInterval(null);
-            }
         }
 
         try {
@@ -535,6 +520,10 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
     if (finishingRef.current) return; // already in flight — ignore reentrant calls
     finishingRef.current = true;
     setIsFinishing(true);
+    // Captured once, up front, so the duration sent to /finish and the duration
+    // shown in the summary modal are the exact same number (previously both
+    // read the same ticking `elapsedTime` state; now both read this one value).
+    const sessionDuration = Math.floor((Date.now() - (sessionStartRef.current ?? Date.now())) / 1000);
     try {
       // 1. Prune incomplete sets and delete empty logs
       const results = await Promise.all(workoutLogs.map(async (log) => {
@@ -563,10 +552,8 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       if (validLogIds.length === 0) {
           // No valid logs, delete the session entirely
           await fetch('/api/workouts/active-session', { method: 'DELETE' });
-          
-          // Clear local state/cache
-          if (timerInterval) clearInterval(timerInterval);
-          setTimerInterval(null);
+
+          // Clear local cache (sessionStartRef resets itself once workoutLogs is empty)
           Object.keys(localStorage).forEach(key => {
             if (key.startsWith('snapcal_history_')) {
                 localStorage.removeItem(key);
@@ -580,7 +567,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          duration: elapsedTime,
+          duration: sessionDuration,
           ids: validLogIds,
           localDate: new Date().toLocaleDateString('en-CA')
         })
@@ -624,7 +611,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
         
         // Capture summary data BEFORE clearing logs via onWorkoutComplete
         setSummaryData({
-          duration: elapsedTime,
+          duration: sessionDuration,
           count: workoutLogs.length,
           records: recordsCount,
           // Volume of work actually saved: completed sets only (incomplete sets are
@@ -670,9 +657,6 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
           }());
         }
 
-        if (timerInterval) clearInterval(timerInterval);
-        setTimerInterval(null);
-        
         // Clear workout history caches so next workout gets fresh data
         Object.keys(localStorage).forEach(key => {
           if (key.startsWith('snapcal_history_')) {
@@ -744,7 +728,6 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
     setShowSummary(false);
     setCompletedAnimation(false);
     setWorkoutLogs([]);
-    setElapsedTime(0);
   };
 
   const handleDiscardWorkout = async () => {
@@ -771,13 +754,9 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
         });
 
         // Optimistic Update: Clear UI immediately
+        // (sessionStartRef resets itself on the next render once workoutLogs is empty)
         setWorkoutLogs([]);
         localStorage.removeItem('snapcal_activeWorkoutLogs');
-        setElapsedTime(0);
-        if (timerInterval) {
-            clearInterval(timerInterval);
-            setTimerInterval(null);
-        }
 
         try {
           const promises = logsToDelete.map(log => 
@@ -976,9 +955,10 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
           <div className="flex items-center justify-between md:max-w-xl w-full md:mx-auto">
             <div>
               <h2 className="font-display text-xl font-bold text-foreground">Active Session</h2>
-              <p className="font-display text-2xl font-bold text-training-text tabular-nums leading-none">
-                {formatTime(elapsedTime)}
-              </p>
+              <SessionTimer
+                startedAt={sessionStartRef.current ?? Date.now()}
+                className="font-display text-2xl font-bold text-training-text leading-none"
+              />
             </div>
 
             {/* Finish Workout — handler + disabled logic preserved; classes restyled */}
@@ -1010,10 +990,13 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       )}
 
       {showPicker ? (
-        <PickerView 
-          onBack={() => setShowPicker(false)} 
-          onAddExercise={handleAddExerciseToDay} 
+        <PickerView
+          onBack={() => setShowPicker(false)}
+          onAddExercise={handleAddExerciseToDay}
           exercises={allExercises}
+          loading={exercisesLoading}
+          error={exercisesError}
+          onRetry={fetchExercises}
         />
       ) : (
         <div className="flex flex-col h-full">
