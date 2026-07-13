@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { HeroSection } from './Hero';
+import { AnimatePresence, motion } from 'framer-motion';
+import PhotoBackdrop from './PhotoBackdrop';
+import HeroContent from './HeroContent';
+import Sections from './sections';
 import AuthScreen from '../AuthScreen';
 
 export default function LandingPage() {
-  const router = useRouter();
   const [showAuth, setShowAuth] = useState(false);
 
   const scrollToFeatures = () => {
@@ -14,8 +15,8 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-card">
-      {/* Navigation */}
+    <div className={`bg-background text-foreground ${showAuth ? 'h-dvh overflow-hidden' : 'min-h-screen'}`}>
+      {/* Nav (unchanged markup except Sign In hidden during auth — existing behavior) */}
       <nav className="absolute top-0 left-0 right-0 z-50 p-6 flex justify-between items-center max-w-7xl mx-auto w-full">
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => setShowAuth(false)}>
           <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-indigo-600">
@@ -37,17 +38,27 @@ export default function LandingPage() {
         )}
       </nav>
 
-      {/* Hero Section */}
-      <HeroSection
-        onCtaClick={() => setShowAuth(true)}
-        onSecondaryClick={scrollToFeatures}
-      >
-        {showAuth && (
-          <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <AuthScreen embedded={true} />
-          </div>
-        )}
-      </HeroSection>
+      {/* The one full-viewport room: photo persists, content swaps */}
+      <section className={`relative ${showAuth ? 'h-dvh' : 'min-h-dvh'}`}>
+        <PhotoBackdrop deepen={showAuth} />
+        <AnimatePresence mode="wait">
+          {showAuth ? (
+            /* INTERIM auth wrapper — Task L3 replaces with <AuthView/>. Must already be full-viewport. */
+            <motion.div key="auth" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 16 }} transition={{ duration: 0.25 }}
+              className="relative z-10 h-full flex items-center justify-center px-6">
+              <div className="w-full max-w-md"><AuthScreen embedded={true} /></div>
+            </motion.div>
+          ) : (
+            <motion.div key="hero" className="absolute inset-0">
+              <HeroContent onCtaClick={() => setShowAuth(true)} onSecondaryClick={scrollToFeatures} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </section>
+
+      {/* Nothing below auth — sections unmount entirely */}
+      {!showAuth && <Sections onCtaClick={() => setShowAuth(true)} />}
     </div>
   );
 }
