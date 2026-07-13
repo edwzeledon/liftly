@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Flame, Sparkles, Brain } from 'lucide-react';
+import CountUp from './CountUp';
 
 const DualRing = ({ protein, proteinGoal, calories, calorieGoal, baseCalorieGoal, onEditProtein }) => {
   const [mounted, setMounted] = useState(false);
@@ -17,7 +18,7 @@ const DualRing = ({ protein, proteinGoal, calories, calorieGoal, baseCalorieGoal
   const notchAngle = pct(baseCalorieGoal, calorieGoal) * 360 - 90;
 
   return (
-    <div className="relative w-56 h-56 mx-auto">
+    <div className="relative w-64 h-64 md:w-72 md:h-72 mx-auto">
       <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
         <circle cx="50" cy="50" r={outer.r} fill="none" strokeWidth={outer.w} className="stroke-muted" stroke="currentColor" />
         <circle cx="50" cy="50" r={outer.r} fill="none" strokeWidth={outer.w} strokeLinecap="round"
@@ -36,7 +37,7 @@ const DualRing = ({ protein, proteinGoal, calories, calorieGoal, baseCalorieGoal
       <button onClick={onEditProtein}
         className="absolute inset-0 flex flex-col items-center justify-center rounded-full focus-visible:ring-2 focus-visible:ring-protein"
         aria-label={`Protein ${protein} of ${proteinGoal} grams. Edit goal.`}>
-        <span className="font-display text-5xl font-black text-foreground tabular-nums leading-none">{protein}</span>
+        <CountUp value={protein} className="font-display text-6xl md:text-7xl font-black text-foreground tabular-nums leading-none" />
         <span className="text-sm font-semibold text-protein-text tabular-nums">/ {proteinGoal} g protein</span>
         <span className="text-xs text-faint tabular-nums mt-1">{calories} / {calorieGoal} kcal</span>
       </button>
@@ -139,18 +140,49 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
   const editLabel = editingGoal === 'trainingOffset' ? 'training bump' : editingGoal;
 
   return (
-    <div className="bg-card rounded-2xl p-6 border border-border relative overflow-hidden">
-      <div className="relative z-10 mb-6">
-        <div className="flex justify-between items-start mb-6">
-          <div>
-            <h2 className="font-display text-2xl font-bold text-foreground">Daily Progress</h2>
-            <p className="text-muted-foreground text-sm">Fuel your training</p>
-            {streakStatus === 'at_risk' && streak > 0 && (
-              <p className="text-xs font-medium text-destructive-text mt-1">
-                Log food or train today to keep your {streak} day streak!
-              </p>
-            )}
-          </div>
+    <div className="px-6 pt-2 pb-6 md:px-0 relative">
+      <div className="mb-6">
+        {/* Status row: training pill (or Rest day) on the left, streak chip on the right */}
+        <div className="flex items-center justify-between mb-4">
+          {(trainingDay || offsetSkipped) ? (
+            <div ref={bumpRef} className="relative inline-block">
+              <button
+                ref={bumpTriggerRef}
+                onClick={() => setShowBumpPopover((v) => !v)}
+                aria-expanded={showBumpPopover}
+                aria-haspopup="dialog"
+                className={`px-3 py-1 rounded-full text-xs font-bold border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                  trainingDay
+                    ? 'bg-training-soft text-training-text border-training-soft-border'
+                    : 'bg-muted text-faint border-border'
+                }`}
+              >
+                {trainingDay ? `Training day +${calorieOffset}` : 'Training bump off (+0)'}
+              </button>
+              {showBumpPopover && (
+                <div role="dialog" aria-label="Training bump options"
+                  className="absolute top-full left-0 mt-2 bg-card rounded-2xl border border-border p-4 w-64 z-20">
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Training days adjust your calorie target. Base goal stays marked on the ring.
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => { setShowBumpPopover(false); handleStartEdit('trainingOffset', trainingOffset); }}
+                      className="flex-1 py-2 text-xs font-bold bg-muted rounded-xl text-muted-foreground hover:bg-muted/80 transition-colors">
+                      Adjust
+                    </button>
+                    <button
+                      onClick={() => { setShowBumpPopover(false); onToggleBumpSkip && onToggleBumpSkip(); }}
+                      className="flex-1 py-2 text-xs font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors">
+                      {trainingDay ? 'Skip today' : 'Re-apply'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <span className="text-faint text-xs">Rest day</span>
+          )}
           {streak > 0 && (
             <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border animate-in fade-in slide-in-from-right-4 ${
               streakStatus === 'safe'
@@ -167,42 +199,10 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
           )}
         </div>
 
-        {(trainingDay || offsetSkipped) && (
-          <div ref={bumpRef} className="relative inline-block min-h-7 mt-1 mb-4">
-            <button
-              ref={bumpTriggerRef}
-              onClick={() => setShowBumpPopover((v) => !v)}
-              aria-expanded={showBumpPopover}
-              aria-haspopup="dialog"
-              className={`px-3 py-1 rounded-full text-xs font-bold border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                trainingDay
-                  ? 'bg-training-soft text-training-text border-training-soft-border'
-                  : 'bg-muted text-faint border-border'
-              }`}
-            >
-              {trainingDay ? `Training day +${calorieOffset}` : 'Training bump off (+0)'}
-            </button>
-            {showBumpPopover && (
-              <div role="dialog" aria-label="Training bump options"
-                className="absolute top-full left-0 mt-2 bg-card rounded-2xl border border-border p-4 w-64 z-20">
-                <p className="text-xs text-muted-foreground mb-3">
-                  Training days adjust your calorie target. Base goal stays marked on the ring.
-                </p>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => { setShowBumpPopover(false); handleStartEdit('trainingOffset', trainingOffset); }}
-                    className="flex-1 py-2 text-xs font-bold bg-muted rounded-xl text-muted-foreground hover:bg-muted/80 transition-colors">
-                    Adjust
-                  </button>
-                  <button
-                    onClick={() => { setShowBumpPopover(false); onToggleBumpSkip && onToggleBumpSkip(); }}
-                    className="flex-1 py-2 text-xs font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors">
-                    {trainingDay ? 'Skip today' : 'Re-apply'}
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
+        {streakStatus === 'at_risk' && streak > 0 && (
+          <p className="text-xs font-medium text-destructive-text mb-4">
+            Log food or train today to keep your {streak} day streak!
+          </p>
         )}
 
         <DualRing

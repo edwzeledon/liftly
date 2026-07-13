@@ -130,9 +130,9 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percen
   };
 
   return (
-    <div className="p-6 md:p-0 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20 md:pb-0">
-      
-      {/* Row 1: Daily Progress & Quick Add/Hydration */}
+    <div className="pt-6 md:pt-0 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20 md:pb-0">
+
+      {/* Row 1: full-bleed hero + quick protein (mobile stacked; desktop 2/3 + 1/3) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
             <DailyProgress 
@@ -154,23 +154,23 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percen
                 onToggleBumpSkip={onToggleBumpSkip}
             />
         </div>
-        <div className="flex flex-col gap-6 h-full">
+        <div className="flex flex-col gap-6 px-6 md:px-0">
             <QuickProtein user={user} onLogAdded={onLogAdded} />
         </div>
       </div>
 
       {/* Row 2: Weekly Review Card */}
-      <div className="w-full">
+      <div className="w-full px-6 md:px-0">
         <WeeklyReviewCard />
       </div>
 
       {/* Row 3: Weekly Trend */}
-      <div className="w-full">
+      <div className="w-full px-6 md:px-0">
         <WeeklyTrend weeklyData={weeklyData} dailyGoal={dailyGoal} />
       </div>
 
       {/* Row 4: Meal Feed */}
-      <div className="w-full">
+      <div className="w-full px-6 md:px-0">
         <MealFeed
             logs={todaysLogs}
             onEditLog={onEditLog}
@@ -181,7 +181,7 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percen
       </div>
 
       {/* Row 5: Hydration (demoted) */}
-      <div className="w-full">
+      <div className="w-full px-6 md:px-0">
         <HydrationTracker waterIntake={dailyStats.water_intake} onUpdateWater={handleUpdateWater} />
       </div>
 
