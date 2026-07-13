@@ -77,10 +77,12 @@ export default function PickerView({ onBack, onAddExercise, exercises = [], load
 
           {/* List */}
           <div className="flex-1 overflow-y-auto space-y-2 pb-4">
-            {filteredExercises().length === 0 ? (
-              <p className="text-center text-faint py-8">No exercises match &lsquo;{searchQuery}&rsquo;</p>
-            ) : (
-              filteredExercises().map((ex) => (
+            {(() => {
+              const filtered = filteredExercises();
+              return filtered.length === 0 ? (
+                <p className="text-center text-faint py-8">No exercises match &lsquo;{searchQuery}&rsquo;</p>
+              ) : (
+                filtered.map((ex) => (
                 <button
                   key={ex.id || ex.name}
                   onClick={() => onAddExercise(ex)}
@@ -95,7 +97,8 @@ export default function PickerView({ onBack, onAddExercise, exercises = [], load
                   </div>
                 </button>
               ))
-            )}
+              );
+            })()}
           </div>
         </>
       )}

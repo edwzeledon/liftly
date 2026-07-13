@@ -31,7 +31,6 @@ export default function QuickProtein({ user, onLogAdded, showToast }) {
   useEffect(() => {
     try {
       const saved = localStorage.getItem('snapcal_protein_presets');
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- hydrating client-only localStorage after mount; a lazy useState initializer would mismatch the SSR-rendered defaults.
       if (saved) setPresets(JSON.parse(saved));
     } catch { /* keep defaults */ }
   }, []);
