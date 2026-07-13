@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import PhotoBackdrop from './PhotoBackdrop';
 import HeroContent from './HeroContent';
 import Sections from './sections';
-import AuthScreen from '../AuthScreen';
+import AuthView from './AuthView';
 
 export default function LandingPage() {
   const [showAuth, setShowAuth] = useState(false);
@@ -13,6 +13,13 @@ export default function LandingPage() {
   const scrollToFeatures = () => {
     document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  useEffect(() => {
+    if (!showAuth) return;
+    const onKey = (e) => e.key === 'Escape' && setShowAuth(false);
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [showAuth]);
 
   return (
     <div className={`bg-background text-foreground ${showAuth ? 'h-dvh overflow-hidden' : 'min-h-screen'}`}>
@@ -43,12 +50,7 @@ export default function LandingPage() {
         <PhotoBackdrop deepen={showAuth} />
         <AnimatePresence mode="wait">
           {showAuth ? (
-            /* INTERIM auth wrapper — Task L3 replaces with <AuthView/>. Must already be full-viewport. */
-            <motion.div key="auth" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 16 }} transition={{ duration: 0.25 }}
-              className="relative z-10 h-full flex items-center justify-center px-6">
-              <div className="w-full max-w-md"><AuthScreen embedded={true} /></div>
-            </motion.div>
+            <AuthView onBack={() => setShowAuth(false)} />
           ) : (
             <motion.div key="hero" className="absolute inset-0">
               <HeroContent onCtaClick={() => setShowAuth(true)} onSecondaryClick={scrollToFeatures} />
