@@ -6,6 +6,7 @@ import PickerView from './PickerView';
 import ConfirmModal from '../ConfirmModal';
 
 import { getExercises } from '@/lib/api';
+import { logsVolume } from '@/lib/workoutStats';
 
 export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [], onUpdateLogs }) {
   // Use props for logs if available, otherwise fallback to local state (though props should always be there now)
@@ -508,7 +509,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
   }
 
   // Summary State
-  const [summaryData, setSummaryData] = useState({ duration: 0, count: 0 });
+  const [summaryData, setSummaryData] = useState({ duration: 0, count: 0, volume: 0 });
   const [isFinishing, setIsFinishing] = useState(false);
 
   const submitWorkout = async () => {
@@ -605,7 +606,10 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
         setSummaryData({
           duration: elapsedTime,
           count: workoutLogs.length,
-          records: recordsCount
+          records: recordsCount,
+          // Volume of work actually saved: completed sets only (incomplete sets are
+          // discarded on finish). Reuses the shared logsVolume helper — no new state.
+          volume: logsVolume(workoutLogs.map(l => ({ ...l, sets: (l.sets || []).filter(s => s.completed) })))
         });
         
         setCompletedAnimation(true);
@@ -781,14 +785,18 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
             <h2 className="text-2xl font-bold text-foreground mb-2">You Crushed It!</h2>
             <p className="text-muted-foreground mb-6">Here&apos;s your summary:</p>
 
-            <div className="grid grid-cols-2 gap-4 w-full mb-6">
-              <div className="bg-muted p-4 rounded-2xl">
-                <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider mb-1">Duration</p>
-                <p className="text-xl font-bold text-foreground">{formatTime(summaryData.duration)}</p>
+            <div className="grid grid-cols-3 gap-3 w-full mb-6">
+              <div className="bg-muted rounded-xl p-3 text-center">
+                <p className="font-display text-2xl font-bold tabular-nums text-foreground">{formatTime(summaryData.duration)}</p>
+                <p className="text-xs text-muted-foreground">Duration</p>
               </div>
-              <div className="bg-muted p-4 rounded-2xl">
-                <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider mb-1">Exercises</p>
-                <p className="text-xl font-bold text-foreground">{summaryData.count}</p>
+              <div className="bg-muted rounded-xl p-3 text-center">
+                <p className="font-display text-2xl font-bold tabular-nums text-foreground">{summaryData.count}</p>
+                <p className="text-xs text-muted-foreground">Exercises</p>
+              </div>
+              <div className="bg-muted rounded-xl p-3 text-center">
+                <p className="font-display text-2xl font-bold tabular-nums text-foreground">{(summaryData.volume || 0).toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground">Volume</p>
               </div>
             </div>
             
@@ -909,35 +917,45 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
         </div>
       )}
 
-      {!showPicker && (
+      {/* Sticky Active Session header (sticks to the page <main> scroll container).
+          -mx / px cancel the WorkoutView root padding (p-6 / md:p-8) so the bar is
+          edge-to-edge with no horizontal scrollbar; inner content stays aligned to
+          the md:max-w-xl list column below. */}
+      {!showPicker && workoutLogs.length > 0 && (
+        <div className="sticky top-0 z-10 -mx-6 md:-mx-8 px-6 md:px-8 py-3 mb-6 bg-background/90 backdrop-blur border-b border-border">
+          <div className="flex items-center justify-between md:max-w-xl w-full md:mx-auto">
+            <div>
+              <h2 className="font-display text-xl font-bold text-foreground">Active Session</h2>
+              <p className="font-display text-2xl font-bold text-training-text tabular-nums leading-none">
+                {formatTime(elapsedTime)}
+              </p>
+            </div>
+
+            {/* Finish Workout — handler + disabled logic preserved; classes restyled */}
+            <button
+              onClick={handleCompleteWorkout}
+              disabled={!workoutLogs.some(log => log.sets.some(s => s.completed))}
+              className={`rounded-xl font-bold transition-all flex items-center gap-2 px-5 py-2.5 ${
+                !workoutLogs.some(log => log.sets.some(s => s.completed))
+                  ? 'bg-muted text-faint cursor-not-allowed'
+                  : 'bg-training text-white active:scale-95'
+              }`}
+            >
+              <Check className="w-4 h-4" />
+              Finish
+            </button>
+          </div>
+        </div>
+      )}
+
+      {!showPicker && workoutLogs.length === 0 && (
         <div className="flex items-center justify-between mb-6 md:max-w-xl w-full md:mx-auto">
           <div className="flex flex-col">
             <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
               <Dumbbell className="w-6 h-6 text-training-text" />
               Lifting Log
             </h2>
-            {workoutLogs.length > 0 && (
-              <p className="text-sm font-mono text-training-text font-medium ml-8 mt-1">
-                {formatTime(elapsedTime)}
-              </p>
-            )}
           </div>
-
-          {/* Finish Workout moved to top right */}
-          {workoutLogs.length > 0 && (
-            <button
-              onClick={handleCompleteWorkout}
-              disabled={!workoutLogs.some(log => log.sets.some(s => s.completed))}
-              className={`px-4 py-2 rounded-xl font-bold transition-all flex items-center gap-2 text-sm ${
-                !workoutLogs.some(log => log.sets.some(s => s.completed))
-                  ? 'bg-muted text-faint cursor-not-allowed'
-                  : 'bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95'
-              }`}
-            >
-              <Check className="w-4 h-4" />
-              Finish
-            </button>
-          )}
         </div>
       )}
 

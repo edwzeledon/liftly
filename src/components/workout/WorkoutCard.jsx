@@ -385,7 +385,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
         return (
           <div
             key={idx}
-            className={`grid grid-cols-10 gap-2 items-center transition-all ${set.completed ? (isPR ? 'opacity-100' : 'opacity-50') : 'opacity-100'}`}
+            className={`grid grid-cols-10 gap-2 items-center transition-all ${set.completed && !isPR ? 'bg-protein-soft rounded-lg' : ''}`}
           >
             <div className="col-span-1 flex justify-center">
               <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${isPR ? 'bg-streak-soft text-streak' : 'bg-muted text-muted-foreground'}`}>
@@ -401,11 +401,12 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
                 onChange={e => updateSet(idx, 'weight', e.target.value)}
                 onFocus={handleFocus}
                 onBlur={handleBlur}
-                disabled={set.completed}
                 placeholder="-"
-                className={`w-full text-center py-2 border rounded-lg outline-none font-bold text-base sm:text-sm disabled:bg-muted transition-all ${isPR
+                className={`w-full text-center py-2 border rounded-lg outline-none font-bold text-base sm:text-sm transition-all ${isPR
                   ? 'bg-streak-soft border-streak-soft-border'
-                  : 'bg-muted border-border text-foreground focus:border-ring focus:ring-2 focus:ring-ring'
+                  : set.completed
+                    ? 'bg-protein-soft border-protein-soft text-protein-text focus:border-protein-text'
+                    : 'bg-muted border-border text-foreground focus:border-ring focus:ring-2 focus:ring-ring'
                   }`}
               />
             </div>
@@ -418,11 +419,12 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
                 onChange={e => updateSet(idx, 'reps', e.target.value)}
                 onFocus={handleFocus}
                 onBlur={handleBlur}
-                disabled={set.completed}
                 placeholder="-"
-                className={`w-full text-center py-2 border rounded-lg outline-none font-bold text-base sm:text-sm disabled:bg-muted transition-all ${isPR
+                className={`w-full text-center py-2 border rounded-lg outline-none font-bold text-base sm:text-sm transition-all ${isPR
                   ? 'bg-streak-soft border-streak-soft-border'
-                  : 'bg-muted border-border text-foreground focus:border-ring focus:ring-2 focus:ring-ring'
+                  : set.completed
+                    ? 'bg-protein-soft border-protein-soft text-protein-text focus:border-protein-text'
+                    : 'bg-muted border-border text-foreground focus:border-ring focus:ring-2 focus:ring-ring'
                   }`}
               />
             </div>
@@ -430,7 +432,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
               <button
                 onClick={() => toggleSetCompletion(idx)}
                 className={`p-1.5 rounded-lg transition-all ${set.completed
-                  ? 'bg-protein text-white ring-2 ring-protein/40'
+                  ? 'bg-protein-soft text-protein ring-2 ring-protein/30'
                   : (!set.weight || !set.reps)
                     ? 'bg-muted text-faint cursor-not-allowed'
                     : 'bg-input text-muted-foreground hover:bg-input/80'
