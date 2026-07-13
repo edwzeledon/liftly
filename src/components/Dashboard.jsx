@@ -188,67 +188,67 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percen
 
       {/* AI Modal */}
       <Sheet open={aiModal.open} onClose={() => setAiModal({ ...aiModal, open: false })}>
-            <div className="flex flex-col items-center text-center">
-              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${
-                aiModal.type === 'suggestion' ? 'bg-training-soft-border text-training-text' : 'bg-ai-soft-border text-ai'
-              }`}>
-                {aiModal.loading ? (
-                  <Loader2 className="w-6 h-6 animate-spin" />
-                ) : aiModal.type === 'suggestion' ? (
-                  <Sparkles className="w-6 h-6" />
-                ) : (
-                  <Brain className="w-6 h-6" />
-                )}
-              </div>
-              
-              <h3 className="text-lg font-bold text-foreground mb-2">
-                {aiModal.loading ? 'Thinking...' :
-                 aiModal.step === 'confirm' ? (aiModal.type === 'suggestion' ? 'Chef Suggestion' : 'Daily Overview') :
-                 (aiModal.type === 'suggestion' ? "Chef Gemini Suggests" : "Daily Insights")}
-              </h3>
+        <div className="flex flex-col items-center text-center">
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${
+            aiModal.type === 'suggestion' ? 'bg-training-soft-border text-training-text' : 'bg-ai-soft-border text-ai'
+          }`}>
+            {aiModal.loading ? (
+              <Loader2 className="w-6 h-6 animate-spin" />
+            ) : aiModal.type === 'suggestion' ? (
+              <Sparkles className="w-6 h-6" />
+            ) : (
+              <Brain className="w-6 h-6" />
+            )}
+          </div>
+          
+          <h3 className="text-lg font-bold text-foreground mb-2">
+            {aiModal.loading ? 'Thinking...' :
+             aiModal.step === 'confirm' ? (aiModal.type === 'suggestion' ? 'Chef Suggestion' : 'Daily Overview') :
+             (aiModal.type === 'suggestion' ? "Chef Gemini Suggests" : "Daily Insights")}
+          </h3>
 
-              <div className="text-muted-foreground text-sm leading-relaxed w-full">
-                {aiModal.loading ? (
-                  <div className="space-y-2 animate-pulse">
-                    <div className="h-2 bg-muted rounded w-3/4 mx-auto"></div>
-                    <div className="h-2 bg-muted rounded w-full"></div>
-                    <div className="h-2 bg-muted rounded w-5/6 mx-auto"></div>
-                  </div>
-                ) : (
-                  <div className={`whitespace-pre-line ${aiModal.step === 'result' ? 'bg-muted p-4 rounded-xl text-left border border-border' : 'text-center px-2'}`}>
-                    {aiModal.content}
-                  </div>
-                )}
+          <div className="text-muted-foreground text-sm leading-relaxed w-full">
+            {aiModal.loading ? (
+              <div className="space-y-2 animate-pulse">
+                <div className="h-2 bg-muted rounded w-3/4 mx-auto"></div>
+                <div className="h-2 bg-muted rounded w-full"></div>
+                <div className="h-2 bg-muted rounded w-5/6 mx-auto"></div>
               </div>
+            ) : (
+              <div className={`whitespace-pre-line ${aiModal.step === 'result' ? 'bg-muted p-4 rounded-xl text-left border border-border' : 'text-center px-2'}`}>
+                {aiModal.content}
+              </div>
+            )}
+          </div>
 
-              {!aiModal.loading && (
-                <div className="mt-6 w-full flex gap-3">
-                  {aiModal.step === 'confirm' ? (
-                    <>
-                      <button
-                        onClick={() => setAiModal({ ...aiModal, open: false })}
-                        className="flex-1 py-3 bg-muted text-muted-foreground rounded-xl font-medium hover:bg-muted/80 active:scale-95 transition-all"
-                      >
-                        Cancel
-                      </button>
-                      <button 
-                        onClick={performAiAction}
-                        className="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 active:scale-95 transition-all"
-                      >
-                        Generate
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      onClick={() => setAiModal({ ...aiModal, open: false })}
-                      className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-medium hover:bg-primary/90 active:scale-95 transition-all"
-                    >
-                      Got it
-                    </button>
-                  )}
-                </div>
+          {!aiModal.loading && (
+            <div className="mt-6 w-full flex gap-3">
+              {aiModal.step === 'confirm' ? (
+                <>
+                  <button
+                    onClick={() => setAiModal({ ...aiModal, open: false })}
+                    className="flex-1 py-3 bg-muted text-muted-foreground rounded-xl font-medium hover:bg-muted/80 active:scale-95 transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={performAiAction}
+                    className="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 active:scale-95 transition-all"
+                  >
+                    Generate
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => setAiModal({ ...aiModal, open: false })}
+                  className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-medium hover:bg-primary/90 active:scale-95 transition-all"
+                >
+                  Got it
+                </button>
               )}
             </div>
+          )}
+        </div>
       </Sheet>
 
     </div>

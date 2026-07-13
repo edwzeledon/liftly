@@ -518,7 +518,7 @@ export default function App() {
               }}
               className="flex flex-col items-center gap-3 sm:gap-4 p-6 sm:p-8 rounded-2xl bg-ai-soft border-2 border-ai-soft-border hover:bg-ai-soft-border hover:border-ai/20 transition-all active:scale-95"
             >
-              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-ai flex items-center justify-center text-white">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-ai flex items-center justify-center text-background">
                 <Utensils className="w-7 h-7 sm:w-8 sm:h-8" />
               </div>
               <span className="font-semibold text-foreground text-base sm:text-lg">Log Meal</span>

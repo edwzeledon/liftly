@@ -113,9 +113,13 @@ const HeroSection = React.forwardRef(({ onCtaClick, onSecondaryClick, children }
           )}
         </div>
 
-        {/* Right: static product hero art */}
+        {/* Right: static product hero art — visible on mobile for the normal
+            hero (Task 10 intent: scale-90 renders it smaller, not hidden),
+            but hidden on mobile while the auth form is active: stacking the
+            decorative phone mock below the sign-in form (single-column grid
+            below md) added clutter with no benefit at that width. */}
         <motion.div
-          className="flex justify-center mt-4 md:mt-0"
+          className={`justify-center mt-4 md:mt-0 ${children ? 'hidden md:flex' : 'flex'}`}
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6, ease: 'easeInOut', delay: 0.1 }}
@@ -132,7 +136,7 @@ const HeroSection = React.forwardRef(({ onCtaClick, onSecondaryClick, children }
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 ${tile}`}>
                 <Icon className={`w-5 h-5 ${iconClass}`} />
               </div>
-              <h3 className="font-display font-bold text-lg text-foreground mb-1">{title}</h3>
+              <h2 className="font-display font-bold text-lg text-foreground mb-1">{title}</h2>
               <p className="text-sm text-muted-foreground">{description}</p>
             </div>
           ))}

@@ -162,7 +162,7 @@ export default function AuthScreen({ embedded = false }) {
 
         <div className="relative flex py-2 items-center">
           <div className="grow border-t border-border"></div>
-          <span className="shrink mx-4 text-faint text-xs uppercase">Or continue with</span>
+          <span className="shrink mx-4 text-muted-foreground text-xs uppercase">Or continue with</span>
           <div className="grow border-t border-border"></div>
         </div>
 

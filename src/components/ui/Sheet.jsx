@@ -1,9 +1,15 @@
 'use client';
 import React, { useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { X } from 'lucide-react';
 
 export default function Sheet({ open, onClose, title, children }) {
+  // Framer Motion's `initial`/`animate`/`exit`/`transition` props are JS-driven
+  // (Web Animations API), so the `motion-reduce:transition-none` Tailwind class
+  // below has no effect on them — it only guards CSS `transition-*` properties.
+  // Read the OS setting explicitly so reduced-motion truly drops the spring
+  // slide-up and leaves only an opacity fade, per the redesign's motion spec.
+  const prefersReducedMotion = useReducedMotion();
   const closeRef = useRef(null);
   const prevFocusRef = useRef(null);
   // Keep the latest onClose in a ref so the effects below key on [open] only —
@@ -49,8 +55,10 @@ export default function Sheet({ open, onClose, title, children }) {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
           <motion.div
             role="dialog" aria-modal="true" aria-label={title}
-            initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 100 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 100 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: prefersReducedMotion ? 0 : 100 }}
+            transition={prefersReducedMotion ? { duration: 0.15 } : { type: 'spring', damping: 25, stiffness: 300 }}
             className="relative w-full sm:max-w-lg bg-card rounded-t-3xl sm:rounded-2xl p-6 max-h-[85vh] overflow-y-auto motion-reduce:transition-none"
           >
             <div className="w-12 h-1.5 bg-muted rounded-full mx-auto mb-4 sm:hidden" />

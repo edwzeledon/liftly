@@ -265,7 +265,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
                         </div>
                         <div>
                           <p className="font-medium text-foreground">{log.food_item}</p>
-                          <p className="text-xs text-faint">{log.calories} cal</p>
+                          <p className="text-xs font-display font-semibold tabular-nums text-muted-foreground">{log.calories} cal</p>
                         </div>
                      </div>
                      <div className="flex items-center gap-2">
@@ -332,7 +332,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
                   <div className="flex justify-between items-center mb-4 border-b border-border pb-4">
                     <div>
                       <h4 className="font-bold text-foreground text-lg">Workout Session</h4>
-                      <p className="text-xs text-faint">
+                      <p className="text-xs text-muted-foreground">
                         {dayLogs.length} Exercises • {formatDuration(dayLogs[0]?.duration)}
                       </p>
                     </div>
@@ -365,12 +365,12 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
                             </div>
                             <div>
                               <p className="font-bold text-foreground text-sm">{log.exercise || log.exercise_name}</p>
-                              <p className="text-xs text-faint">{log.sets?.length || 0} Sets</p>
+                              <p className="text-xs text-muted-foreground">{log.sets?.length || 0} Sets</p>
                             </div>
                           </div>
                           <div className="text-right">
                             <p className="text-xs text-faint uppercase font-bold tracking-wider mb-0.5">Best Set</p>
-                            <p className="font-mono text-sm font-medium text-foreground">
+                            <p className="font-display text-sm font-semibold tabular-nums text-foreground">
                               {bestSet ? `${bestSet.weight}lbs × ${bestSet.reps}` : '-'}
                             </p>
                           </div>
@@ -385,7 +385,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
                   <div className="flex justify-between items-center mb-4 border-b border-border pb-4">
                     <div>
                       <h4 className="font-bold text-foreground text-lg">Daily Nutrition</h4>
-                      <p className="text-xs text-faint">
+                      <p className="text-xs text-muted-foreground">
                         {dayLogs.length} Meals • {dayLogs.reduce((sum, item) => sum + (parseInt(item.calories)||0), 0)} Calories
                       </p>
                     </div>
@@ -416,7 +416,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
                            </div>
                            <div>
                              <p className="font-bold text-foreground text-sm">{log.food_item}</p>
-                             <p className="text-xs text-faint flex flex-wrap gap-2">
+                             <p className="text-xs text-muted-foreground flex flex-wrap gap-2">
                                <span>{new Date(log.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                                {(log.protein || log.carbs || log.fats) && (
                                  <>
@@ -432,7 +432,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
                            </div>
                         </div>
                         <div className="text-right">
-                          <span className="font-mono text-sm font-medium text-foreground">{log.calories} cal</span>
+                          <span className="font-display text-sm font-semibold tabular-nums text-foreground">{log.calories} cal</span>
                         </div>
                       </div>
                     ))}

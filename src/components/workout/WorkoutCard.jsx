@@ -409,7 +409,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
                 onBlur={handleBlur}
                 placeholder="-"
                 className={`w-full text-center py-2 border rounded-lg outline-none font-bold text-base sm:text-sm transition-all ${isPR
-                  ? 'bg-streak-soft border-streak-soft-border'
+                  ? 'bg-streak-soft border-streak-soft-border focus:border-streak'
                   : set.completed
                     ? 'bg-protein-soft border-protein-soft text-protein-text focus:border-protein-text'
                     : 'bg-muted border-border text-foreground focus:border-ring focus:ring-2 focus:ring-ring'
@@ -427,7 +427,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
                 onBlur={handleBlur}
                 placeholder="-"
                 className={`w-full text-center py-2 border rounded-lg outline-none font-bold text-base sm:text-sm transition-all ${isPR
-                  ? 'bg-streak-soft border-streak-soft-border'
+                  ? 'bg-streak-soft border-streak-soft-border focus:border-streak'
                   : set.completed
                     ? 'bg-protein-soft border-protein-soft text-protein-text focus:border-protein-text'
                     : 'bg-muted border-border text-foreground focus:border-ring focus:ring-2 focus:ring-ring'

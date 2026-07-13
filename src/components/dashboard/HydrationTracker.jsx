@@ -36,8 +36,8 @@ export default function HydrationTracker({ waterIntake = 0, onUpdateWater }) {
             key={i}
             onClick={() => toggleGlass(i)}
             className={`p-2 rounded-xl transition-all duration-300 ${
-              i < waterIntake 
-                ? 'bg-deficit text-white scale-105' 
+              i < waterIntake
+                ? 'bg-deficit text-background scale-105'
                 : 'bg-muted text-faint hover:bg-deficit/15 hover:text-deficit'
             }`}
           >

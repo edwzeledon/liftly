@@ -163,7 +163,7 @@ export default function QuickProtein({ user, onLogAdded }) {
                   <Plus className="w-3 h-3" />
                 </button>
                 <button type="button" aria-label="Log it" disabled={submitting} onClick={() => logPreset(p)}
-                  className="relative w-6 h-6 rounded-full bg-protein text-white flex items-center justify-center ml-0.5 disabled:opacity-50 before:absolute before:-inset-y-2.5 before:-inset-x-0.5 before:content-['']">
+                  className="relative w-6 h-6 rounded-full bg-protein text-background flex items-center justify-center ml-0.5 disabled:opacity-50 before:absolute before:-inset-y-2.5 before:-inset-x-0.5 before:content-['']">
                   <Check className="w-3.5 h-3.5" />
                 </button>
               </span>
@@ -219,7 +219,7 @@ export default function QuickProtein({ user, onLogAdded }) {
           />
           <button
             type="submit"
-            className="w-11 h-11 rounded-xl bg-protein text-white flex items-center justify-center"
+            className="w-11 h-11 rounded-xl bg-protein text-background flex items-center justify-center"
             aria-label="Save preset"
           >
             <Check className="w-4 h-4" />

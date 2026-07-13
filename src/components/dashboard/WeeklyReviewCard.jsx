@@ -49,7 +49,7 @@ export default function WeeklyReviewCard() {
       ) : (
         <div className="bg-card rounded-2xl p-4 border border-border border-l-4 border-l-ai">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-ai flex items-center justify-center text-white shrink-0">
+            <div className="w-10 h-10 rounded-2xl bg-ai flex items-center justify-center text-background shrink-0">
               <Sparkles className="w-5 h-5" />
             </div>
             <div className="flex-1">

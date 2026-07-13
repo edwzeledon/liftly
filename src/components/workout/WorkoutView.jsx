@@ -616,30 +616,39 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
         setShowSummary(true);
         setConfirmModal(prev => ({ ...prev, isOpen: false }));
         
-        // Trigger Celebration Confetti
-        const duration = 2000;
-        const end = Date.now() + duration;
+        // Trigger Celebration Confetti — skipped under prefers-reduced-motion.
+        // canvas-confetti is a raw canvas particle burst outside Tailwind's
+        // motion-reduce variant system; full-viewport particles for 2s are
+        // exactly the large-scale motion that preference exists to suppress.
+        // The trophy/summary UI still conveys the celebration without it.
+        const reduceMotion = typeof window !== 'undefined' &&
+          window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
-        (function frame() {
-          confetti({
-            particleCount: 5,
-            angle: 60,
-            spread: 55,
-            origin: { x: 0 },
-            colors: ['#FFD700', '#FFA500', '#6366f1']
-          });
-          confetti({
-            particleCount: 5,
-            angle: 120,
-            spread: 55,
-            origin: { x: 1 },
-            colors: ['#FFD700', '#FFA500', '#6366f1']
-          });
+        if (!reduceMotion) {
+          const duration = 2000;
+          const end = Date.now() + duration;
 
-          if (Date.now() < end) {
-            requestAnimationFrame(frame);
-          }
-        }());
+          (function frame() {
+            confetti({
+              particleCount: 5,
+              angle: 60,
+              spread: 55,
+              origin: { x: 0 },
+              colors: ['#FFD700', '#FFA500', '#6366f1']
+            });
+            confetti({
+              particleCount: 5,
+              angle: 120,
+              spread: 55,
+              origin: { x: 1 },
+              colors: ['#FFD700', '#FFA500', '#6366f1']
+            });
+
+            if (Date.now() < end) {
+              requestAnimationFrame(frame);
+            }
+          }());
+        }
 
         if (timerInterval) clearInterval(timerInterval);
         setTimerInterval(null);
@@ -1026,7 +1035,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
                    </button>
                    <button 
                      onClick={handleDiscardWorkout}
-                     className="w-full py-3 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 active:scale-95 transition-all flex items-center justify-center gap-2 text-sm"
+                     className="w-full py-3 bg-destructive text-white rounded-xl font-bold hover:bg-destructive/90 active:scale-95 transition-all flex items-center justify-center gap-2 text-sm"
                    >
                      <Ban className="w-4 h-4" />
                      Discard

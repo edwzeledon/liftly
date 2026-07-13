@@ -67,7 +67,7 @@ export default function MealFeed({ logs, onEditLog, onDeleteLog, onAnalyzeDay, o
                       </h4>
 
                       {/* Time & Meal Type */}
-                      <p className="text-xs text-faint mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-0.5">
                         {new Date(log.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                         {log.meal_type && <span className="capitalize"> • {log.meal_type}</span>}
                       </p>
@@ -85,7 +85,7 @@ export default function MealFeed({ logs, onEditLog, onDeleteLog, onAnalyzeDay, o
 
                 {/* Calories */}
                 <div className="flex items-center gap-3 shrink-0 pl-2">
-                  <span className="font-bold text-ai text-base whitespace-nowrap">{log.calories} kcal</span>
+                  <span className="font-display font-semibold tabular-nums text-ai text-base whitespace-nowrap">{log.calories} kcal</span>
 
                   {/* Menu */}
                   <div className="relative">
