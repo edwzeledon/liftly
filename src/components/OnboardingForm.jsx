@@ -416,13 +416,13 @@ export default function OnboardingForm({ onComplete, onCancel, isEditing = false
                                          parseInt(formData.customFatsPercent || 0)) !== 100
                                     )) ||
                                     (step === 4 && (!formData.goalWeight || !formData.targetDate))
-                                    ? 'bg-muted cursor-not-allowed '
+                                    ? 'bg-muted cursor-not-allowed'
                                     : 'bg-indigo-600 hover:bg-indigo-700'
                                 }`}
                         >
                             {step === 4 || (step === 3 && formData.goal === 'maintain') ? (
                                 <>
-                                    {isEditing ? "Update Plan" :"Complete Setup"} <Check className="w-5 h-5" />
+                                    {isEditing ? "Update Plan" : "Complete Setup"} <Check className="w-5 h-5" />
                                 </>
                             ) : (
                                 <>

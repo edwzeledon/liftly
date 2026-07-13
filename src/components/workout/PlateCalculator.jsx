@@ -53,15 +53,15 @@ export default function PlateCalculator({ isOpen, onClose, onApply }) {
         {/* Total Display */}
         <div className="bg-primary text-primary-foreground p-6 rounded-2xl mb-6 text-center relative overflow-hidden">
           <div className="relative z-10">
-            <p className="text-faint text-xs uppercase font-bold tracking-wider mb-1">Total Weight</p>
+            <p className="text-primary-foreground/80 text-xs uppercase font-bold tracking-wider mb-1">Total Weight</p>
             <div className="text-5xl font-bold tracking-tight">
               {calculateTotal()}
-              <span className="text-2xl text-muted-foreground ml-1">lbs</span>
+              <span className="text-2xl text-primary-foreground/70 ml-1">lbs</span>
             </div>
-            <p className="text-muted-foreground text-xs mt-2">
+            <p className="text-primary-foreground/70 text-xs mt-2">
                Bar ({barWeight}) + Plates ({calculateTotal() - barWeight})
             </p>
-            <p className="text-muted-foreground text-[10px] mt-1">
+            <p className="text-primary-foreground/70 text-[10px] mt-1">
                *Includes plates for both sides
             </p>
           </div>

@@ -312,7 +312,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                 disabled={scanCount >= MAX_DAILY_SCANS}
                 className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
                   mode === 'scan'
-                    ? 'bg-card text-training-text '
+                    ? 'bg-card text-training-text'
                     : scanCount >= MAX_DAILY_SCANS
                       ? 'text-faint cursor-not-allowed'
                       : 'text-muted-foreground hover:text-foreground'
@@ -331,7 +331,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                 disabled={!!preview}
                 className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
                   mode === 'manual'
-                    ? 'bg-card text-training-text '
+                    ? 'bg-card text-training-text'
                     : preview
                       ? 'text-faint cursor-not-allowed'
                       : 'text-muted-foreground hover:text-foreground'
@@ -392,8 +392,8 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                       disabled={scanCount >= MAX_DAILY_SCANS}
                       className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-3 transition-colors ${
                         scanCount >= MAX_DAILY_SCANS
-                          ? 'bg-muted text-faint cursor-not-allowed '
-                          : 'bg-indigo-600 text-white hover:bg-indigo-700 '
+                          ? 'bg-muted text-faint cursor-not-allowed'
+                          : 'bg-indigo-600 text-white hover:bg-indigo-700'
                       }`}
                     >
                       <Camera className="w-6 h-6" />
@@ -491,7 +491,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                       onClick={() => setForm({...form, mealType: type})}
                       className={`py-2 rounded-xl text-xs font-bold uppercase transition-all ${
                         form.mealType === type
-                          ? 'bg-indigo-600 text-white '
+                          ? 'bg-indigo-600 text-white'
                           : 'bg-muted text-faint hover:bg-muted/80'
                       }`}
                     >

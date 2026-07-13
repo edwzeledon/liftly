@@ -216,7 +216,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
             onClick={() => setViewMode('meals')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               viewMode === 'meals'
-                ? 'bg-card text-training-text '
+                ? 'bg-card text-training-text'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
@@ -226,7 +226,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
             onClick={() => setViewMode('workouts')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               viewMode === 'workouts'
-                ? 'bg-card text-training-text '
+                ? 'bg-card text-training-text'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >

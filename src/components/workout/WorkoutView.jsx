@@ -930,7 +930,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
               disabled={!workoutLogs.some(log => log.sets.some(s => s.completed))}
               className={`px-4 py-2 rounded-xl font-bold transition-all flex items-center gap-2 text-sm ${
                 !workoutLogs.some(log => log.sets.some(s => s.completed))
-                  ? 'bg-muted text-faint cursor-not-allowed '
+                  ? 'bg-muted text-faint cursor-not-allowed'
                   : 'bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95'
               }`}
             >

@@ -117,7 +117,7 @@ export default function InsightsView({ user, onGoLogProtein }) {
           {RANGES.map((r) => (
             <button key={r.weeks} onClick={() => setRange(r.weeks)}
               className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${
-                range === r.weeks ? 'bg-card text-foreground ' : 'text-faint hover:text-muted-foreground'
+                range === r.weeks ? 'bg-card text-foreground' : 'text-faint hover:text-muted-foreground'
               }`}>
               {r.label}
             </button>
