@@ -16,6 +16,7 @@ import InsightsView from '@/components/insights/InsightsView';
 
 import SettingsView from '@/components/SettingsView';
 import Sheet from '@/components/ui/Sheet';
+import { useToast } from '@/hooks/useToast';
 
 const NavButton = ({ active, onClick, icon: Icon, label }) => (
   <button 
@@ -46,6 +47,8 @@ export default function App() {
   const [isRetakingAssessment, setIsRetakingAssessment] = useState(false);
   const [showActionSheet, setShowActionSheet] = useState(false);
   const [bumpSkipped, setBumpSkipped] = useState(false);
+  const [staleData, setStaleData] = useState(false); // fetchData failed → showing cached data
+  const { toastEl, showToast } = useToast();
 
   // Stable date key (en-CA => YYYY-MM-DD) for per-day training-bump skip state
   const todayStr = new Date().toLocaleDateString('en-CA');
@@ -94,6 +97,7 @@ export default function App() {
       setLogs(fetchedLogs);
       setWorkoutLogs(fetchedWorkoutLogs);
       setActiveWorkoutLogs(fetchedActiveWorkoutLogs);
+      setStaleData(false); // fresh data landed — clear any stale banner
       if (settings) {
         if (settings.is_new_user) {
           setShowOnboarding(true);
@@ -145,6 +149,8 @@ export default function App() {
       }
     } catch (error) {
       console.error("Error fetching data:", error);
+      // Keep whatever cached data is on screen and surface a persistent banner.
+      setStaleData(true);
     } finally {
       setLoading(false);
     }
@@ -249,7 +255,7 @@ export default function App() {
       fetchData(); // Refresh logs
     } catch (e) {
       console.error("Error updating log", e);
-      alert("Failed to update log.");
+      showToast({ message: "Couldn't update log", variant: 'error' });
     }
   };
 
@@ -383,6 +389,16 @@ export default function App() {
             </button>
           </div>
         </header>
+
+        {/* Stale-data banner — persists until a successful refetch clears it. */}
+        {staleData && (
+          <div className="bg-destructive/15 border-b border-destructive/30 text-sm px-6 py-2 flex items-center justify-between z-10">
+            <span className="text-foreground">Showing cached data</span>
+            <button onClick={fetchData} className="font-bold text-destructive-text px-2 py-1">
+              Retry
+            </button>
+          </div>
+        )}
 
         {/* Scrollable Content Area */}
         <main className="flex-1 overflow-y-auto pb-24 md:pb-0 scroll-smooth bg-background">
@@ -526,6 +542,8 @@ export default function App() {
             </button>
           </div>
         </Sheet>
+
+        {toastEl}
 
       </div>
     </div>

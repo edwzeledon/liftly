@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Beef, Plus, Minus, Check, X } from 'lucide-react';
 import { addLog, deleteLog } from '@/lib/api';
+import { useToast } from '@/hooks/useToast';
 
 const DEFAULT_PRESETS = [
   { id: 'chicken', name: 'Chicken breast', protein: 31, calories: 165 },
@@ -17,9 +18,8 @@ export default function QuickProtein({ user, onLogAdded }) {
   const [presets, setPresets] = useState(DEFAULT_PRESETS);
   const [activeId, setActiveId] = useState(null); // chip expanded with stepper
   const [portions, setPortions] = useState(1);
-  const [toast, setToast] = useState(null); // { logId, name }
   const [submitting, setSubmitting] = useState(false);
-  const toastTimer = useRef(null);
+  const { toastEl, showToast } = useToast();
 
   // Step 1b: preset editing
   const [editing, setEditing] = useState(false);
@@ -35,9 +35,6 @@ export default function QuickProtein({ user, onLogAdded }) {
       if (saved) setPresets(JSON.parse(saved));
     } catch { /* keep defaults */ }
   }, []);
-
-  // Clear any pending toast timer on unmount.
-  useEffect(() => () => clearTimeout(toastTimer.current), []);
 
   const savePresets = (next) => {
     setPresets(next);
@@ -87,28 +84,25 @@ export default function QuickProtein({ user, onLogAdded }) {
         method: 'quick-protein',
       });
       if (onLogAdded) onLogAdded();
-      clearTimeout(toastTimer.current);
-      setToast({ logId: created?.id, name: preset.name });
-      toastTimer.current = setTimeout(() => setToast(null), 5000);
+      showToast({
+        message: `Logged ${preset.name}`,
+        action: {
+          label: 'Undo',
+          onAction: async () => {
+            if (!user || !created?.id) return;
+            try {
+              await deleteLog(created.id, user.id);
+              if (onLogAdded) onLogAdded();
+            } catch (err) { console.error('Undo failed', err); }
+          },
+        },
+      });
     } catch (e) {
       console.error('Quick protein log failed', e);
-      setToast({ error: true, name: preset.name });
-      toastTimer.current = setTimeout(() => setToast(null), 5000);
+      showToast({ message: `Couldn't save ${preset.name}`, variant: 'error' });
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const undo = async () => {
-    if (!user) return;
-    if (toast?.logId) {
-      try {
-        await deleteLog(toast.logId, user.id);
-        if (onLogAdded) onLogAdded();
-      } catch (e) { console.error('Undo failed', e); }
-    }
-    clearTimeout(toastTimer.current);
-    setToast(null);
   };
 
   return (
@@ -235,23 +229,7 @@ export default function QuickProtein({ user, onLogAdded }) {
         </form>
       )}
 
-      <AnimatePresence>
-        {toast && (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-            role="status" aria-live="polite"
-            className="absolute left-4 right-4 -bottom-3 translate-y-full sm:bottom-4 sm:translate-y-0 bg-muted border border-border text-foreground text-sm rounded-xl px-4 py-3 flex items-center justify-between z-10"
-          >
-            <span>{toast.error ? `Couldn't save ${toast.name}` : `Logged ${toast.name}`}</span>
-            {!toast.error && (
-              <button onClick={undo} className="font-bold text-protein-text ml-3">Undo</button>
-            )}
-            <button onClick={() => { clearTimeout(toastTimer.current); setToast(null); }} aria-label="Dismiss" className="ml-3 text-muted-foreground">
-              <X className="w-4 h-4" />
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {toastEl}
     </div>
   );
 }

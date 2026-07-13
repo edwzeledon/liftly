@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Dumbbell, Trophy, Scale, Plus, Check, X } from 'lucide-react';
 import { getInsights, updateDailyStats } from '@/lib/api';
 import SegmentedControl from '@/components/ui/SegmentedControl';
+import { useToast } from '@/hooks/useToast';
 import { LockedCard, SkeletonCard } from './ChartStates';
 import VolumeProteinCard from './VolumeProteinCard';
 import PrTimelineCard from './PrTimelineCard';
@@ -19,6 +20,7 @@ function WeightEntry({ user, onSaved }) {
   const [isLogging, setIsLogging] = useState(false);
   const [weight, setWeight] = useState('');
   const [saving, setSaving] = useState(false);
+  const { toastEl, showToast } = useToast();
 
   const handleSave = async () => {
     if (!weight || !user || saving) return;
@@ -35,12 +37,14 @@ function WeightEntry({ user, onSaved }) {
       if (onSaved) onSaved();
     } catch (error) {
       console.error('Error saving weight:', error);
+      showToast({ message: "Couldn't save weight", variant: 'error' });
     } finally {
       setSaving(false);
     }
   };
 
   return (
+    <>
     <div className="bg-card rounded-2xl px-5 py-4 border border-border flex items-center justify-between gap-4">
       <div className="flex items-center gap-2 min-w-0">
         <div className="p-2 bg-fat/15 rounded-xl text-fat shrink-0">
@@ -89,6 +93,8 @@ function WeightEntry({ user, onSaved }) {
         </button>
       )}
     </div>
+    {toastEl}
+    </>
   );
 }
 

@@ -10,6 +10,7 @@ import MealFeed from './dashboard/MealFeed';
 import QuickProtein from './dashboard/QuickProtein';
 import WeeklyReviewCard from './dashboard/WeeklyReviewCard';
 import Sheet from './ui/Sheet';
+import { useToast } from '@/hooks/useToast';
 
 export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percentComplete, weeklyData, todaysLogs, user, onLogDeleted, onUpdateGoal, onEditLog, onLogAdded, onAddMeal, streak, streakStatus, trainingDay = false, calorieOffset = 0, trainingOffset = 250, offsetSkipped = false, onToggleBumpSkip }) {
   const effectiveGoal = dailyGoal + calorieOffset;
@@ -17,7 +18,22 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percen
   const [aiModal, setAiModal] = useState({ open: false, type: '', step: 'confirm', content: '', loading: false });
   
   // New State for Daily Stats
-  const [dailyStats, setDailyStats] = useState({ water_intake: 0, scan_count: 0, overview_count: 0, suggestion_count: 0 }); 
+  const [dailyStats, setDailyStats] = useState({ water_intake: 0, scan_count: 0, overview_count: 0, suggestion_count: 0 });
+
+  // Optimistically-hidden meal rows: hidden immediately, the real deleteLog runs
+  // on the toast's onCommit (undo unhides before commit fires).
+  const [hiddenLogIds, setHiddenLogIds] = useState(new Set());
+  const { toastEl, showToast } = useToast();
+
+  const visibleTodaysLogs = todaysLogs.filter(log => !hiddenLogIds.has(log.id));
+
+  const unhideLog = (logId) => {
+    setHiddenLogIds(prev => {
+      const next = new Set(prev);
+      next.delete(logId);
+      return next;
+    });
+  };
 
   // Fetch Daily Stats on Load
   useEffect(() => {
@@ -48,32 +64,46 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percen
     if (!user) return;
     // Ensure non-negative
     const safeAmount = Math.max(0, newAmount);
+    // Capture previous value BEFORE the optimistic set so we can roll back.
+    const previousAmount = dailyStats.water_intake;
     setDailyStats(prev => ({ ...prev, water_intake: safeAmount }));
-    
+
     try {
-      await updateDailyStats({ 
-        date: new Date().toLocaleDateString('en-CA'), 
-        water_intake: safeAmount 
+      await updateDailyStats({
+        date: new Date().toLocaleDateString('en-CA'),
+        water_intake: safeAmount
       });
     } catch (error) {
       console.error("Error updating water:", error);
-      // Revert on error - we might need a better way to revert if we don't track previous state explicitly here, 
-      // but for now let's just re-fetch or keep it simple. 
-      // Ideally we'd use optimistic UI with rollback.
-      // For now, let's just log the error.
+      // Roll back the optimistic update and surface the failure.
+      setDailyStats(prev => ({ ...prev, water_intake: previousAmount }));
+      showToast({ message: "Couldn't save water", variant: 'error' });
     }
   };
 
 
 
-  const handleDeleteLog = async (logId) => {
+  const handleDeleteLog = (logId) => {
     if(!user) return;
-    try {
-      await deleteLog(logId, user.id);
-      if (onLogDeleted) onLogDeleted();
-    } catch (e) {
-      console.error("Error deleting", e);
-    }
+    // Optimistically hide the row; the REAL delete is the toast's onCommit.
+    setHiddenLogIds(prev => new Set(prev).add(logId));
+    showToast({
+      message: 'Meal deleted',
+      action: {
+        label: 'Undo',
+        onAction: () => unhideLog(logId),
+      },
+      onCommit: () => {
+        deleteLog(logId, user.id)
+          .then(() => { if (onLogDeleted) onLogDeleted(); })
+          .catch((e) => {
+            console.error("Error deleting", e);
+            // Commit failed: bring the row back and tell the user.
+            unhideLog(logId);
+            showToast({ message: "Couldn't delete meal", variant: 'error' });
+          });
+      },
+    });
   };
 
   const handleSuggestMeal = () => {
@@ -173,7 +203,7 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percen
       {/* Row 4: Meal Feed */}
       <div className="w-full px-6 md:px-0">
         <MealFeed
-            logs={todaysLogs}
+            logs={visibleTodaysLogs}
             onEditLog={onEditLog}
             onDeleteLog={handleDeleteLog}
             onAnalyzeDay={handleAnalyzeDay}
@@ -250,6 +280,8 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percen
           )}
         </div>
       </Sheet>
+
+      {toastEl}
 
     </div>
   );

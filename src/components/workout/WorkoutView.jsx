@@ -7,6 +7,7 @@ import ConfirmModal from '../ConfirmModal';
 
 import { getExercises } from '@/lib/api';
 import { logsVolume } from '@/lib/workoutStats';
+import { useToast } from '@/hooks/useToast';
 
 export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [], onUpdateLogs }) {
   // Use props for logs if available, otherwise fallback to local state (though props should always be there now)
@@ -26,6 +27,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
     }
   };
 
+  const { toastEl, showToast } = useToast();
   const [showPicker, setShowPicker] = useState(false);
   const [completedAnimation, setCompletedAnimation] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
@@ -491,7 +493,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
           if (!res.ok) {
             // Revert on failure
             setWorkoutLogs(previousLogs);
-            alert("Failed to delete workout");
+            showToast({ message: "Couldn't delete exercise", variant: 'error' });
             return;
           }
 
@@ -661,9 +663,27 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
         });
         
         if (onWorkoutComplete) onWorkoutComplete();
+      } else {
+        // Finish failed: leave the session fully intact (logs kept, timer still
+        // running) and offer a Retry. submitWorkout is safe to call again — the
+        // prune/delete steps are idempotent and no state has been cleared.
+        console.error("Failed to finish workout", res.status);
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        showToast({
+          message: "Couldn't save your workout",
+          variant: 'error',
+          action: { label: 'Retry', onAction: submitWorkout },
+        });
       }
     } catch (e) {
       console.error("Error finishing workout", e);
+      // Network/throw failure: session state is untouched; let the user retry.
+      setConfirmModal(prev => ({ ...prev, isOpen: false }));
+      showToast({
+        message: "Couldn't save your workout",
+        variant: 'error',
+        action: { label: 'Retry', onAction: submitWorkout },
+      });
     } finally {
       setIsFinishing(false);
     }
@@ -1046,6 +1066,8 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
           </div>
         </div>
       )}
+
+      {toastEl}
     </div>
   );
 }

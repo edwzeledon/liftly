@@ -7,6 +7,7 @@ import { deleteLog, deleteWorkoutLog } from '@/lib/api';
 import SegmentedControl from '@/components/ui/SegmentedControl';
 import ConfirmModal from './ConfirmModal';
 import WorkoutCard from './workout/WorkoutCard';
+import { useToast } from '@/hooks/useToast';
 
 const VIEW_MODES = [{ label: 'Meals', value: 'meals' }, { label: 'Workouts', value: 'workouts' }];
 
@@ -14,6 +15,16 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
   const [viewMode, setViewMode] = useState('workouts'); // 'meals' | 'workouts'
   const [editingDay, setEditingDay] = useState(null); // { label, logs }
   const [optimisticallyDeletedIds, setOptimisticallyDeletedIds] = useState(new Set());
+  const { toastEl, showToast } = useToast();
+
+  const unhideLog = (logId) => {
+    setOptimisticallyDeletedIds(prev => {
+      const next = new Set(prev);
+      next.delete(logId);
+      return next;
+    });
+  };
+
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
     title: '',
@@ -24,7 +35,32 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
 
   const handleDeleteLog = async (logId, exerciseName = null) => {
     if(!user) return;
-    
+
+    // Meal rows: optimistic hide + undoable toast. The real deleteLog runs on the
+    // toast's onCommit; Undo cancels it. No confirm dialog for single meals.
+    if (viewMode === 'meals') {
+      setOptimisticallyDeletedIds(prev => new Set(prev).add(logId));
+      showToast({
+        message: 'Meal deleted',
+        action: {
+          label: 'Undo',
+          onAction: () => unhideLog(logId),
+        },
+        onCommit: () => {
+          deleteLog(logId, user.id)
+            .then(() => { if (onLogDeleted) onLogDeleted(); })
+            .catch((e) => {
+              console.error("Error deleting", e);
+              // Commit failed: unhide and surface the error.
+              unhideLog(logId);
+              showToast({ message: "Couldn't delete meal", variant: 'error' });
+            });
+        },
+      });
+      return;
+    }
+
+    // Workout rows keep the confirm dialog (destructive, no undo path).
     setConfirmModal({
       isOpen: true,
       title: 'Delete Entry',
@@ -32,19 +68,15 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
       isDestructive: true,
       onConfirm: async () => {
         setConfirmModal(prev => ({ ...prev, isOpen: false }));
-        
+
         // Optimistic update
         setOptimisticallyDeletedIds(prev => new Set(prev).add(logId));
 
         try {
-          if (viewMode === 'meals') {
-            await deleteLog(logId, user.id);
-          } else {
-            await deleteWorkoutLog(logId);
-            // Clear PR cache if exercise name is provided
-            if (exerciseName) {
-              localStorage.removeItem(`snapcal_pr_${exerciseName}`);
-            }
+          await deleteWorkoutLog(logId);
+          // Clear PR cache if exercise name is provided
+          if (exerciseName) {
+            localStorage.removeItem(`snapcal_pr_${exerciseName}`);
           }
           if (onLogDeleted) onLogDeleted();
         } catch (e) {
@@ -452,6 +484,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
         onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
         isDestructive={confirmModal.isDestructive}
       />
+      {toastEl}
     </div>
   );
 }
