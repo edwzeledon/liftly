@@ -461,7 +461,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
                 <button
                   onClick={() => removeSet(idx)}
                   aria-label={`Remove set ${idx + 1}`}
-                  className="relative text-faint hover:text-destructive-text p-1 flex items-center justify-center before:absolute before:-inset-2 before:content-['']"
+                  className="relative text-faint hover:text-destructive-text p-1 flex items-center justify-center before:absolute before:-inset-2.5 before:content-['']"
                 >
                   <X className="w-4 h-4" />
                 </button>
