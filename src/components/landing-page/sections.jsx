@@ -1,51 +1,61 @@
 'use client';
 
-import React from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Trophy, Beef, Brain } from 'lucide-react';
+import { makeVariants } from './motionVariants';
 
 const FEATURES = [
-  {
-    icon: Trophy,
-    tile: 'bg-training-soft',
-    iconClass: 'text-training-text',
-    title: 'PR detection',
-    description: 'Automatically flags new personal records the moment you log a set.',
-  },
-  {
-    icon: Beef,
-    tile: 'bg-protein-soft',
-    iconClass: 'text-protein-text',
-    title: '2-tap protein',
-    description: 'Log the protein sources you eat most in two taps, no typing required.',
-  },
-  {
-    icon: Brain,
-    tile: 'bg-ai-soft',
-    iconClass: 'text-ai',
-    title: 'Weekly AI review',
-    description: 'A once-a-week AI breakdown of how your fueling tracked with training.',
-  },
+  { icon: Trophy, tile: 'bg-training-soft', iconClass: 'text-training-text', stat: 'every PR',
+    title: 'PR detection', description: 'Automatically flags new personal records the moment you log a set.' },
+  { icon: Beef, tile: 'bg-protein-soft', iconClass: 'text-protein-text', stat: '2 taps',
+    title: 'Quick protein', description: 'Log the protein sources you eat most in two taps, no typing required.' },
+  { icon: Brain, tile: 'bg-ai-soft', iconClass: 'text-ai', stat: '1×/week',
+    title: 'AI review', description: 'A once-a-week AI breakdown of how your fueling tracked with training.' },
 ];
 
-// Task L2 stub: feature-strip markup carried verbatim from the old Hero.jsx.
-// Task L4 rebuilds/restyles this section — do not restyle here.
 export default function Sections({ onCtaClick }) {
+  const reduce = useReducedMotion();
+  const v = makeVariants(reduce);
+  const cardStagger = { ...v.container, visible: { ...v.container.visible, transition: reduce ? {} : { staggerChildren: 0.08 } } };
+
   return (
-    <section className="relative w-full bg-card text-foreground">
-      {/* Feature strip */}
-      <div id="features" className="max-w-7xl mx-auto px-6 pt-24 pb-24">
-        <div className="grid sm:grid-cols-3 gap-5">
-          {FEATURES.map(({ icon: Icon, tile, iconClass, title, description }) => (
-            <div key={title} className="bg-card border border-border rounded-2xl p-5">
+    <>
+      <section id="features" className="max-w-7xl mx-auto px-6 py-20 md:py-28">
+        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }} variants={v.container}>
+          <motion.p variants={v.item} className="text-protein-text text-sm font-semibold uppercase tracking-widest mb-2">
+            Built around the bar
+          </motion.p>
+          <motion.h2 variants={v.item} className="font-display font-bold uppercase text-3xl md:text-4xl text-foreground mb-10">
+            Fuel that follows your training
+          </motion.h2>
+        </motion.div>
+        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }} variants={cardStagger}
+          className="grid sm:grid-cols-3 gap-5">
+          {FEATURES.map(({ icon: Icon, tile, iconClass, stat, title, description }) => (
+            <motion.div key={title} variants={v.item} className="bg-card border border-border rounded-2xl p-5">
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 ${tile}`}>
                 <Icon className={`w-5 h-5 ${iconClass}`} />
               </div>
-              <h2 className="font-display font-bold text-lg text-foreground mb-1">{title}</h2>
+              <p className="font-display font-bold text-3xl text-foreground tabular-nums leading-none mb-1">{stat}</p>
+              <h3 className="font-display font-bold text-lg text-foreground mb-1">{title}</h3>
               <p className="text-sm text-muted-foreground">{description}</p>
-            </div>
+            </motion.div>
           ))}
-        </div>
-      </div>
-    </section>
+        </motion.div>
+      </section>
+
+      <section className="bg-card border-y border-border">
+        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.4 }} variants={v.container}
+          className="max-w-7xl mx-auto px-6 py-16 flex flex-col md:flex-row items-center justify-between gap-6">
+          <motion.h2 variants={v.item} className="font-display font-bold uppercase text-3xl md:text-4xl text-foreground">
+            Stop guessing. Start fueling.
+          </motion.h2>
+          <motion.button variants={v.item} onClick={onCtaClick}
+            className="bg-training text-white font-bold rounded-xl px-8 py-4 min-h-11 transition-colors hover:bg-training/90 active:scale-95">
+            Start training
+          </motion.button>
+        </motion.div>
+      </section>
+    </>
   );
 }
