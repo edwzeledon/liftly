@@ -4,7 +4,10 @@ import { useModalBehavior } from '@/hooks/useModalBehavior';
 
 export default function ConfirmModal({ isOpen, title, message, onConfirm, onCancel, confirmText = 'Delete', cancelText = 'Cancel', isDestructive = true, isLoading = false }) {
   // Always-rendered by parents (WorkoutView), gated by isOpen — pass the boolean.
-  const { closeRef } = useModalBehavior(isOpen, onCancel);
+  // Escape is loading-guarded like the Cancel button and backdrop: the hook
+  // ref-stabilizes this inline arrow (re-captured every render), so it always
+  // reads the fresh isLoading closure.
+  const { closeRef } = useModalBehavior(isOpen, () => { if (!isLoading) onCancel(); });
   if (!isOpen) return null;
 
   return (

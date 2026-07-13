@@ -40,10 +40,12 @@ export default function Sheet({ open, onClose, title, children }) {
             {/* Grab handle — the only drag initiator (mobile-only via sm:hidden).
                 The transparent pt/pb enlarges the touch target while -mt-2/mb-2
                 keep the visible pill at its original position; touch-none lets
-                the pointer drive the drag instead of scrolling the body. */}
+                the pointer drive the drag instead of scrolling the body.
+                w-24 mx-auto keeps the hit area centered and clear of the
+                absolutely-positioned close X in the top-right corner. */}
             <div
               onPointerDown={(e) => { if (!prefersReducedMotion) dragControls.start(e); }}
-              className="sm:hidden flex justify-center -mt-2 pt-2 pb-2 mb-2 touch-none cursor-grab active:cursor-grabbing"
+              className="sm:hidden w-24 mx-auto flex justify-center -mt-2 pt-2 pb-2 mb-2 touch-none cursor-grab active:cursor-grabbing"
             >
               <div className="w-12 h-1.5 bg-muted rounded-full" />
             </div>
