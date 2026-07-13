@@ -369,14 +369,14 @@ export default function App() {
           <div className="flex items-center gap-1">
             <button
               onClick={() => setActiveTab('settings')}
-              className={`p-2 rounded-full transition-colors ${activeTab === 'settings' ? 'text-training-text bg-training-soft' : 'text-faint hover:text-muted-foreground hover:bg-muted'}`}
+              className={`p-2 rounded-full transition-colors ${activeTab === 'settings' ? 'text-training-text bg-training-soft' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}
               title="Settings"
             >
               <Settings className="w-5 h-5" />
             </button>
             <button
               onClick={handleLogout}
-              className="text-faint hover:text-muted-foreground p-2 rounded-full hover:bg-muted transition-colors"
+              className="text-muted-foreground hover:text-foreground p-2 rounded-full hover:bg-muted transition-colors"
               title="Sign Out"
             >
               <LogOut className="w-5 h-5" />
@@ -463,40 +463,19 @@ export default function App() {
 
         {/* Mobile Bottom Navigation (Hidden on Desktop) */}
         <nav className="md:hidden absolute bottom-0 left-0 right-0 bg-card border-t border-border px-4 py-2 flex justify-between items-center z-20 pb-safe">
-          <NavButton
-            active={activeTab === 'home'}
-            onClick={() => setActiveTab('home')}
-            icon={Home}
-            label="Today"
-          />
-          <NavButton
-            active={activeTab === 'workouts'}
-            onClick={() => setActiveTab('workouts')}
-            icon={Dumbbell}
-            label="Train"
-          />
+          <NavButton active={activeTab === 'home'} onClick={() => setActiveTab('home')} icon={Home} label="Today" />
+          <NavButton active={activeTab === 'workouts'} onClick={() => setActiveTab('workouts')} icon={Dumbbell} label="Train" />
 
-          <div className="-mt-12">
-            <button
-              onClick={() => setShowActionSheet(true)}
-              className="w-16 h-16 rounded-full flex items-center justify-center transition-transform hover:scale-105 active:scale-95 bg-indigo-600 text-white"
-            >
-              <Plus className="w-8 h-8" />
-            </button>
-          </div>
+          <button
+            onClick={() => setShowActionSheet(true)}
+            aria-label="Quick log"
+            className="w-14 h-14 rounded-2xl flex items-center justify-center bg-training text-white active:scale-95 transition-transform"
+          >
+            <Plus className="w-7 h-7" />
+          </button>
 
-          <NavButton
-            active={activeTab === 'insights'}
-            onClick={() => setActiveTab('insights')}
-            icon={BarChart3}
-            label="Insights"
-          />
-          <NavButton
-            active={activeTab === 'history'}
-            onClick={() => setActiveTab('history')}
-            icon={Calendar}
-            label="History"
-          />
+          <NavButton active={activeTab === 'insights'} onClick={() => setActiveTab('insights')} icon={BarChart3} label="Insights" />
+          <NavButton active={activeTab === 'history'} onClick={() => setActiveTab('history')} icon={Calendar} label="History" />
         </nav>
         
         {/* Render Edit Modal if active */}
