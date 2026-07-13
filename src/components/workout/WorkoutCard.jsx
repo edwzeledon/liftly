@@ -433,7 +433,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
                   ? 'bg-green-500 text-white ring-2 ring-green-200'
                   : (!set.weight || !set.reps)
                     ? 'bg-muted text-faint cursor-not-allowed'
-                    : 'bg-muted text-faint hover:bg-muted/80'
+                    : 'bg-input text-muted-foreground hover:bg-input/80'
                   }`}
               >
                 {set.completed ? <Check className="w-5 h-5" /> : <Check className="w-5 h-5 opacity-0" />}

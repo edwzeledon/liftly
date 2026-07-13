@@ -165,7 +165,7 @@ export default function OnboardingForm({ onComplete, onCancel, isEditing = false
                                         onClick={() => setFormData({ ...formData, gender: g })}
                                         className={`p-4 rounded-2xl border-2 font-bold capitalize transition-all ${formData.gender === g
                                                 ? 'border-indigo-600 bg-training-soft text-training-text'
-                                                : 'border-border text-muted-foreground hover:border-border'
+                                                : 'border-border text-muted-foreground hover:border-training-text/20'
                                             }`}
                                     >
                                         {g}
@@ -241,7 +241,7 @@ export default function OnboardingForm({ onComplete, onCancel, isEditing = false
                                     onClick={() => setFormData({ ...formData, activity: level.id })}
                                     className={`w-full p-4 rounded-2xl border-2 text-left transition-all ${formData.activity === level.id
                                             ? 'border-indigo-600 bg-training-soft'
-                                            : 'border-border hover:border-border'
+                                            : 'border-border hover:border-training-text/20'
                                         }`}
                                 >
                                     <div className={`font-bold ${formData.activity === level.id ? 'text-training-text' : 'text-foreground'}`}>
@@ -264,7 +264,7 @@ export default function OnboardingForm({ onComplete, onCancel, isEditing = false
                                     onClick={() => setFormData({ ...formData, goal: goal.id })}
                                     className={`w-full p-4 rounded-2xl border-2 text-left transition-all ${formData.goal === goal.id
                                             ? 'border-indigo-600 bg-training-soft'
-                                            : 'border-border hover:border-border'
+                                            : 'border-border hover:border-training-text/20'
                                         }`}
                                 >
                                     <div className={`font-bold ${formData.goal === goal.id ? 'text-training-text' : 'text-foreground'}`}>
