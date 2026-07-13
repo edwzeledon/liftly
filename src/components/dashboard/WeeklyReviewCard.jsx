@@ -9,7 +9,7 @@ import { startOfWeek } from '@/lib/workoutStats';
 const SECTIONS = [
   { key: 'training', label: 'Training', icon: Dumbbell, tint: 'text-training-text bg-training-soft' },
   { key: 'fuel', label: 'Fuel', icon: Beef, tint: 'text-protein-text bg-protein-soft' },
-  { key: 'win', label: 'Win of the week', icon: Trophy, tint: 'text-amber-600 bg-amber-50' },
+  { key: 'win', label: 'Win of the week', icon: Trophy, tint: 'text-streak bg-streak-soft' },
   { key: 'focus', label: 'Next week\'s focus', icon: Target, tint: 'text-muted-foreground bg-muted' },
 ];
 
@@ -42,14 +42,14 @@ export default function WeeklyReviewCard() {
     <>
       {read ? (
         <button onClick={openReview}
-          className="w-full h-12 bg-card rounded-2xl shadow-sm border border-border flex items-center gap-2 px-4 text-sm font-semibold text-muted-foreground hover:text-foreground">
+          className="w-full h-12 bg-card rounded-2xl border border-border flex items-center gap-2 px-4 text-sm font-semibold text-muted-foreground hover:text-foreground">
           <Sparkles className="w-4 h-4 text-ai" />
           Week of {weekStart} review · Read again
         </button>
       ) : (
-        <div className="bg-card rounded-3xl p-6 shadow-sm border border-border border-l-4 border-l-indigo-500">
+        <div className="bg-card rounded-2xl p-6 border border-border border-l-4 border-l-training-text">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-linear-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white shrink-0">
+            <div className="w-10 h-10 rounded-2xl bg-ai flex items-center justify-center text-white shrink-0">
               <Sparkles className="w-5 h-5" />
             </div>
             <div className="flex-1">
@@ -57,7 +57,7 @@ export default function WeeklyReviewCard() {
               <p className="text-xs text-faint">Training + nutrition, one AI summary per week</p>
             </div>
             <button onClick={openReview}
-              className="px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-xl hover:bg-indigo-700 active:scale-95 transition-all shadow-lg shadow-indigo-200">
+              className="px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-xl hover:bg-indigo-700 active:scale-95 transition-all">
               Read review
             </button>
           </div>
@@ -68,11 +68,11 @@ export default function WeeklyReviewCard() {
         {open && (
           <div className="fixed inset-0 z-50 flex items-end sm:items-center sm:justify-center">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setOpen(false)} />
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setOpen(false)} />
             <motion.div
               initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 100 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="relative w-full sm:max-w-lg bg-card rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl max-h-[85vh] overflow-y-auto">
+              className="relative w-full sm:max-w-lg bg-card rounded-t-3xl sm:rounded-2xl p-6 max-h-[85vh] overflow-y-auto">
               <div className="w-12 h-1.5 bg-muted rounded-full mx-auto mb-4 sm:hidden" />
               <button onClick={() => setOpen(false)} aria-label="Close"
                 className="absolute top-4 right-4 p-2 bg-muted rounded-full text-muted-foreground"><X className="w-4 h-4" /></button>

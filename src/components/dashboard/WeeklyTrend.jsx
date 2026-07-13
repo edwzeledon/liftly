@@ -21,7 +21,7 @@ const PLOT_MARGIN = 5;
 export default function WeeklyTrend({ weeklyData, dailyGoal }) {
   const rows = weeklyData.map((d) => ({ ...d, label: d.dayName }));
   return (
-    <div className="bg-card rounded-3xl p-6 shadow-sm border border-border">
+    <div className="bg-card rounded-2xl p-6 border border-border">
       <h3 className="font-display text-lg font-bold text-foreground flex items-center gap-2 mb-4">
         <TrendingUp className="w-5 h-5 text-faint" />
         This Week
@@ -35,7 +35,7 @@ export default function WeeklyTrend({ weeklyData, dailyGoal }) {
           {dailyGoal > 0 && <ReferenceLine y={dailyGoal} stroke={REF_LINE} strokeDasharray="3 3" />}
           <Bar dataKey="calories" name="Calories" radius={[6, 6, 0, 0]} maxBarSize={28} isAnimationActive={false}>
             {rows.map((r) => (
-              <Cell key={r.label + r.date} fill={r.calories > 0 ? SERIES.weeklyBars : SERIES.weeklyBarsEmpty} fillOpacity={r.calories > 0 ? 0.85 : 1} />
+              <Cell key={r.label + r.date} fill={r.calories > 0 ? SERIES.weeklyBars : SERIES.weeklyBarsEmpty} fillOpacity={1} />
             ))}
           </Bar>
         </BarChart>

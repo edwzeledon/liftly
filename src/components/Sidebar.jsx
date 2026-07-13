@@ -63,7 +63,7 @@ export default function Sidebar({ activeTab, setActiveTab, onLogout, onOpenLog }
 
       <button
         onClick={onOpenLog}
-        className="w-full flex items-center justify-center gap-2 py-3 mb-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 active:scale-95 transition-all shadow-lg shadow-indigo-200"
+        className="w-full flex items-center justify-center gap-2 py-3 mb-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 active:scale-95 transition-all"
       >
         <Plus className="w-5 h-5" />
         <span>Log</span>

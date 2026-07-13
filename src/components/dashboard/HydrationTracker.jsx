@@ -24,9 +24,9 @@ export default function HydrationTracker({ waterIntake = 0, onUpdateWater }) {
   };
 
   return (
-    <div className="bg-card rounded-3xl p-6 shadow-sm border border-border h-full flex flex-col justify-center">
+    <div className="bg-card rounded-2xl p-6 border border-border h-full flex flex-col justify-center">
       <h3 className="font-bold text-foreground mb-4 flex items-center gap-2 shrink-0">
-        <Droplet className="w-5 h-5 text-blue-500" />
+        <Droplet className="w-5 h-5 text-deficit" />
         Hydration
       </h3>
       
@@ -37,8 +37,8 @@ export default function HydrationTracker({ waterIntake = 0, onUpdateWater }) {
             onClick={() => toggleGlass(i)}
             className={`p-2 rounded-xl transition-all duration-300 ${
               i < waterIntake 
-                ? 'bg-blue-500 text-white shadow-md scale-105' 
-                : 'bg-muted text-faint hover:bg-blue-50 hover:text-blue-300'
+                ? 'bg-deficit text-white scale-105' 
+                : 'bg-muted text-faint hover:bg-deficit/15 hover:text-deficit'
             }`}
           >
             <Droplet className={`w-5 h-5 ${i < waterIntake ? 'fill-current' : ''}`} />

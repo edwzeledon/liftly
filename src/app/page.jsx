@@ -479,7 +479,7 @@ export default function App() {
           <div className="-mt-12">
             <button
               onClick={() => setShowActionSheet(true)}
-              className="w-16 h-16 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-105 active:scale-95 bg-indigo-600 text-white"
+              className="w-16 h-16 rounded-full flex items-center justify-center transition-transform hover:scale-105 active:scale-95 bg-indigo-600 text-white"
             >
               <Plus className="w-8 h-8" />
             </button>
@@ -523,7 +523,7 @@ export default function App() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
               onClick={() => setShowActionSheet(false)}
             />
 
@@ -533,7 +533,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 100, scale: 0.95 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="relative w-full sm:w-auto sm:min-w-[400px] sm:max-w-md bg-card rounded-t-3xl sm:rounded-3xl p-6 sm:p-8 shadow-2xl">
+              className="relative w-full sm:w-auto sm:min-w-[400px] sm:max-w-md bg-card rounded-t-3xl sm:rounded-2xl p-6 sm:p-8">
               <div className="w-12 h-1.5 bg-muted rounded-full mx-auto mb-4 sm:hidden" />
               <h3 className="text-lg sm:text-xl font-bold text-foreground mb-5 sm:mb-6 text-center">Quick Log</h3>
 
@@ -544,9 +544,9 @@ export default function App() {
                     setShowActionSheet(false);
                     setActiveTab('workouts');
                   }}
-                  className="flex flex-col items-center gap-3 sm:gap-4 p-6 sm:p-8 rounded-2xl bg-training-soft border-2 border-training-soft-border hover:bg-indigo-100 hover:border-indigo-200 transition-all active:scale-95 hover:shadow-lg"
+                  className="flex flex-col items-center gap-3 sm:gap-4 p-6 sm:p-8 rounded-2xl bg-training-soft border-2 border-training-soft-border hover:bg-training-soft-border hover:border-training-soft-border transition-all active:scale-95"
                 >
-                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-linear-to-br from-indigo-600 to-indigo-700 flex items-center justify-center text-white shadow-lg">
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-training flex items-center justify-center text-white">
                     <Dumbbell className="w-7 h-7 sm:w-8 sm:h-8" />
                   </div>
                   <span className="font-semibold text-foreground text-base sm:text-lg">Log Workout</span>
@@ -559,9 +559,9 @@ export default function App() {
                     setShowActionSheet(false);
                     setActiveTab('add');
                   }}
-                  className="flex flex-col items-center gap-3 sm:gap-4 p-6 sm:p-8 rounded-2xl bg-ai-soft border-2 border-ai-soft-border hover:bg-ai-soft-border hover:border-ai/20 transition-all active:scale-95 hover:shadow-lg"
+                  className="flex flex-col items-center gap-3 sm:gap-4 p-6 sm:p-8 rounded-2xl bg-ai-soft border-2 border-ai-soft-border hover:bg-ai-soft-border hover:border-ai/20 transition-all active:scale-95"
                 >
-                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-linear-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white shadow-lg">
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-ai flex items-center justify-center text-white">
                     <Utensils className="w-7 h-7 sm:w-8 sm:h-8" />
                   </div>
                   <span className="font-semibold text-foreground text-base sm:text-lg">Log Meal</span>

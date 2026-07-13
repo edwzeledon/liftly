@@ -23,8 +23,8 @@ export default function EditFoodModal({ log, onClose, onUpdate }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-card w-full max-w-sm rounded-3xl p-6 shadow-2xl relative animate-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-card w-full max-w-sm rounded-2xl p-6 relative animate-in zoom-in-95 duration-200">
         <button onClick={onClose} className="absolute top-4 right-4 p-2 bg-muted rounded-full text-muted-foreground hover:bg-muted/80 transition-colors">
           <X className="w-4 h-4" />
         </button>
@@ -41,7 +41,7 @@ export default function EditFoodModal({ log, onClose, onUpdate }) {
               type="text"
               value={form.foodItem}
               onChange={e => setForm({...form, foodItem: e.target.value})}
-              className="w-full px-4 py-2 bg-muted border border-border rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition-all font-medium text-foreground"
+              className="w-full px-4 py-2 bg-muted border border-border rounded-xl focus:border-ring focus:ring-2 focus:ring-ring outline-none transition-all font-medium text-foreground"
               required
             />
           </div>
@@ -52,7 +52,7 @@ export default function EditFoodModal({ log, onClose, onUpdate }) {
               type="number"
               value={form.calories}
               onChange={e => setForm({...form, calories: e.target.value})}
-              className="w-full px-4 py-2 bg-muted border border-border rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition-all font-bold text-training-text"
+              className="w-full px-4 py-2 bg-muted border border-border rounded-xl focus:border-ring focus:ring-2 focus:ring-ring outline-none transition-all font-bold text-training-text"
               required
             />
           </div>
@@ -64,7 +64,7 @@ export default function EditFoodModal({ log, onClose, onUpdate }) {
                 type="number"
                 value={form.protein}
                 onChange={e => setForm({...form, protein: e.target.value})}
-                className="w-full px-3 py-2 bg-muted rounded-xl border border-border focus:border-blue-500 outline-none text-sm text-center"
+                className="w-full px-3 py-2 bg-muted rounded-xl border border-border focus:border-deficit outline-none text-sm text-center"
               />
             </div>
             <div>
@@ -90,7 +90,7 @@ export default function EditFoodModal({ log, onClose, onUpdate }) {
           <button 
             type="submit"
             disabled={saving}
-            className="w-full py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 active:scale-95 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2 mt-2"
+            className="w-full py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 active:scale-95 transition-all flex items-center justify-center gap-2 mt-2"
           >
             {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
             Save Changes

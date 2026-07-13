@@ -216,7 +216,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
             onClick={() => setViewMode('meals')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               viewMode === 'meals'
-                ? 'bg-card text-training-text shadow-sm'
+                ? 'bg-card text-training-text '
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
@@ -226,7 +226,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
             onClick={() => setViewMode('workouts')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               viewMode === 'workouts'
-                ? 'bg-card text-training-text shadow-sm'
+                ? 'bg-card text-training-text '
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
@@ -276,7 +276,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
                 ))
               ) : (
                 editingDay.logs.map(log => (
-                  <div key={log.id} className="bg-card p-4 rounded-2xl border border-border shadow-sm flex justify-between items-center">
+                  <div key={log.id} className="bg-card p-4 rounded-2xl border border-border flex justify-between items-center">
                      <div className="flex items-center gap-3">
                         <div className={`p-2 rounded-lg ${log.method === 'ai-scan' ? 'bg-ai-soft-border text-ai' : 'bg-muted text-muted-foreground'}`}>
                           {log.method === 'ai-scan' ? <ImageIcon className="w-4 h-4" /> : <Utensils className="w-4 h-4" />}
@@ -320,7 +320,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
       )}
 
       {groupedLogs.length === 0 ? (
-         <div className="flex flex-col items-center justify-center h-64 text-faint bg-card rounded-3xl border border-border">
+         <div className="flex flex-col items-center justify-center h-64 text-faint bg-card rounded-2xl border border-border">
            {viewMode === 'meals' ? (
              <Utensils className="w-12 h-12 mb-2 opacity-20" />
            ) : (
@@ -346,7 +346,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
 
               {viewMode === 'workouts' ? (
                 // Grouped Workout Card
-                <div className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden p-5">
+                <div className="bg-card rounded-2xl border border-border overflow-hidden p-5">
                   <div className="flex justify-between items-center mb-4 border-b border-border pb-4">
                     <div>
                       <h4 className="font-bold text-foreground text-lg">Workout Session</h4>
@@ -378,7 +378,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
                       return (
                         <div key={log.id} className="flex items-center justify-between p-3 bg-muted rounded-xl">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-card flex items-center justify-center text-training-text font-bold text-xs shadow-sm">
+                            <div className="w-8 h-8 rounded-lg bg-card flex items-center justify-center text-training-text font-bold text-xs">
                               {(log.exercise || log.exercise_name || '?').charAt(0)}
                             </div>
                             <div>
@@ -399,7 +399,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
                 </div>
               ) : (
                 // Grouped Meal Card
-                <div className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden p-5">
+                <div className="bg-card rounded-2xl border border-border overflow-hidden p-5">
                   <div className="flex justify-between items-center mb-4 border-b border-border pb-4">
                     <div>
                       <h4 className="font-bold text-foreground text-lg">Daily Nutrition</h4>
@@ -429,7 +429,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
                     {dayLogs.map((log) => (
                       <div key={log.id} className="flex items-center justify-between p-3 bg-muted rounded-xl group">
                         <div className="flex items-center gap-3">
-                           <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs shadow-sm ${log.method === 'ai-scan' ? 'bg-ai-soft-border text-ai' : 'bg-card text-muted-foreground'}`}>
+                           <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs ${log.method === 'ai-scan' ? 'bg-ai-soft-border text-ai' : 'bg-card text-muted-foreground'}`}>
                              {log.method === 'ai-scan' ? <ImageIcon className="w-4 h-4" /> : <Utensils className="w-4 h-4" />}
                            </div>
                            <div>
@@ -440,9 +440,9 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
                                  <>
                                    <span className="text-faint">•</span>
                                    <span className="flex gap-1">
-                                     {log.protein > 0 && <span className="text-blue-600 font-medium">P:{log.protein}</span>}
-                                     {log.carbs > 0 && <span className="text-amber-600 font-medium">C:{log.carbs}</span>}
-                                     {log.fats > 0 && <span className="text-rose-600 font-medium">F:{log.fats}</span>}
+                                     {log.protein > 0 && <span className="text-deficit font-medium">P:{log.protein}</span>}
+                                     {log.carbs > 0 && <span className="text-carb font-medium">C:{log.carbs}</span>}
+                                     {log.fats > 0 && <span className="text-fat font-medium">F:{log.fats}</span>}
                                    </span>
                                  </>
                                )}

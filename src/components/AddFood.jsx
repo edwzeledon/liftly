@@ -265,7 +265,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
       return `${baseClasses} fixed inset-0 z-50 h-dvh max-w-none rounded-none border-0 md:border-0 md:my-0 md:h-dvh`;
     }
 
-    return `${baseClasses} md:rounded-3xl shadow-xl border-0 md:border border-border ${getContainerWidth()} h-dvh md:h-auto m-0 md:my-auto fixed inset-0 z-50 md:relative md:inset-auto md:z-auto`;
+    return `${baseClasses} md:rounded-2xl border-0 md:border border-border ${getContainerWidth()} h-dvh md:h-auto m-0 md:my-auto fixed inset-0 z-50 md:relative md:inset-auto md:z-auto`;
   };
 
   const isFullScreenMode = isCameraFullscreen;
@@ -279,8 +279,8 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
     >
       {/* Drag Overlay */}
       {isDragging && (
-        <div className="absolute inset-0 z-50 bg-indigo-500/10 backdrop-blur-sm border-4 border-indigo-500 border-dashed md:rounded-3xl flex items-center justify-center pointer-events-none">
-           <p className="text-training-text font-bold text-xl bg-card px-6 py-3 rounded-xl shadow-lg">Drop image here</p>
+        <div className="absolute inset-0 z-50 bg-training/10 backdrop-blur-sm border-4 border-training-text border-dashed md:rounded-2xl flex items-center justify-center pointer-events-none">
+           <p className="text-training-text font-bold text-xl bg-card px-6 py-3 rounded-xl">Drop image here</p>
         </div>
       )}
 
@@ -312,7 +312,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                 disabled={scanCount >= MAX_DAILY_SCANS}
                 className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
                   mode === 'scan'
-                    ? 'bg-card text-training-text shadow-sm'
+                    ? 'bg-card text-training-text '
                     : scanCount >= MAX_DAILY_SCANS
                       ? 'text-faint cursor-not-allowed'
                       : 'text-muted-foreground hover:text-foreground'
@@ -331,7 +331,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                 disabled={!!preview}
                 className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
                   mode === 'manual'
-                    ? 'bg-card text-training-text shadow-sm'
+                    ? 'bg-card text-training-text '
                     : preview
                       ? 'text-faint cursor-not-allowed'
                       : 'text-muted-foreground hover:text-foreground'
@@ -347,10 +347,10 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
             <div className={`flex-1 flex flex-col relative ${isFullScreenMode ? 'h-full min-h-0' : ''}`}>
               
               {/* Main Content Area: Camera, Preview, or Buttons */}
-              <div className={`relative overflow-hidden shadow-sm bg-muted flex flex-col items-center justify-center transition-all duration-500
+              <div className={`relative overflow-hidden bg-muted flex flex-col items-center justify-center transition-all duration-500
                 ${isFullScreenMode
                   ? 'absolute inset-0 w-full h-full rounded-none border-0 min-h-0'
-                  : 'rounded-3xl border-2 border-dashed border-training-soft-border min-h-[40vh] md:min-h-[400px]'
+                  : 'rounded-2xl border-2 border-dashed border-training-soft-border min-h-[40vh] md:min-h-[400px]'
                 }`}>
                 
                 {/* 1. Camera View */}
@@ -378,7 +378,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                 {isFullScreenMode && (
                   <button 
                     onClick={() => { stopCamera(); setCapturedImage(null); }} 
-                    className="absolute top-6 right-6 p-3 bg-black/40 text-white rounded-full backdrop-blur-md z-30 hover:bg-black/60 transition-colors shadow-lg"
+                    className="absolute top-6 right-6 p-3 bg-black/40 text-white rounded-full backdrop-blur-md z-30 hover:bg-black/60 transition-colors"
                   >
                     <X className="w-6 h-6" />
                   </button>
@@ -390,10 +390,10 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                     <button 
                       onClick={startCamera}
                       disabled={scanCount >= MAX_DAILY_SCANS}
-                      className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-3 transition-colors shadow-lg ${
+                      className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-3 transition-colors ${
                         scanCount >= MAX_DAILY_SCANS
-                          ? 'bg-muted text-faint cursor-not-allowed shadow-none'
-                          : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-200'
+                          ? 'bg-muted text-faint cursor-not-allowed '
+                          : 'bg-indigo-600 text-white hover:bg-indigo-700 '
                       }`}
                     >
                       <Camera className="w-6 h-6" />
@@ -427,7 +427,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                   <div className="absolute bottom-6 left-0 right-0 flex justify-center z-10">
                     <button 
                       onClick={captureImage}
-                      className="w-16 h-16 bg-card rounded-full border-4 border-indigo-500 shadow-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
+                      className="w-16 h-16 bg-card rounded-full border-4 border-training-text flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
                     >
                       <div className="w-12 h-12 bg-indigo-600 rounded-full"></div>
                     </button>
@@ -439,14 +439,14 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                   <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-4 z-20 px-6">
                     <button
                       onClick={retakeImage}
-                      className="flex-1 max-w-xs py-3 bg-card/90 backdrop-blur-md text-foreground font-bold rounded-xl hover:bg-card transition-all shadow-lg flex items-center justify-center gap-2"
+                      className="flex-1 max-w-xs py-3 bg-card/90 backdrop-blur-md text-foreground font-bold rounded-xl hover:bg-card transition-all flex items-center justify-center gap-2"
                     >
                       <X className="w-5 h-5" />
                       Retake
                     </button>
                     <button 
                       onClick={confirmImage}
-                      className="flex-1 max-w-xs py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-lg flex items-center justify-center gap-2"
+                      className="flex-1 max-w-xs py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-all flex items-center justify-center gap-2"
                     >
                       <Check className="w-5 h-5" />
                       Analyze
@@ -491,7 +491,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                       onClick={() => setForm({...form, mealType: type})}
                       className={`py-2 rounded-xl text-xs font-bold uppercase transition-all ${
                         form.mealType === type
-                          ? 'bg-indigo-600 text-white shadow-md'
+                          ? 'bg-indigo-600 text-white '
                           : 'bg-muted text-faint hover:bg-muted/80'
                       }`}
                     >
@@ -508,7 +508,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                   value={form.foodItem}
                   onChange={e => setForm({...form, foodItem: e.target.value})}
                   placeholder="e.g., Grilled Chicken Salad"
-                  className="w-full px-4 py-3 rounded-xl border border-border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+                  className="w-full px-4 py-3 rounded-xl border border-border focus:border-ring focus:ring-2 focus:ring-ring transition-all outline-none"
                   required
                 />
               </div>
@@ -519,7 +519,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                   value={form.calories}
                   onChange={e => setForm({...form, calories: e.target.value})}
                   placeholder="e.g., 450"
-                  className="w-full px-4 py-3 rounded-xl border border-border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
+                  className="w-full px-4 py-3 rounded-xl border border-border focus:border-ring focus:ring-2 focus:ring-ring transition-all outline-none"
                   required
                 />
               </div>
@@ -532,7 +532,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                     value={form.protein}
                     onChange={e => setForm({...form, protein: e.target.value})}
                     placeholder="0"
-                    className="w-full px-3 py-2 rounded-xl border border-border focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                    className="w-full px-3 py-2 rounded-xl border border-border focus:border-deficit focus:ring-2 focus:ring-ring outline-none transition-all"
                   />
                 </div>
                 <div>
@@ -542,7 +542,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                     value={form.carbs}
                     onChange={e => setForm({...form, carbs: e.target.value})}
                     placeholder="0"
-                    className="w-full px-3 py-2 rounded-xl border border-border focus:border-amber-500 focus:ring-2 focus:ring-amber-100 outline-none transition-all"
+                    className="w-full px-3 py-2 rounded-xl border border-border focus:border-carb focus:ring-2 focus:ring-ring outline-none transition-all"
                   />
                 </div>
                 <div>
@@ -552,7 +552,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                     value={form.fats}
                     onChange={e => setForm({...form, fats: e.target.value})}
                     placeholder="0"
-                    className="w-full px-3 py-2 rounded-xl border border-border focus:border-rose-500 focus:ring-2 focus:ring-rose-100 outline-none transition-all"
+                    className="w-full px-3 py-2 rounded-xl border border-border focus:border-fat focus:ring-2 focus:ring-ring outline-none transition-all"
                   />
                 </div>
               </div>
@@ -562,7 +562,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
               <button
                 type="submit"
                 disabled={isSaving}
-                className="w-full py-4 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 active:scale-95 transition-all shadow-lg shadow-indigo-200 mt-4 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                className="w-full py-4 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 active:scale-95 transition-all mt-4 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}
                 {isSaving ? 'Saving...' : 'Save Entry'}

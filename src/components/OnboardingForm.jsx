@@ -164,7 +164,7 @@ export default function OnboardingForm({ onComplete, onCancel, isEditing = false
                                         key={g}
                                         onClick={() => setFormData({ ...formData, gender: g })}
                                         className={`p-4 rounded-2xl border-2 font-bold capitalize transition-all ${formData.gender === g
-                                                ? 'border-indigo-600 bg-training-soft text-training-text'
+                                                ? 'border-training-text bg-training-soft text-training-text'
                                                 : 'border-border text-muted-foreground hover:border-training-text/20'
                                             }`}
                                     >
@@ -240,7 +240,7 @@ export default function OnboardingForm({ onComplete, onCancel, isEditing = false
                                     key={level.id}
                                     onClick={() => setFormData({ ...formData, activity: level.id })}
                                     className={`w-full p-4 rounded-2xl border-2 text-left transition-all ${formData.activity === level.id
-                                            ? 'border-indigo-600 bg-training-soft'
+                                            ? 'border-training-text bg-training-soft'
                                             : 'border-border hover:border-training-text/20'
                                         }`}
                                 >
@@ -263,7 +263,7 @@ export default function OnboardingForm({ onComplete, onCancel, isEditing = false
                                     key={goal.id}
                                     onClick={() => setFormData({ ...formData, goal: goal.id })}
                                     className={`w-full p-4 rounded-2xl border-2 text-left transition-all ${formData.goal === goal.id
-                                            ? 'border-indigo-600 bg-training-soft'
+                                            ? 'border-training-text bg-training-soft'
                                             : 'border-border hover:border-training-text/20'
                                         }`}
                                 >
@@ -326,7 +326,7 @@ export default function OnboardingForm({ onComplete, onCancel, isEditing = false
                                         (parseInt(formData.customProteinPercent || 0) + 
                                          parseInt(formData.customCarbsPercent || 0) + 
                                          parseInt(formData.customFatsPercent || 0)) === 100 
-                                            ? 'text-green-600' 
+                                            ? 'text-protein-text' 
                                             : 'text-destructive-text'
                                     }`}>
                                         Total: {
@@ -405,7 +405,7 @@ export default function OnboardingForm({ onComplete, onCancel, isEditing = false
                                 )) ||
                                 (step === 4 && (!formData.goalWeight || !formData.targetDate))
                             }
-                            className={`flex-1 py-3.5 rounded-xl font-bold text-white transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2 ${(step === 1 && (!formData.age || !formData.weight || !formData.heightFt)) ||
+                            className={`flex-1 py-3.5 rounded-xl font-bold text-white transition-all flex items-center justify-center gap-2 ${(step === 1 && (!formData.age || !formData.weight || !formData.heightFt)) ||
                                     (step === 3 && formData.goal === 'custom' && (
                                         !formData.customCalories || 
                                         !formData.customProteinPercent || 
@@ -416,13 +416,13 @@ export default function OnboardingForm({ onComplete, onCancel, isEditing = false
                                          parseInt(formData.customFatsPercent || 0)) !== 100
                                     )) ||
                                     (step === 4 && (!formData.goalWeight || !formData.targetDate))
-                                    ? 'bg-muted cursor-not-allowed shadow-none'
+                                    ? 'bg-muted cursor-not-allowed '
                                     : 'bg-indigo-600 hover:bg-indigo-700'
                                 }`}
                         >
                             {step === 4 || (step === 3 && formData.goal === 'maintain') ? (
                                 <>
-                                    {isEditing ? "Update Plan" : "Complete Setup"} <Check className="w-5 h-5" />
+                                    {isEditing ? "Update Plan" :"Complete Setup"} <Check className="w-5 h-5" />
                                 </>
                             ) : (
                                 <>

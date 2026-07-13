@@ -40,9 +40,9 @@ function WeightEntry({ user, onSaved }) {
   };
 
   return (
-    <div className="bg-card rounded-3xl px-5 py-4 shadow-sm border border-border flex items-center justify-between gap-4">
+    <div className="bg-card rounded-2xl px-5 py-4 border border-border flex items-center justify-between gap-4">
       <div className="flex items-center gap-2 min-w-0">
-        <div className="p-2 bg-rose-100 rounded-xl text-rose-600 shrink-0">
+        <div className="p-2 bg-fat/15 rounded-xl text-fat shrink-0">
           <Scale className="w-5 h-5" />
         </div>
         <div className="min-w-0">
@@ -59,13 +59,13 @@ function WeightEntry({ user, onSaved }) {
             onChange={(e) => setWeight(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); }}
             placeholder="0.0"
-            className="w-24 px-3 py-2 rounded-xl border-2 border-training-soft-border focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none font-bold text-foreground"
+            className="w-24 px-3 py-2 rounded-xl border-2 border-training-soft-border focus:border-ring focus:ring-2 focus:ring-ring outline-none font-bold text-foreground"
             autoFocus
           />
           <button
             onClick={handleSave}
             disabled={saving}
-            className="p-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200 disabled:opacity-60"
+            className="p-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-60"
             aria-label="Save weight"
           >
             <Check className="w-4 h-4" />
@@ -81,7 +81,7 @@ function WeightEntry({ user, onSaved }) {
       ) : (
         <button
           onClick={() => setIsLogging(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-xl font-bold text-sm hover:bg-primary/90 transition-all shadow-lg shadow-slate-200 shrink-0"
+          className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-xl font-bold text-sm hover:bg-primary/90 transition-all shrink-0"
         >
           <Plus className="w-4 h-4" />
           Log Weight
@@ -117,7 +117,7 @@ export default function InsightsView({ user, onGoLogProtein }) {
           {RANGES.map((r) => (
             <button key={r.weeks} onClick={() => setRange(r.weeks)}
               className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${
-                range === r.weeks ? 'bg-card text-foreground shadow-sm' : 'text-faint hover:text-muted-foreground'
+                range === r.weeks ? 'bg-card text-foreground ' : 'text-faint hover:text-muted-foreground'
               }`}>
               {r.label}
             </button>
@@ -130,7 +130,7 @@ export default function InsightsView({ user, onGoLogProtein }) {
       {state === 'loading' && (<><SkeletonCard /><SkeletonCard /><SkeletonCard /></>)}
 
       {state === 'error' && (
-        <div className="bg-card rounded-3xl p-6 shadow-sm border border-border text-center">
+        <div className="bg-card rounded-2xl p-6 border border-border text-center">
           <p className="text-sm text-muted-foreground mb-3">Couldn&apos;t load insights.</p>
           <button
             onClick={() => { setState('loading'); setRefreshKey((k) => k + 1); }}

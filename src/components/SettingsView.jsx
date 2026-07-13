@@ -16,7 +16,7 @@ export default function SettingsView({ onRetakeAssessment }) {
       <div className="w-full max-w-sm space-y-4">
         <button
           onClick={onRetakeAssessment}
-          className="w-full py-4 bg-card border border-border rounded-2xl shadow-sm hover:border-training-soft-border hover:shadow-md transition-all flex items-center justify-between px-6 group"
+          className="w-full py-4 bg-card border border-border rounded-2xl hover:border-training-soft-border transition-all flex items-center justify-between px-6 group"
         >
           <div className="flex items-center gap-4">
             <div className="p-2 bg-training-soft text-training-text rounded-lg group-hover:bg-training-soft-border transition-colors">

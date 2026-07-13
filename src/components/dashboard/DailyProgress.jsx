@@ -8,8 +8,8 @@ const DualRing = ({ protein, proteinGoal, calories, calorieGoal, baseCalorieGoal
     return () => clearTimeout(t);
   }, []);
 
-  const outer = { r: 42, w: 9 };  // protein
-  const inner = { r: 31, w: 5 };  // calories
+  const outer = { r: 42, w: 9 }; // protein
+  const inner = { r: 31, w: 5 }; // calories
   const ring = (r) => 2 * Math.PI * r;
   const pct = (v, m) => Math.min(Math.max(v / (m || 1), 0), 1);
   const offset = (r, v, m) => ring(r) - (mounted ? pct(v, m) : 0) * ring(r);
@@ -139,7 +139,7 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
   const editLabel = editingGoal === 'trainingOffset' ? 'training bump' : editingGoal;
 
   return (
-    <div className="bg-card rounded-3xl p-6 shadow-sm border border-border relative overflow-hidden">
+    <div className="bg-card rounded-2xl p-6 border border-border relative overflow-hidden">
       <div className="relative z-10 mb-6">
         <div className="flex justify-between items-start mb-6">
           <div>
@@ -174,7 +174,7 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
               onClick={() => setShowBumpPopover((v) => !v)}
               aria-expanded={showBumpPopover}
               aria-haspopup="dialog"
-              className={`px-3 py-1 rounded-full text-xs font-bold border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${
+              className={`px-3 py-1 rounded-full text-xs font-bold border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                 trainingDay
                   ? 'bg-training-soft text-training-text border-training-soft-border'
                   : 'bg-muted text-faint border-border'
@@ -184,7 +184,7 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
             </button>
             {showBumpPopover && (
               <div role="dialog" aria-label="Training bump options"
-                className="absolute top-full left-0 mt-2 bg-card rounded-2xl shadow-xl border border-border p-4 w-64 z-20">
+                className="absolute top-full left-0 mt-2 bg-card rounded-2xl border border-border p-4 w-64 z-20">
                 <p className="text-xs text-muted-foreground mb-3">
                   Training days adjust your calorie target. Base goal stays marked on the ring.
                 </p>
@@ -238,7 +238,7 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
                         type="number"
                         value={tempGoalValue}
                         onChange={e => setTempGoalValue(e.target.value)}
-                        className="flex-1 px-4 py-3 rounded-2xl border-2 border-training-soft-border text-2xl font-bold text-center text-foreground focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 outline-none transition-all"
+                        className="flex-1 px-4 py-3 rounded-2xl border-2 border-training-soft-border text-2xl font-bold text-center text-foreground focus:border-ring focus:ring-4 focus:ring-ring/20 outline-none transition-all"
                         autoFocus
                         placeholder="0"
                         onKeyDown={(e) => e.key === 'Enter' && handleSaveGoal()}
@@ -248,7 +248,7 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
                     <button onClick={() => setEditingGoal(null)} className="flex-1 py-3 bg-muted text-muted-foreground font-bold rounded-xl hover:bg-muted/80 transition-colors">
                         Cancel
                     </button>
-                    <button onClick={handleSaveGoal} className="flex-1 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200">
+                    <button onClick={handleSaveGoal} className="flex-1 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors">
                         Save
                     </button>
                 </div>
@@ -264,7 +264,7 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
           className={`flex-1 flex items-center justify-center gap-2 text-sm font-semibold transition-colors px-4 py-2 rounded-xl active:scale-95 ${
             suggestionDisabled
               ? 'bg-muted text-faint cursor-not-allowed'
-              : 'text-training-text hover:text-training-text/80 bg-training-soft hover:bg-indigo-100'
+              : 'text-training-text hover:text-training-text/80 bg-training-soft hover:bg-training-soft-border'
           }`}
         >
           <Sparkles className="w-4 h-4" />

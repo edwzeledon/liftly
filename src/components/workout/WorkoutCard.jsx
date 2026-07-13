@@ -328,7 +328,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
   }, [bestSetIndex, sets]); // Depend on sets to access the data
 
   return (
-  <div className={`bg-card p-5 rounded-2xl border border-border shadow-sm hover:border-training-soft-border transition-all ${isTemp ? 'opacity-60' : ''}`}>
+  <div className={`bg-card p-5 rounded-2xl border border-border hover:border-training-soft-border transition-all ${isTemp ? 'opacity-60' : ''}`}>
     <div className="flex justify-between items-start mb-4">
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl bg-training-soft flex items-center justify-center text-training-text font-bold">
@@ -352,8 +352,8 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
         <button
           onClick={quickFinish}
           className={`p-2 rounded-full transition-colors ${allSetsCompleted
-            ? 'text-green-600 bg-green-50 hover:bg-green-100'
-            : 'text-faint hover:text-green-600 hover:bg-green-50'
+            ? 'text-protein-text bg-protein-soft hover:bg-protein-soft/80'
+            : 'text-faint hover:text-protein-text hover:bg-protein-soft'
             }`}
           title={allSetsCompleted ? "Mark all as incomplete" : "Mark all as done"}
         >
@@ -388,7 +388,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
             className={`grid grid-cols-10 gap-2 items-center transition-all ${set.completed ? (isPR ? 'opacity-100' : 'opacity-50') : 'opacity-100'}`}
           >
             <div className="col-span-1 flex justify-center">
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${isPR ? 'bg-amber-100 text-amber-600' : 'bg-muted text-muted-foreground'}`}>
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${isPR ? 'bg-streak-soft text-streak' : 'bg-muted text-muted-foreground'}`}>
                 {idx + 1}
               </div>
             </div>
@@ -404,8 +404,8 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
                 disabled={set.completed}
                 placeholder="-"
                 className={`w-full text-center py-2 border rounded-lg outline-none font-bold text-base sm:text-sm disabled:bg-muted transition-all ${isPR
-                  ? 'bg-amber-50 border-amber-200'
-                  : 'bg-muted border-border text-foreground focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100'
+                  ? 'bg-streak-soft border-streak-soft-border'
+                  : 'bg-muted border-border text-foreground focus:border-ring focus:ring-2 focus:ring-ring'
                   }`}
               />
             </div>
@@ -421,16 +421,16 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
                 disabled={set.completed}
                 placeholder="-"
                 className={`w-full text-center py-2 border rounded-lg outline-none font-bold text-base sm:text-sm disabled:bg-muted transition-all ${isPR
-                  ? 'bg-amber-50 border-amber-200'
-                  : 'bg-muted border-border text-foreground focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100'
+                  ? 'bg-streak-soft border-streak-soft-border'
+                  : 'bg-muted border-border text-foreground focus:border-ring focus:ring-2 focus:ring-ring'
                   }`}
               />
             </div>
             <div className="col-span-2 flex justify-center">
               <button
                 onClick={() => toggleSetCompletion(idx)}
-                className={`p-1.5 rounded-lg transition-all shadow-sm ${set.completed
-                  ? 'bg-green-500 text-white ring-2 ring-green-200'
+                className={`p-1.5 rounded-lg transition-all ${set.completed
+                  ? 'bg-protein text-white ring-2 ring-protein/40'
                   : (!set.weight || !set.reps)
                     ? 'bg-muted text-faint cursor-not-allowed'
                     : 'bg-input text-muted-foreground hover:bg-input/80'
@@ -451,8 +451,8 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
                   <X className="w-4 h-4" />
                 </button>
               ) : isPR && (
-                <div className="animate-in zoom-in duration-500 text-amber-500 drop-shadow-sm">
-                  <Trophy className="w-5 h-5 fill-amber-100" />
+                <div className="animate-in zoom-in duration-500 text-streak">
+                  <Trophy className="w-5 h-5 fill-streak/20" />
                 </div>
               )}
             </div>
@@ -473,6 +473,6 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
       isOpen={showCalculator}
       onClose={() => setShowCalculator(false)}
       onApply={handleApplyWeight}
-    />    </div>
+    /> </div>
 );
 }

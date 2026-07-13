@@ -112,7 +112,7 @@ export default function QuickProtein({ user, onLogAdded }) {
   };
 
   return (
-    <div className="bg-card rounded-3xl p-5 shadow-sm border border-border relative">
+    <div className="bg-card rounded-2xl p-5 border border-border relative">
       <div className="flex items-center justify-between mb-3">
         <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
           <Beef className="w-4 h-4 text-protein" />
@@ -185,7 +185,7 @@ export default function QuickProtein({ user, onLogAdded }) {
           <button
             type="button"
             onClick={() => setAdding(true)}
-            className="flex items-center gap-1 rounded-full px-3.5 py-2 text-sm font-semibold border border-dashed border-border text-muted-foreground hover:bg-muted min-h-11"
+            className="flex items-center gap-1 rounded-full px-3.5 py-2 text-sm font-semibold border border-dashed border-faint/40 text-muted-foreground hover:bg-muted min-h-11"
           >
             <Plus className="w-3.5 h-3.5" />
             Add
@@ -240,7 +240,7 @@ export default function QuickProtein({ user, onLogAdded }) {
           <motion.div
             initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
             role="status" aria-live="polite"
-            className="absolute left-4 right-4 -bottom-3 translate-y-full sm:bottom-4 sm:translate-y-0 bg-primary text-primary-foreground text-sm rounded-xl px-4 py-3 flex items-center justify-between shadow-lg z-10"
+            className="absolute left-4 right-4 -bottom-3 translate-y-full sm:bottom-4 sm:translate-y-0 bg-muted border border-border text-foreground text-sm rounded-xl px-4 py-3 flex items-center justify-between z-10"
           >
             <span>{toast.error ? `Couldn't save ${toast.name}` : `Logged ${toast.name}`}</span>
             {!toast.error && (

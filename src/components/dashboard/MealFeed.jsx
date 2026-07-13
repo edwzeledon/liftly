@@ -10,7 +10,7 @@ export default function MealFeed({ logs, onEditLog, onDeleteLog, onAnalyzeDay, o
   const [openMenuId, setOpenMenuId] = useState(null);
 
   return (
-    <div className="bg-card rounded-3xl p-6 shadow-sm border border-border h-full">
+    <div className="bg-card rounded-2xl p-6 border border-border h-full">
       <div className="flex items-center justify-between mb-6">
         <h3 className="font-bold text-foreground text-lg">Today&apos;s Meals</h3>
         <div className="flex gap-2">
@@ -25,7 +25,7 @@ export default function MealFeed({ logs, onEditLog, onDeleteLog, onAnalyzeDay, o
             )}
             <button
                 onClick={onAddMeal}
-                className="text-xs font-medium bg-indigo-100 text-training-text px-3 py-1.5 rounded-full flex items-center gap-1.5 hover:bg-indigo-200 transition-colors active:scale-95"
+                className="text-xs font-medium bg-training-soft text-training-text px-3 py-1.5 rounded-full flex items-center gap-1.5 hover:bg-training-soft-border transition-colors active:scale-95"
             >
                 <Plus className="w-3 h-3" />
                 Add Meal
@@ -75,9 +75,9 @@ export default function MealFeed({ logs, onEditLog, onDeleteLog, onAnalyzeDay, o
                       {/* Macros (Compact) */}
                       {(log.protein > 0 || log.carbs > 0 || log.fats > 0) && (
                         <div className="flex items-center gap-2 mt-1 text-xs font-medium">
-                          {log.protein > 0 && <span className="text-blue-600">P:{log.protein}</span>}
-                          {log.carbs > 0 && <span className="text-amber-600">C:{log.carbs}</span>}
-                          {log.fats > 0 && <span className="text-rose-600">F:{log.fats}</span>}
+                          {log.protein > 0 && <span className="text-deficit">P:{log.protein}</span>}
+                          {log.carbs > 0 && <span className="text-carb">C:{log.carbs}</span>}
+                          {log.fats > 0 && <span className="text-fat">F:{log.fats}</span>}
                         </div>
                       )}
                     </div>
@@ -102,7 +102,7 @@ export default function MealFeed({ logs, onEditLog, onDeleteLog, onAnalyzeDay, o
                           className="fixed inset-0 z-10"
                           onClick={() => setOpenMenuId(null)}
                         />
-                        <div className="absolute right-0 top-full mt-1 bg-card rounded-xl shadow-lg border border-border py-1 min-w-[120px] z-20">
+                        <div className="absolute right-0 top-full mt-1 bg-card rounded-xl border border-border py-1 min-w-[120px] z-20">
                           <button
                             onClick={() => {
                               onEditLog(log);

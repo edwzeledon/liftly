@@ -188,8 +188,8 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percen
       {/* AI Modal */}
       {aiModal.open && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center pointer-events-none p-4 pb-24 sm:pb-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm pointer-events-auto transition-opacity" onClick={() => setAiModal({ ...aiModal, open: false })} />
-          <div className="bg-card w-full max-w-sm rounded-3xl shadow-2xl p-6 pointer-events-auto transform transition-all animate-in slide-in-from-bottom-10 relative">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm pointer-events-auto transition-opacity" onClick={() => setAiModal({ ...aiModal, open: false })} />
+          <div className="bg-card w-full max-w-sm rounded-2xl p-6 pointer-events-auto transform transition-all animate-in slide-in-from-bottom-10 relative">
             <button
               onClick={() => setAiModal({ ...aiModal, open: false })}
               className="absolute top-4 right-4 p-2 bg-muted rounded-full text-muted-foreground hover:bg-muted/80"
@@ -199,7 +199,7 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percen
 
             <div className="flex flex-col items-center text-center">
               <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${
-                aiModal.type === 'suggestion' ? 'bg-indigo-100 text-training-text' : 'bg-ai-soft-border text-ai'
+                aiModal.type === 'suggestion' ? 'bg-training-soft-border text-training-text' : 'bg-ai-soft-border text-ai'
               }`}>
                 {aiModal.loading ? (
                   <Loader2 className="w-6 h-6 animate-spin" />
@@ -242,7 +242,7 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percen
                       </button>
                       <button 
                         onClick={performAiAction}
-                        className="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 active:scale-95 transition-all shadow-lg shadow-indigo-200"
+                        className="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 active:scale-95 transition-all"
                       >
                         Generate
                       </button>

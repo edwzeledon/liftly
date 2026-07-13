@@ -62,14 +62,14 @@ export default function AuthScreen({ embedded = false }) {
   };
 
   const content = (
-    <div className={`w-full ${embedded ? '' : 'max-w-sm md:max-w-lg bg-card p-8 rounded-3xl shadow-xl border border-border relative overflow-hidden'}`}>
+    <div className={`w-full ${embedded ? '' : 'max-w-sm md:max-w-lg bg-card p-8 rounded-2xl border border-border relative overflow-hidden'}`}>
       {!embedded && (
         <div className="absolute top-0 right-0 w-64 h-64 bg-training-soft rounded-full -mr-32 -mt-32 blur-3xl opacity-50 pointer-events-none"></div>
       )}
 
       <div className="relative z-10 text-center mb-8">
         {!embedded && (
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-600 rounded-2xl mb-4 shadow-lg shadow-indigo-200">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-600 rounded-2xl mb-4">
             <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M 75 18 H 35 C 22 18, 15 25, 15 38 V 62 C 15 75, 22 82, 35 82 H 65 C 78 82, 85 75, 85 62 V 38" stroke="#EBE9E4" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
               <circle cx="56" cy="50" r="14" fill="#EBE9E4" style={{ opacity: 0.25 }} />
@@ -136,7 +136,7 @@ export default function AuthScreen({ embedded = false }) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-4 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 active:scale-95 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2"
+          className="w-full py-4 bg-indigo-600 text-white font-bold rounded-2xl hover:bg-indigo-700 active:scale-95 transition-all flex items-center justify-center gap-2"
         >
           {loading ? (
             <Loader2 className="w-5 h-5 animate-spin" />

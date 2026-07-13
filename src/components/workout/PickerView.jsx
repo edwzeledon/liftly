@@ -41,7 +41,7 @@ export default function PickerView({ onBack, onAddExercise, exercises = [] }) {
           placeholder="Search exercises..."
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
-          className="w-full pl-12 pr-4 py-3 bg-muted border border-border rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none font-medium text-foreground"
+          className="w-full pl-12 pr-4 py-3 bg-muted border border-border rounded-xl focus:border-ring focus:ring-2 focus:ring-ring outline-none font-medium text-foreground"
         />
       </div>
 
@@ -74,7 +74,7 @@ export default function PickerView({ onBack, onAddExercise, exercises = [] }) {
               <button
                 key={ex.id || ex.name}
                 onClick={() => onAddExercise(ex)}
-                className="w-full p-4 bg-card border border-border rounded-xl flex items-center justify-between hover:border-training-soft-border hover:shadow-sm transition-all group text-left"
+                className="w-full p-4 bg-card border border-border rounded-xl flex items-center justify-between hover:border-training-soft-border transition-all group text-left"
               >
                 <div>
                   <h4 className="font-bold text-foreground">{ex.name}</h4>

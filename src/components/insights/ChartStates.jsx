@@ -4,7 +4,7 @@ import React from 'react';
 import { Lock } from 'lucide-react';
 
 const Card = ({ title, icon: Icon, children }) => (
-  <div className="bg-card rounded-3xl p-6 shadow-sm border border-border">
+  <div className="bg-card rounded-2xl p-6 border border-border">
     <h3 className="font-display text-lg font-bold text-foreground flex items-center gap-2 mb-4">
       {Icon && <Icon className="w-5 h-5 text-faint" />}
       {title}
@@ -47,7 +47,7 @@ export function EmptyCard({ title, icon, message = 'Not enough data for this ran
 
 export function SkeletonCard() {
   return (
-    <div className="bg-card rounded-3xl p-6 shadow-sm border border-border">
+    <div className="bg-card rounded-2xl p-6 border border-border">
       <div className="animate-pulse space-y-3">
         <div className="h-4 bg-muted rounded w-1/3" />
         <div className="h-40 bg-muted rounded-2xl" />

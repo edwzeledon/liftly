@@ -5,10 +5,10 @@ export default function ConfirmModal({ isOpen, title, message, onConfirm, onCanc
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in">
-      <div className="bg-card rounded-3xl p-6 shadow-2xl w-full max-w-sm animate-in zoom-in-95">
+    <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+      <div className="bg-card rounded-2xl p-6 w-full max-w-sm animate-in zoom-in-95">
         <div className="flex flex-col items-center text-center mb-6">
-          <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${isDestructive ? 'bg-red-100 text-destructive-text' : 'bg-indigo-100 text-training-text'}`}>
+          <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${isDestructive ? 'bg-destructive/15 text-destructive-text' : 'bg-training-soft-border text-training-text'}`}>
             <AlertTriangle className="w-6 h-6" />
           </div>
           <h3 className="text-xl font-bold text-foreground mb-2">{title}</h3>

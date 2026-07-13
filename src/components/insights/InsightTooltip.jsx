@@ -7,7 +7,7 @@ export default function InsightTooltip({ active, payload, label, formatter, labe
   if (!active || !payload?.length) return null;
   const displayLabel = labelFormatter ? labelFormatter(label, payload) : label;
   return (
-    <div className="bg-card rounded-xl shadow-lg px-3 py-2 text-xs" style={{ border: 'none' }}>
+    <div className="bg-card rounded-xl px-3 py-2 text-xs" style={{ border: 'none' }}>
       <p className="font-bold text-foreground mb-1">{displayLabel}</p>
       {payload.map((entry) => (
         <p key={entry.dataKey} className="text-muted-foreground tabular-nums">

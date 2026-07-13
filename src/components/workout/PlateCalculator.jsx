@@ -41,8 +41,8 @@ export default function PlateCalculator({ isOpen, onClose, onApply }) {
   };
 
   return (
-    <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in">
-      <div className="bg-card rounded-3xl p-6 shadow-2xl w-full max-w-sm animate-in zoom-in-95">
+    <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+      <div className="bg-card rounded-2xl p-6 w-full max-w-sm animate-in zoom-in-95">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-xl font-bold text-foreground">Plate Calculator</h3>
           <button onClick={onClose} className="p-2 hover:bg-muted rounded-full transition-colors">
@@ -68,8 +68,8 @@ export default function PlateCalculator({ isOpen, onClose, onApply }) {
           
           {/* Background decoration */}
           <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-             <div className="absolute -right-5 -top-5 w-32 h-32 bg-indigo-500 rounded-full blur-3xl"></div>
-             <div className="absolute -left-5 -bottom-5 w-32 h-32 bg-blue-500 rounded-full blur-3xl"></div>
+             <div className="absolute -right-5 -top-5 w-32 h-32 bg-training rounded-full blur-3xl"></div>
+             <div className="absolute -left-5 -bottom-5 w-32 h-32 bg-deficit rounded-full blur-3xl"></div>
           </div>
         </div>
 
@@ -82,7 +82,7 @@ export default function PlateCalculator({ isOpen, onClose, onApply }) {
                   <button
                     key={w}
                     onClick={() => setBarWeight(w)}
-                    className={`px-3 py-2 rounded-lg transition-all whitespace-nowrap ${barWeight === w ? 'bg-card shadow-sm text-foreground' : 'text-faint'}`}
+                    className={`px-3 py-2 rounded-lg transition-all whitespace-nowrap ${barWeight === w ? 'bg-card text-foreground' : 'text-faint'}`}
                   >
                     {w} lbs
                   </button>
@@ -100,7 +100,7 @@ export default function PlateCalculator({ isOpen, onClose, onApply }) {
                  <span className="text-[10px] text-faint uppercase font-bold">lbs</span>
                </div>
 
-               <div className="flex items-center gap-3 bg-card rounded-lg p-1 shadow-sm">
+               <div className="flex items-center gap-3 bg-card rounded-lg p-1">
                  <button
                    onClick={() => updatePlate(weight, -1)}
                    className="w-8 h-8 flex items-center justify-center text-faint hover:text-training-text hover:bg-training-soft rounded-md transition-colors"
@@ -131,7 +131,7 @@ export default function PlateCalculator({ isOpen, onClose, onApply }) {
           </button>
           <button 
             onClick={() => onApply(calculateTotal())}
-            className="flex-1 py-4 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 active:scale-95 transition-all flex items-center justify-center gap-2"
+            className="flex-1 py-4 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 active:scale-95 transition-all flex items-center justify-center gap-2"
           >
             <Check className="w-5 h-5" />
             Use Weight
