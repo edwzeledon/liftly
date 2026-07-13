@@ -158,17 +158,21 @@ export default function OnboardingForm({ onComplete, onCancel, isEditing = false
                     {step === 1 && (
                         <div className="space-y-4">
                             {/* Gender */}
-                            <div className="grid grid-cols-2 gap-4">
-                                {['male', 'female'].map(g => (
+                            <div className="grid grid-cols-3 gap-3">
+                                {[
+                                    { value: 'male', label: 'Male' },
+                                    { value: 'female', label: 'Female' },
+                                    { value: 'unspecified', label: 'Prefer not to say' }
+                                ].map(g => (
                                     <button
-                                        key={g}
-                                        onClick={() => setFormData({ ...formData, gender: g })}
-                                        className={`p-4 rounded-2xl border-2 font-bold capitalize transition-all ${formData.gender === g
+                                        key={g.value}
+                                        onClick={() => setFormData({ ...formData, gender: g.value })}
+                                        className={`p-4 rounded-2xl border-2 font-bold transition-all ${formData.gender === g.value
                                                 ? 'border-training-text bg-training-soft text-training-text'
                                                 : 'border-border text-muted-foreground hover:border-training-text/20'
                                             }`}
                                     >
-                                        {g}
+                                        {g.label}
                                     </button>
                                 ))}
                             </div>

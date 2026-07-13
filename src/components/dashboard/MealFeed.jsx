@@ -91,7 +91,8 @@ export default function MealFeed({ logs, onEditLog, onDeleteLog, onAnalyzeDay, o
                   <div className="relative">
                     <button
                       onClick={() => setOpenMenuId(isMenuOpen ? null : log.id)}
-                      className="p-2 text-faint hover:text-muted-foreground hover:bg-muted rounded-lg transition-colors"
+                      aria-label="Meal options"
+                      className="p-2 text-faint hover:text-muted-foreground hover:bg-muted rounded-lg transition-colors min-h-11 min-w-11 flex items-center justify-center"
                     >
                       <MoreVertical className="w-4 h-4" />
                     </button>

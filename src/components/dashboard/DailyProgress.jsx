@@ -232,8 +232,10 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
                 </p>
 
                 <div className="flex gap-3">
+                    <label className="sr-only" htmlFor="goal-input">Enter {editLabel} goal</label>
                     <input
                         ref={goalCloseRef}
+                        id="goal-input"
                         type="number"
                         value={tempGoalValue}
                         onChange={e => setTempGoalValue(e.target.value)}
@@ -246,7 +248,7 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
                     <button onClick={() => setEditingGoal(null)} className="flex-1 py-3 bg-muted text-muted-foreground font-bold rounded-xl hover:bg-muted/80 transition-colors">
                         Cancel
                     </button>
-                    <button onClick={handleSaveGoal} className="flex-1 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors">
+                    <button onClick={handleSaveGoal} disabled={Number.isNaN(parseInt(tempGoalValue))} className={`flex-1 py-3 font-bold rounded-xl transition-colors ${Number.isNaN(parseInt(tempGoalValue)) ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-40' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}>
                         Save
                     </button>
                 </div>

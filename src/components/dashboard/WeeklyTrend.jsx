@@ -20,6 +20,11 @@ const PLOT_MARGIN = 5;
 
 export default function WeeklyTrend({ weeklyData, dailyGoal }) {
   const rows = weeklyData.map((d) => ({ ...d, label: d.dayName }));
+
+  // Build sr-only trained sentence
+  const trainedDays = rows.filter(r => r.trained).map(r => r.dayName);
+  const trainedSentence = trainedDays.length > 0 ? `Trained ${trainedDays.join(', ')}` : 'No training days this week';
+
   return (
     <div className="bg-card rounded-2xl p-6 border border-border">
       <h3 className="font-display text-lg font-bold text-foreground flex items-center gap-2 mb-4">
@@ -47,6 +52,7 @@ export default function WeeklyTrend({ weeklyData, dailyGoal }) {
           </span>
         ))}
       </div>
+      <span className="sr-only">{trainedSentence}</span>
     </div>
   );
 }

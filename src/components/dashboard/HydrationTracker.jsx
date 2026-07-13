@@ -35,7 +35,9 @@ export default function HydrationTracker({ waterIntake = 0, onUpdateWater }) {
           <button
             key={i}
             onClick={() => toggleGlass(i)}
-            className={`p-2 rounded-xl transition-all duration-300 ${
+            aria-label={`Glass ${i + 1}`}
+            aria-pressed={i < waterIntake}
+            className={`p-2 rounded-xl transition-all duration-300 min-h-11 min-w-11 flex items-center justify-center ${
               i < waterIntake
                 ? 'bg-deficit text-background scale-105'
                 : 'bg-muted text-faint hover:bg-deficit/15 hover:text-deficit'

@@ -350,14 +350,16 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
       <div className="flex items-center gap-1">
         <button
           onClick={() => setShowCalculator(true)}
-          className="p-2 text-faint hover:text-training-text hover:bg-training-soft rounded-full transition-colors"
+          aria-label="Plate calculator"
+          className="p-2 text-faint hover:text-training-text hover:bg-training-soft rounded-full transition-colors min-h-11 min-w-11 flex items-center justify-center"
           title="Plate Calculator"
         >
           <Calculator className="w-4 h-4" />
         </button>
         <button
           onClick={quickFinish}
-          className={`p-2 rounded-full transition-colors ${allSetsCompleted
+          aria-label={allSetsCompleted ? "Mark all sets incomplete" : "Quick finish"}
+          className={`p-2 rounded-full transition-colors min-h-11 min-w-11 flex items-center justify-center ${allSetsCompleted
             ? 'text-protein-text bg-protein-soft hover:bg-protein-soft/80'
             : 'text-faint hover:text-protein-text hover:bg-protein-soft'
             }`}
@@ -367,7 +369,8 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
         </button>
         <button
           onClick={() => onDelete(log.id)}
-          className="p-2 text-faint hover:text-destructive-text hover:bg-destructive/10 rounded-full transition-colors"
+          aria-label="Delete exercise"
+          className="p-2 text-faint hover:text-destructive-text hover:bg-destructive/10 rounded-full transition-colors min-h-11 min-w-11 flex items-center justify-center"
         >
           <Trash2 className="w-4 h-4" />
         </button>
@@ -437,10 +440,13 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
             <div className="col-span-2 flex justify-center">
               <button
                 onClick={() => toggleSetCompletion(idx)}
-                className={`p-1.5 rounded-lg transition-all ${set.completed
+                disabled={!set.weight || !set.reps}
+                aria-label={`Mark set ${idx + 1} ${set.completed ? 'not done' : 'done'}`}
+                aria-pressed={set.completed}
+                className={`p-1.5 rounded-lg transition-all min-h-11 min-w-11 flex items-center justify-center ${set.completed
                   ? 'bg-protein-soft text-protein ring-2 ring-protein/30'
                   : (!set.weight || !set.reps)
-                    ? 'bg-muted text-faint cursor-not-allowed'
+                    ? 'bg-muted text-faint cursor-not-allowed opacity-40'
                     : 'bg-input text-muted-foreground hover:bg-input/80'
                   }`}
               >
@@ -454,7 +460,8 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
               {!set.completed ? (
                 <button
                   onClick={() => removeSet(idx)}
-                  className="text-faint hover:text-destructive-text p-1"
+                  aria-label={`Remove set ${idx + 1}`}
+                  className="text-faint hover:text-destructive-text p-1 min-h-11 min-w-11 flex items-center justify-center"
                 >
                   <X className="w-4 h-4" />
                 </button>

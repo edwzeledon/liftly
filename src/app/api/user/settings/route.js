@@ -58,8 +58,10 @@ export async function POST(request) {
     let bmr = (10 * weight) + (6.25 * height) - (5 * age);
     if (gender === 'male') {
       bmr += 5;
-    } else {
+    } else if (gender === 'female') {
       bmr -= 161;
+    } else {
+      bmr -= 78; // unspecified: midpoint
     }
 
     const tdee = bmr * (ACTIVITY_FACTORS[activity] || 1.2);

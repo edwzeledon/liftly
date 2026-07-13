@@ -375,14 +375,16 @@ export default function App() {
           <div className="flex items-center gap-1">
             <button
               onClick={() => setActiveTab('settings')}
-              className={`p-2 rounded-full transition-colors ${activeTab === 'settings' ? 'text-training-text bg-training-soft' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}
+              aria-label="Settings"
+              className={`p-2 rounded-full transition-colors min-h-11 min-w-11 flex items-center justify-center ${activeTab === 'settings' ? 'text-training-text bg-training-soft' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}
               title="Settings"
             >
               <Settings className="w-5 h-5" />
             </button>
             <button
               onClick={handleLogout}
-              className="text-muted-foreground hover:text-foreground p-2 rounded-full hover:bg-muted transition-colors"
+              aria-label="Sign out"
+              className="text-muted-foreground hover:text-foreground p-2 rounded-full hover:bg-muted transition-colors min-h-11 min-w-11 flex items-center justify-center"
               title="Sign Out"
             >
               <LogOut className="w-5 h-5" />
