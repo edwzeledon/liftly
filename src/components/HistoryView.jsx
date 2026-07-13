@@ -48,7 +48,12 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
         },
         onCommit: () => {
           deleteLog(logId, user.id)
-            .then(() => { if (onLogDeleted) onLogDeleted(); })
+            .then(async () => {
+              if (onLogDeleted) await onLogDeleted();
+              // Prune the id once the refetch has landed — the row is gone from
+              // props by now, so this can't flash it back.
+              unhideLog(logId);
+            })
             .catch((e) => {
               console.error("Error deleting", e);
               // Commit failed: unhide and surface the error.

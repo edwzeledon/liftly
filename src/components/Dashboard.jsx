@@ -75,8 +75,14 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percen
       });
     } catch (error) {
       console.error("Error updating water:", error);
-      // Roll back the optimistic update and surface the failure.
-      setDailyStats(prev => ({ ...prev, water_intake: previousAmount }));
+      // Roll back the optimistic update — but only if the current value is still
+      // the one THIS call set. If a newer tap already changed (and saved) it,
+      // an out-of-order failure must not clobber that newer value.
+      setDailyStats(prev => (
+        prev.water_intake === safeAmount
+          ? { ...prev, water_intake: previousAmount }
+          : prev
+      ));
       showToast({ message: "Couldn't save water", variant: 'error' });
     }
   };
@@ -95,7 +101,12 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percen
       },
       onCommit: () => {
         deleteLog(logId, user.id)
-          .then(() => { if (onLogDeleted) onLogDeleted(); })
+          .then(async () => {
+            if (onLogDeleted) await onLogDeleted();
+            // Prune the id once the refetch has landed (the row is gone from
+            // todaysLogs by now, so unhiding can't flash it back).
+            unhideLog(logId);
+          })
           .catch((e) => {
             console.error("Error deleting", e);
             // Commit failed: bring the row back and tell the user.
@@ -186,7 +197,7 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percen
             />
         </div>
         <div className="flex flex-col gap-6 px-6 md:px-0">
-            <QuickProtein user={user} onLogAdded={onLogAdded} />
+            <QuickProtein user={user} onLogAdded={onLogAdded} showToast={showToast} />
         </div>
       </div>
 

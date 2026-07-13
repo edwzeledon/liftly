@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Dumbbell, Plus, Download, Folder, Save, Ban, Check, Trophy, X, Play, Trash2, Loader2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import WorkoutCard from './WorkoutCard';
@@ -505,6 +505,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
           // Revert on error
           setWorkoutLogs(previousLogs);
           console.error("Error deleting workout", e);
+          showToast({ message: "Couldn't delete exercise", variant: 'error' });
         }
       }
     });
@@ -513,9 +514,15 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
   // Summary State
   const [summaryData, setSummaryData] = useState({ duration: 0, count: 0, volume: 0 });
   const [isFinishing, setIsFinishing] = useState(false);
+  // Reentrancy guard for submitWorkout. A ref (not the isFinishing state) because
+  // the Retry toast action holds a stale closure whose isFinishing snapshot is
+  // always false — the ref is read live, so a double-tapped Retry can't double-POST.
+  const finishingRef = useRef(false);
 
   const submitWorkout = async () => {
     if (!user) return;
+    if (finishingRef.current) return; // already in flight — ignore reentrant calls
+    finishingRef.current = true;
     setIsFinishing(true);
     try {
       // 1. Prune incomplete sets and delete empty logs
@@ -685,6 +692,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
         action: { label: 'Retry', onAction: submitWorkout },
       });
     } finally {
+      finishingRef.current = false;
       setIsFinishing(false);
     }
   };

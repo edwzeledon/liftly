@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Beef, Plus, Minus, Check, X } from 'lucide-react';
 import { addLog, deleteLog } from '@/lib/api';
-import { useToast } from '@/hooks/useToast';
 
 const DEFAULT_PRESETS = [
   { id: 'chicken', name: 'Chicken breast', protein: 31, calories: 165 },
@@ -14,12 +13,13 @@ const DEFAULT_PRESETS = [
   { id: 'tuna', name: 'Tuna can', protein: 25, calories: 120 },
 ];
 
-export default function QuickProtein({ user, onLogAdded }) {
+// showToast comes from the screen-level toast host (Dashboard) so QuickProtein
+// shares one toast channel with the rest of the screen — no same-screen overlap.
+export default function QuickProtein({ user, onLogAdded, showToast }) {
   const [presets, setPresets] = useState(DEFAULT_PRESETS);
   const [activeId, setActiveId] = useState(null); // chip expanded with stepper
   const [portions, setPortions] = useState(1);
   const [submitting, setSubmitting] = useState(false);
-  const { toastEl, showToast } = useToast();
 
   // Step 1b: preset editing
   const [editing, setEditing] = useState(false);
@@ -228,8 +228,6 @@ export default function QuickProtein({ user, onLogAdded }) {
           </button>
         </form>
       )}
-
-      {toastEl}
     </div>
   );
 }
