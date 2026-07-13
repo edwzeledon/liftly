@@ -6,25 +6,40 @@ import { X } from 'lucide-react';
 export default function Sheet({ open, onClose, title, children }) {
   const closeRef = useRef(null);
   const prevFocusRef = useRef(null);
+  // Keep the latest onClose in a ref so the effects below key on [open] only —
+  // consumers pass inline arrows, and re-running these effects on every parent
+  // re-render would yank focus out of the open dialog.
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
+  // Escape-to-close + body scroll lock.
   useEffect(() => {
     if (!open) return;
-    const onKey = (e) => e.key === 'Escape' && onClose();
+    const onKey = (e) => e.key === 'Escape' && onCloseRef.current();
     document.addEventListener('keydown', onKey);
     document.body.style.overflow = 'hidden';
-    // Remember the element focused before the sheet opened, then move focus
-    // into the sheet (the close button is a safe, always-present target).
-    prevFocusRef.current = document.activeElement;
-    closeRef.current?.focus();
     return () => {
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = 'unset';
-      // Return focus to whatever had it before the sheet opened.
-      if (prevFocusRef.current && typeof prevFocusRef.current.focus === 'function') {
-        prevFocusRef.current.focus();
+    };
+  }, [open]);
+
+  // Focus management: capture the previously-focused element, move focus into
+  // the sheet (the close button is a safe, always-present target), and restore
+  // it on close — only if the captured element is still in the document.
+  useEffect(() => {
+    if (!open) return;
+    prevFocusRef.current = document.activeElement;
+    closeRef.current?.focus();
+    return () => {
+      const prev = prevFocusRef.current;
+      if (prev && prev.isConnected && typeof prev.focus === 'function') {
+        prev.focus();
       }
     };
-  }, [open, onClose]);
+  }, [open]);
 
   return (
     <AnimatePresence>

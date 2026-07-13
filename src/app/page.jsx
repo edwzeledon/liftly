@@ -493,9 +493,7 @@ export default function App() {
         )}
 
         {/* Log Action Sheet */}
-        <Sheet open={showActionSheet} onClose={() => setShowActionSheet(false)}>
-          <h3 className="text-lg sm:text-xl font-bold text-foreground mb-5 sm:mb-6 text-center">Quick Log</h3>
-
+        <Sheet open={showActionSheet} onClose={() => setShowActionSheet(false)} title="Quick Log">
           <div className="grid grid-cols-2 gap-4 sm:gap-5">
             {/* Log Workout */}
             <button
