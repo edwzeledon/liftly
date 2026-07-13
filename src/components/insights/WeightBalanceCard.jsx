@@ -36,10 +36,10 @@ export default function WeightBalanceCard({ data }) {
           </ComposedChart>
         </ResponsiveContainer>
       </div>
-      <div className="flex gap-4 mt-2 text-xs font-semibold text-slate-500">
+      <div className="flex gap-4 mt-2 text-xs font-semibold text-muted-foreground">
         <span className="flex items-center gap-1.5"><span className="w-3 h-1 rounded bg-indigo-600 inline-block" />Weight</span>
-        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-blue-400 inline-block" />Deficit</span>
-        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-orange-400 inline-block" />Surplus</span>
+        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-deficit inline-block" />Deficit</span>
+        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-surplus inline-block" />Surplus</span>
       </div>
     </InsightCard>
   );

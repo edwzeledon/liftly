@@ -62,11 +62,11 @@ export default function AuthScreen({ embedded = false }) {
   };
 
   const content = (
-    <div className={`w-full ${embedded ? '' : 'max-w-sm md:max-w-lg bg-white p-8 rounded-3xl shadow-xl border border-slate-100 relative overflow-hidden'}`}>
+    <div className={`w-full ${embedded ? '' : 'max-w-sm md:max-w-lg bg-card p-8 rounded-3xl shadow-xl border border-border relative overflow-hidden'}`}>
       {!embedded && (
-        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50 rounded-full -mr-32 -mt-32 blur-3xl opacity-50 pointer-events-none"></div>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-training-soft rounded-full -mr-32 -mt-32 blur-3xl opacity-50 pointer-events-none"></div>
       )}
-      
+
       <div className="relative z-10 text-center mb-8">
         {!embedded && (
           <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-600 rounded-2xl mb-4 shadow-lg shadow-indigo-200">
@@ -77,8 +77,8 @@ export default function AuthScreen({ embedded = false }) {
             </svg>
           </div>
         )}
-        <h1 className="text-3xl font-bold text-slate-800 mb-2">{isRegistering ? 'Create Account' : 'Welcome Back'}</h1>
-        <p className="text-slate-500">{isRegistering ? 'Start your journey today' : 'Sign in to continue tracking'}</p>
+        <h1 className="text-3xl font-bold text-foreground mb-2">{isRegistering ? 'Create Account' : 'Welcome Back'}</h1>
+        <p className="text-muted-foreground">{isRegistering ? 'Start your journey today' : 'Sign in to continue tracking'}</p>
       </div>
 
       <form onSubmit={handleAuth} className="flex flex-col relative z-10">
@@ -90,11 +90,11 @@ export default function AuthScreen({ embedded = false }) {
               exit={{ height: 0, opacity: 0, marginBottom: 0 }}
               className="relative overflow-hidden"
             >
-              <User className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" />
+              <User className="absolute left-4 top-3.5 w-5 h-5 text-faint" />
               <input
                 type="text"
                 placeholder="Full Name"
-                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition-all"
+                className="w-full pl-12 pr-4 py-3 bg-muted border border-border rounded-xl focus:border-ring focus:ring-2 focus:ring-ring outline-none transition-all"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
@@ -102,13 +102,13 @@ export default function AuthScreen({ embedded = false }) {
             </motion.div>
           )}
         </AnimatePresence>
-        
+
         <div className="relative mb-4">
-          <Mail className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" />
+          <Mail className="absolute left-4 top-3.5 w-5 h-5 text-faint" />
           <input
             type="email"
             placeholder="Email Address"
-            className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition-all"
+            className="w-full pl-12 pr-4 py-3 bg-muted border border-border rounded-xl focus:border-ring focus:ring-2 focus:ring-ring outline-none transition-all"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -116,11 +116,11 @@ export default function AuthScreen({ embedded = false }) {
         </div>
 
         <div className="relative mb-4">
-          <Lock className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" />
+          <Lock className="absolute left-4 top-3.5 w-5 h-5 text-faint" />
           <input
             type="password"
             placeholder="Password"
-            className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition-all"
+            className="w-full pl-12 pr-4 py-3 bg-muted border border-border rounded-xl focus:border-ring focus:ring-2 focus:ring-ring outline-none transition-all"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -128,7 +128,7 @@ export default function AuthScreen({ embedded = false }) {
         </div>
 
         {error && (
-          <div className="text-red-500 text-sm text-center bg-red-50 py-2 rounded-lg mb-4">
+          <div className="text-destructive-text text-sm text-center bg-destructive/10 py-2 rounded-lg mb-4">
             {error}
           </div>
         )}
@@ -150,25 +150,25 @@ export default function AuthScreen({ embedded = false }) {
       </form>
 
       <div className="mt-6 text-center space-y-4 relative z-10">
-        <p className="text-slate-500 text-sm">
+        <p className="text-muted-foreground text-sm">
           {isRegistering ? 'Already have an account?' : "Don't have an account?"}
           <button
             onClick={() => setIsRegistering(!isRegistering)}
-            className="text-indigo-600 font-bold ml-1 hover:underline"
+            className="text-training-text font-bold ml-1 hover:underline"
           >
             {isRegistering ? 'Login' : 'Sign Up'}
           </button>
         </p>
 
         <div className="relative flex py-2 items-center">
-          <div className="grow border-t border-slate-200"></div>
-          <span className="shrink mx-4 text-slate-400 text-xs uppercase">Or continue with</span>
-          <div className="grow border-t border-slate-200"></div>
+          <div className="grow border-t border-border"></div>
+          <span className="shrink mx-4 text-faint text-xs uppercase">Or continue with</span>
+          <div className="grow border-t border-border"></div>
         </div>
 
         <button
           onClick={handleGoogleLogin}
-          className="w-full py-3 bg-white border border-slate-200 text-slate-700 font-bold rounded-2xl hover:bg-slate-50 active:scale-95 transition-all flex items-center justify-center gap-2"
+          className="w-full py-3 bg-card border border-border text-foreground font-bold rounded-2xl hover:bg-muted active:scale-95 transition-all flex items-center justify-center gap-2"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path
@@ -197,7 +197,7 @@ export default function AuthScreen({ embedded = false }) {
   if (embedded) return content;
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 items-center justify-center p-6 font-sans text-slate-900 w-full">
+    <div className="flex flex-col min-h-screen bg-background items-center justify-center p-6 font-sans text-foreground w-full">
       {content}
     </div>
   );

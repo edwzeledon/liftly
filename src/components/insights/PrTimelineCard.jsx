@@ -46,14 +46,14 @@ export default function PrTimelineCard({ data }) {
         </ResponsiveContainer>
       )}
       {/* Accessible PR list (also the touch fallback) */}
-      <ul className="mt-3 divide-y divide-slate-50">
+      <ul className="mt-3 divide-y divide-border">
         {[...prEvents].reverse().slice(0, 6).map((p) => (
           <li key={p.exercise + p.date} className="py-2.5 flex items-center justify-between text-sm">
             <div>
-              <p className="font-semibold text-slate-700">{p.exercise} — <span className="tabular-nums">{p.weight}×{p.reps}</span></p>
-              <p className="text-xs text-slate-400">{fmtDay(p.date)}</p>
+              <p className="font-semibold text-foreground">{p.exercise} — <span className="tabular-nums">{p.weight}×{p.reps}</span></p>
+              <p className="text-xs text-faint">{fmtDay(p.date)}</p>
             </div>
-            <p className="text-xs text-slate-500 tabular-nums text-right">
+            <p className="text-xs text-muted-foreground tabular-nums text-right">
               {p.dayProtein != null ? `${p.dayProtein}g protein` : 'no food logged'}
               {p.prevDayProtein != null && <><br />{p.prevDayProtein}g day before</>}
             </p>

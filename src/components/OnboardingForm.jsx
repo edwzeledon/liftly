@@ -121,11 +121,11 @@ export default function OnboardingForm({ onComplete, onCancel, isEditing = false
     };
 
     return (
-        <div className="fixed inset-0 z-50 bg-white overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-card overflow-y-auto">
             {isEditing && (
-                <button 
+                <button
                     onClick={onCancel}
-                    className="fixed top-6 right-6 p-2 bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200 transition-colors z-50"
+                    className="fixed top-6 right-6 p-2 bg-muted rounded-full text-muted-foreground hover:bg-muted/80 transition-colors z-50"
                 >
                     <X className="w-6 h-6" />
                 </button>
@@ -135,18 +135,18 @@ export default function OnboardingForm({ onComplete, onCancel, isEditing = false
                     {/* Progress Bar */}
                     <div className="flex gap-2 mb-8">
                         {[1, 2, 3, 4].map(i => (
-                            <div key={i} className={`h-1.5 flex-1 rounded-full transition-colors ${i <= step ? 'bg-indigo-600' : 'bg-slate-100'} ${i === 4 && formData.goal === 'maintain' ? 'hidden' : ''}`} />
+                            <div key={i} className={`h-1.5 flex-1 rounded-full transition-colors ${i <= step ? 'bg-indigo-600' : 'bg-muted'} ${i === 4 && formData.goal === 'maintain' ? 'hidden' : ''}`} />
                         ))}
                     </div>
 
                     <div className="mb-8 text-center">
-                        <h1 className="text-2xl font-bold text-slate-800 mb-2">
+                        <h1 className="text-2xl font-bold text-foreground mb-2">
                             {step === 1 && (isEditing ? "Update your details" : "Tell us about yourself")}
                             {step === 2 && "How active are you?"}
                             {step === 3 && (formData.goal === 'custom' ? "Set your custom targets" : "What is your goal?")}
                             {step === 4 && "Set your timeline"}
                         </h1>
-                        <p className="text-slate-500">
+                        <p className="text-muted-foreground">
                             {step === 1 && "We'll use this to calculate your personalized plan."}
                             {step === 2 && "Be honest! This helps us estimate your daily burn."}
                             {step === 3 && (formData.goal === 'custom' ? "Enter your preferred daily targets." : "We'll adjust your calorie target based on this.")}
@@ -164,8 +164,8 @@ export default function OnboardingForm({ onComplete, onCancel, isEditing = false
                                         key={g}
                                         onClick={() => setFormData({ ...formData, gender: g })}
                                         className={`p-4 rounded-2xl border-2 font-bold capitalize transition-all ${formData.gender === g
-                                                ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
-                                                : 'border-slate-100 text-slate-500 hover:border-slate-200'
+                                                ? 'border-indigo-600 bg-training-soft text-training-text'
+                                                : 'border-border text-muted-foreground hover:border-border'
                                             }`}
                                     >
                                         {g}
@@ -175,14 +175,14 @@ export default function OnboardingForm({ onComplete, onCancel, isEditing = false
 
                             {/* Age */}
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-1">Age</label>
+                                <label className="block text-sm font-bold text-foreground mb-1">Age</label>
                                 <div className="relative">
-                                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-faint" />
                                     <input
                                         type="number"
                                         value={formData.age}
                                         onChange={e => setFormData({ ...formData, age: e.target.value })}
-                                        className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-slate-100 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none font-bold text-slate-800"
+                                        className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-border focus:border-ring focus:ring-4 focus:ring-ring/10 outline-none font-bold text-foreground"
                                         placeholder="Years"
                                     />
                                 </div>
@@ -190,14 +190,14 @@ export default function OnboardingForm({ onComplete, onCancel, isEditing = false
 
                             {/* Weight */}
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-1">Weight (lbs)</label>
+                                <label className="block text-sm font-bold text-foreground mb-1">Weight (lbs)</label>
                                 <div className="relative">
-                                    <Weight className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                                    <Weight className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-faint" />
                                     <input
                                         type="number"
                                         value={formData.weight}
                                         onChange={e => setFormData({ ...formData, weight: e.target.value })}
-                                        className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-slate-100 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none font-bold text-slate-800"
+                                        className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-border focus:border-ring focus:ring-4 focus:ring-ring/10 outline-none font-bold text-foreground"
                                         placeholder="lbs"
                                     />
                                 </div>
@@ -205,27 +205,27 @@ export default function OnboardingForm({ onComplete, onCancel, isEditing = false
 
                             {/* Height */}
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-1">Height</label>
+                                <label className="block text-sm font-bold text-foreground mb-1">Height</label>
                                 <div className="flex gap-4">
                                     <div className="relative flex-1">
                                         <input
                                             type="number"
                                             value={formData.heightFt}
                                             onChange={e => setFormData({ ...formData, heightFt: e.target.value })}
-                                            className="w-full px-4 py-3 rounded-xl border-2 border-slate-100 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none font-bold text-slate-800 text-center"
+                                            className="w-full px-4 py-3 rounded-xl border-2 border-border focus:border-ring focus:ring-4 focus:ring-ring/10 outline-none font-bold text-foreground text-center"
                                             placeholder="0"
                                         />
-                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">ft</span>
+                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-faint font-medium">ft</span>
                                     </div>
                                     <div className="relative flex-1">
                                         <input
                                             type="number"
                                             value={formData.heightIn}
                                             onChange={e => setFormData({ ...formData, heightIn: e.target.value })}
-                                            className="w-full px-4 py-3 rounded-xl border-2 border-slate-100 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none font-bold text-slate-800 text-center"
+                                            className="w-full px-4 py-3 rounded-xl border-2 border-border focus:border-ring focus:ring-4 focus:ring-ring/10 outline-none font-bold text-foreground text-center"
                                             placeholder="0"
                                         />
-                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">in</span>
+                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-faint font-medium">in</span>
                                     </div>
                                 </div>
                             </div>
@@ -240,14 +240,14 @@ export default function OnboardingForm({ onComplete, onCancel, isEditing = false
                                     key={level.id}
                                     onClick={() => setFormData({ ...formData, activity: level.id })}
                                     className={`w-full p-4 rounded-2xl border-2 text-left transition-all ${formData.activity === level.id
-                                            ? 'border-indigo-600 bg-indigo-50'
-                                            : 'border-slate-100 hover:border-slate-200'
+                                            ? 'border-indigo-600 bg-training-soft'
+                                            : 'border-border hover:border-border'
                                         }`}
                                 >
-                                    <div className={`font-bold ${formData.activity === level.id ? 'text-indigo-700' : 'text-slate-800'}`}>
+                                    <div className={`font-bold ${formData.activity === level.id ? 'text-training-text' : 'text-foreground'}`}>
                                         {level.label}
                                     </div>
-                                    <div className={`text-sm ${formData.activity === level.id ? 'text-indigo-600' : 'text-slate-500'}`}>
+                                    <div className={`text-sm ${formData.activity === level.id ? 'text-training-text' : 'text-muted-foreground'}`}>
                                         {level.description}
                                     </div>
                                 </button>
@@ -263,14 +263,14 @@ export default function OnboardingForm({ onComplete, onCancel, isEditing = false
                                     key={goal.id}
                                     onClick={() => setFormData({ ...formData, goal: goal.id })}
                                     className={`w-full p-4 rounded-2xl border-2 text-left transition-all ${formData.goal === goal.id
-                                            ? 'border-indigo-600 bg-indigo-50'
-                                            : 'border-slate-100 hover:border-slate-200'
+                                            ? 'border-indigo-600 bg-training-soft'
+                                            : 'border-border hover:border-border'
                                         }`}
                                 >
-                                    <div className={`font-bold ${formData.goal === goal.id ? 'text-indigo-700' : 'text-slate-800'}`}>
+                                    <div className={`font-bold ${formData.goal === goal.id ? 'text-training-text' : 'text-foreground'}`}>
                                         {goal.label}
                                     </div>
-                                    <div className={`text-sm ${formData.goal === goal.id ? 'text-indigo-600' : 'text-slate-500'}`}>
+                                    <div className={`text-sm ${formData.goal === goal.id ? 'text-training-text' : 'text-muted-foreground'}`}>
                                         {goal.description}
                                     </div>
                                 </button>
@@ -280,43 +280,43 @@ export default function OnboardingForm({ onComplete, onCancel, isEditing = false
                             {formData.goal === 'custom' && (
                                 <div className="mt-6 space-y-4 animate-in slide-in-from-top-4 fade-in">
                                     <div>
-                                        <label className="block text-sm font-bold text-slate-700 mb-1">Daily Calories</label>
+                                        <label className="block text-sm font-bold text-foreground mb-1">Daily Calories</label>
                                         <input
                                             type="number"
                                             value={formData.customCalories}
                                             onChange={e => setFormData({ ...formData, customCalories: e.target.value })}
-                                            className="w-full px-4 py-3 rounded-xl border-2 border-slate-100 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none font-bold text-slate-800"
+                                            className="w-full px-4 py-3 rounded-xl border-2 border-border focus:border-ring focus:ring-4 focus:ring-ring/10 outline-none font-bold text-foreground"
                                             placeholder="e.g. 2500"
                                         />
                                     </div>
                                     <div className="grid grid-cols-3 gap-3">
                                         <div>
-                                            <label className="block text-xs font-bold text-slate-500 mb-1">Protein (%)</label>
+                                            <label className="block text-xs font-bold text-muted-foreground mb-1">Protein (%)</label>
                                             <input
                                                 type="number"
                                                 value={formData.customProteinPercent}
                                                 onChange={e => setFormData({ ...formData, customProteinPercent: e.target.value })}
-                                                className="w-full px-3 py-2 rounded-xl border-2 border-slate-100 focus:border-indigo-500 outline-none font-bold text-slate-800 text-sm"
+                                                className="w-full px-3 py-2 rounded-xl border-2 border-border focus:border-ring outline-none font-bold text-foreground text-sm"
                                                 placeholder="30"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-bold text-slate-500 mb-1">Carbs (%)</label>
+                                            <label className="block text-xs font-bold text-muted-foreground mb-1">Carbs (%)</label>
                                             <input
                                                 type="number"
                                                 value={formData.customCarbsPercent}
                                                 onChange={e => setFormData({ ...formData, customCarbsPercent: e.target.value })}
-                                                className="w-full px-3 py-2 rounded-xl border-2 border-slate-100 focus:border-indigo-500 outline-none font-bold text-slate-800 text-sm"
+                                                className="w-full px-3 py-2 rounded-xl border-2 border-border focus:border-ring outline-none font-bold text-foreground text-sm"
                                                 placeholder="35"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-bold text-slate-500 mb-1">Fats (%)</label>
+                                            <label className="block text-xs font-bold text-muted-foreground mb-1">Fats (%)</label>
                                             <input
                                                 type="number"
                                                 value={formData.customFatsPercent}
                                                 onChange={e => setFormData({ ...formData, customFatsPercent: e.target.value })}
-                                                className="w-full px-3 py-2 rounded-xl border-2 border-slate-100 focus:border-indigo-500 outline-none font-bold text-slate-800 text-sm"
+                                                className="w-full px-3 py-2 rounded-xl border-2 border-border focus:border-ring outline-none font-bold text-foreground text-sm"
                                                 placeholder="35"
                                             />
                                         </div>
@@ -327,7 +327,7 @@ export default function OnboardingForm({ onComplete, onCancel, isEditing = false
                                          parseInt(formData.customCarbsPercent || 0) + 
                                          parseInt(formData.customFatsPercent || 0)) === 100 
                                             ? 'text-green-600' 
-                                            : 'text-red-500'
+                                            : 'text-destructive-text'
                                     }`}>
                                         Total: {
                                             (parseInt(formData.customProteinPercent || 0) + 
@@ -347,32 +347,32 @@ export default function OnboardingForm({ onComplete, onCancel, isEditing = false
                     {step === 4 && (
                         <div className="space-y-4 animate-in slide-in-from-right-4 fade-in">
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-1">Goal Weight ({formData.weightUnit})</label>
+                                <label className="block text-sm font-bold text-foreground mb-1">Goal Weight ({formData.weightUnit})</label>
                                 <div className="relative">
-                                    <Target className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                                    <Target className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-faint" />
                                     <input
                                         type="number"
                                         value={formData.goalWeight}
                                         onChange={e => setFormData({ ...formData, goalWeight: e.target.value })}
-                                        className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-slate-100 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none font-bold text-slate-800"
+                                        className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-border focus:border-ring focus:ring-4 focus:ring-ring/10 outline-none font-bold text-foreground"
                                         placeholder={formData.goal === 'lose' ? "e.g. 180" : "e.g. 160"}
                                     />
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-1">Target Date</label>
+                                <label className="block text-sm font-bold text-foreground mb-1">Target Date</label>
                                 <div className="relative">
-                                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-faint" />
                                     <input
                                         type="date"
                                         value={formData.targetDate}
                                         min={getMinTargetDate()}
                                         onChange={e => setFormData({ ...formData, targetDate: e.target.value })}
-                                        className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-slate-100 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none font-bold text-slate-800"
+                                        className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-border focus:border-ring focus:ring-4 focus:ring-ring/10 outline-none font-bold text-foreground"
                                     />
                                 </div>
                                 {formData.goalWeight && (
-                                    <p className="text-xs text-slate-400 mt-2 ml-1">
+                                    <p className="text-xs text-faint mt-2 ml-1">
                                         Minimum date based on safe {formData.goal === 'gain' ? 'gain' : 'loss'} of {formData.goal === 'gain' ? '1' : '2'} {formData.weightUnit}/week
                                     </p>
                                 )}
@@ -385,7 +385,7 @@ export default function OnboardingForm({ onComplete, onCancel, isEditing = false
                         {step > 1 && (
                             <button
                                 onClick={handleBack}
-                                className="flex-1 py-3.5 rounded-xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors"
+                                className="flex-1 py-3.5 rounded-xl font-bold text-muted-foreground bg-muted hover:bg-muted/80 transition-colors"
                             >
                                 Back
                             </button>
@@ -416,7 +416,7 @@ export default function OnboardingForm({ onComplete, onCancel, isEditing = false
                                          parseInt(formData.customFatsPercent || 0)) !== 100
                                     )) ||
                                     (step === 4 && (!formData.goalWeight || !formData.targetDate))
-                                    ? 'bg-slate-300 cursor-not-allowed shadow-none'
+                                    ? 'bg-muted cursor-not-allowed shadow-none'
                                     : 'bg-indigo-600 hover:bg-indigo-700'
                                 }`}
                         >

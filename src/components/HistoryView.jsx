@@ -209,15 +209,15 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
   return (
     <div className="p-6 md:p-0 min-h-full pb-20 md:pb-0">
       <div className="flex items-center justify-between mb-6 md:mb-8">
-        <h2 className="text-2xl font-bold text-slate-800">History</h2>
-        
-        <div className="flex bg-slate-100 p-1 rounded-xl">
+        <h2 className="text-2xl font-bold text-foreground">History</h2>
+
+        <div className="flex bg-muted p-1 rounded-xl">
           <button
             onClick={() => setViewMode('meals')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              viewMode === 'meals' 
-                ? 'bg-white text-indigo-600 shadow-sm' 
-                : 'text-slate-500 hover:text-slate-700'
+              viewMode === 'meals'
+                ? 'bg-card text-training-text shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             Meals
@@ -225,31 +225,31 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
           <button
             onClick={() => setViewMode('workouts')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              viewMode === 'workouts' 
-                ? 'bg-white text-indigo-600 shadow-sm' 
-                : 'text-slate-500 hover:text-slate-700'
+              viewMode === 'workouts'
+                ? 'bg-card text-training-text shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             Workouts
           </button>
         </div>
       </div>
-      
+
       {/* Edit Workout Modal */}
       {editingDay && (
-        <div className="fixed inset-0 z-50 flex flex-col bg-slate-50 animate-in slide-in-from-bottom-10">
-          <div className="bg-white border-b border-slate-200 pt-safe shrink-0">
+        <div className="fixed inset-0 z-50 flex flex-col bg-background animate-in slide-in-from-bottom-10">
+          <div className="bg-card border-b border-border pt-safe shrink-0">
             <div className="px-6 py-4 flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold text-slate-800">Edit Workout</h2>
-                <p className="text-sm text-slate-500">{editingDay.label}</p>
+                <h2 className="text-xl font-bold text-foreground">Edit Workout</h2>
+                <p className="text-sm text-muted-foreground">{editingDay.label}</p>
               </div>
-              <button 
+              <button
                 onClick={() => {
                   setEditingDay(null);
                   if (onLogDeleted) onLogDeleted(); // Refresh parent data
                 }}
-                className="p-2 bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200 transition-colors"
+                className="p-2 bg-muted rounded-full text-muted-foreground hover:bg-muted/80 transition-colors"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -276,24 +276,24 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
                 ))
               ) : (
                 editingDay.logs.map(log => (
-                  <div key={log.id} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex justify-between items-center">
+                  <div key={log.id} className="bg-card p-4 rounded-2xl border border-border shadow-sm flex justify-between items-center">
                      <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${log.method === 'ai-scan' ? 'bg-purple-100 text-purple-600' : 'bg-slate-100 text-slate-500'}`}>
+                        <div className={`p-2 rounded-lg ${log.method === 'ai-scan' ? 'bg-ai-soft-border text-ai' : 'bg-muted text-muted-foreground'}`}>
                           {log.method === 'ai-scan' ? <ImageIcon className="w-4 h-4" /> : <Utensils className="w-4 h-4" />}
                         </div>
                         <div>
-                          <p className="font-medium text-slate-800">{log.food_item}</p>
-                          <p className="text-xs text-slate-400">{log.calories} cal</p>
+                          <p className="font-medium text-foreground">{log.food_item}</p>
+                          <p className="text-xs text-faint">{log.calories} cal</p>
                         </div>
                      </div>
                      <div className="flex items-center gap-2">
-                        <button 
+                        <button
                           onClick={() => onEditLog(log)}
-                          className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                          className="p-2 text-faint hover:text-training-text hover:bg-training-soft rounded-lg transition-colors"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
-                        <button 
+                        <button
                            onClick={() => {
                              handleDeleteLog(log.id);
                              setEditingDay(prev => ({
@@ -301,7 +301,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
                                logs: prev.logs.filter(l => l.id !== log.id)
                              }));
                            }}
-                           className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                           className="p-2 text-faint hover:text-destructive-text hover:bg-destructive/10 rounded-lg transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -310,7 +310,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
                 ))
               )}
               {editingDay.logs.length === 0 && (
-                <div className="text-center py-12 text-slate-400">
+                <div className="text-center py-12 text-faint">
                   <p>No entries left in this session.</p>
                 </div>
               )}
@@ -320,7 +320,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
       )}
 
       {groupedLogs.length === 0 ? (
-         <div className="flex flex-col items-center justify-center h-64 text-slate-400 bg-white rounded-3xl border border-slate-100">
+         <div className="flex flex-col items-center justify-center h-64 text-faint bg-card rounded-3xl border border-border">
            {viewMode === 'meals' ? (
              <Utensils className="w-12 h-12 mb-2 opacity-20" />
            ) : (
@@ -340,55 +340,55 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
               exit={{ opacity: 0, y: -20, scale: 0.95 }}
               transition={{ duration: 0.2 }}
             >
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 sticky top-0 bg-slate-50 py-2 z-10 backdrop-blur-sm">
+              <h3 className="text-xs font-bold text-faint uppercase tracking-wider mb-3 sticky top-0 bg-background py-2 z-10 backdrop-blur-sm">
                 {label}
               </h3>
-              
+
               {viewMode === 'workouts' ? (
                 // Grouped Workout Card
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden p-5">
-                  <div className="flex justify-between items-center mb-4 border-b border-slate-50 pb-4">
+                <div className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden p-5">
+                  <div className="flex justify-between items-center mb-4 border-b border-border pb-4">
                     <div>
-                      <h4 className="font-bold text-slate-800 text-lg">Workout Session</h4>
-                      <p className="text-xs text-slate-400">
+                      <h4 className="font-bold text-foreground text-lg">Workout Session</h4>
+                      <p className="text-xs text-faint">
                         {dayLogs.length} Exercises • {formatDuration(dayLogs[0]?.duration)}
                       </p>
                     </div>
                     <div className="flex gap-1">
-                      <button 
+                      <button
                         onClick={() => setEditingDay({ label, logs: dayLogs })}
-                        className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                        className="p-2 text-faint hover:text-training-text hover:bg-training-soft rounded-lg transition-colors"
                         title="Edit Session"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
-                      <button 
+                      <button
                         onClick={() => handleDeleteDayWorkout(dayLogs)}
-                        className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        className="p-2 text-faint hover:text-destructive-text hover:bg-destructive/10 rounded-lg transition-colors"
                         title="Delete Session"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-3">
                     {dayLogs.map((log) => {
                       const bestSet = getBestSet(log.sets);
                       return (
-                        <div key={log.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                        <div key={log.id} className="flex items-center justify-between p-3 bg-muted rounded-xl">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-indigo-600 font-bold text-xs shadow-sm">
+                            <div className="w-8 h-8 rounded-lg bg-card flex items-center justify-center text-training-text font-bold text-xs shadow-sm">
                               {(log.exercise || log.exercise_name || '?').charAt(0)}
                             </div>
                             <div>
-                              <p className="font-bold text-slate-700 text-sm">{log.exercise || log.exercise_name}</p>
-                              <p className="text-xs text-slate-400">{log.sets?.length || 0} Sets</p>
+                              <p className="font-bold text-foreground text-sm">{log.exercise || log.exercise_name}</p>
+                              <p className="text-xs text-faint">{log.sets?.length || 0} Sets</p>
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="text-xs text-slate-400 uppercase font-bold tracking-wider mb-0.5">Best Set</p>
-                            <p className="font-mono text-sm font-medium text-slate-800">
+                            <p className="text-xs text-faint uppercase font-bold tracking-wider mb-0.5">Best Set</p>
+                            <p className="font-mono text-sm font-medium text-foreground">
                               {bestSet ? `${bestSet.weight}lbs × ${bestSet.reps}` : '-'}
                             </p>
                           </div>
@@ -399,46 +399,46 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
                 </div>
               ) : (
                 // Grouped Meal Card
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden p-5">
-                  <div className="flex justify-between items-center mb-4 border-b border-slate-50 pb-4">
+                <div className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden p-5">
+                  <div className="flex justify-between items-center mb-4 border-b border-border pb-4">
                     <div>
-                      <h4 className="font-bold text-slate-800 text-lg">Daily Nutrition</h4>
-                      <p className="text-xs text-slate-400">
+                      <h4 className="font-bold text-foreground text-lg">Daily Nutrition</h4>
+                      <p className="text-xs text-faint">
                         {dayLogs.length} Meals • {dayLogs.reduce((sum, item) => sum + (parseInt(item.calories)||0), 0)} Calories
                       </p>
                     </div>
                     <div className="flex gap-1">
-                      <button 
+                      <button
                         onClick={() => setEditingDay({ label, logs: dayLogs })}
-                        className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                        className="p-2 text-faint hover:text-training-text hover:bg-training-soft rounded-lg transition-colors"
                         title="Edit Meals"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
-                      <button 
+                      <button
                         onClick={() => handleDeleteDayMeals(dayLogs)}
-                        className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        className="p-2 text-faint hover:text-destructive-text hover:bg-destructive/10 rounded-lg transition-colors"
                         title="Delete All Meals"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-3">
                     {dayLogs.map((log) => (
-                      <div key={log.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl group">
+                      <div key={log.id} className="flex items-center justify-between p-3 bg-muted rounded-xl group">
                         <div className="flex items-center gap-3">
-                           <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs shadow-sm ${log.method === 'ai-scan' ? 'bg-purple-100 text-purple-600' : 'bg-white text-slate-500'}`}>
+                           <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs shadow-sm ${log.method === 'ai-scan' ? 'bg-ai-soft-border text-ai' : 'bg-card text-muted-foreground'}`}>
                              {log.method === 'ai-scan' ? <ImageIcon className="w-4 h-4" /> : <Utensils className="w-4 h-4" />}
                            </div>
                            <div>
-                             <p className="font-bold text-slate-700 text-sm">{log.food_item}</p>
-                             <p className="text-xs text-slate-400 flex flex-wrap gap-2">
+                             <p className="font-bold text-foreground text-sm">{log.food_item}</p>
+                             <p className="text-xs text-faint flex flex-wrap gap-2">
                                <span>{new Date(log.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                                {(log.protein || log.carbs || log.fats) && (
                                  <>
-                                   <span className="text-slate-300">•</span>
+                                   <span className="text-faint">•</span>
                                    <span className="flex gap-1">
                                      {log.protein > 0 && <span className="text-blue-600 font-medium">P:{log.protein}</span>}
                                      {log.carbs > 0 && <span className="text-amber-600 font-medium">C:{log.carbs}</span>}
@@ -450,7 +450,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
                            </div>
                         </div>
                         <div className="text-right">
-                          <span className="font-mono text-sm font-medium text-slate-800">{log.calories} cal</span>
+                          <span className="font-mono text-sm font-medium text-foreground">{log.calories} cal</span>
                         </div>
                       </div>
                     ))}

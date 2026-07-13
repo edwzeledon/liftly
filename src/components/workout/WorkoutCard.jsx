@@ -328,23 +328,23 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
   }, [bestSetIndex, sets]); // Depend on sets to access the data
 
   return (
-  <div className={`bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:border-indigo-100 transition-all ${isTemp ? 'opacity-60' : ''}`}>
+  <div className={`bg-card p-5 rounded-2xl border border-border shadow-sm hover:border-training-soft-border transition-all ${isTemp ? 'opacity-60' : ''}`}>
     <div className="flex justify-between items-start mb-4">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold">
+        <div className="w-10 h-10 rounded-xl bg-training-soft flex items-center justify-center text-training-text font-bold">
           {(log.exercise_name || log.exercise || '?').charAt(0)}
         </div>
         <div>
-          <h3 className="font-bold text-slate-800">{log.exercise_name || log.exercise}</h3>
+          <h3 className="font-bold text-foreground">{log.exercise_name || log.exercise}</h3>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{log.category}</span>
+            <span className="text-xs font-bold text-faint uppercase tracking-wider">{log.category}</span>
           </div>
         </div>
       </div>
       <div className="flex items-center gap-1">
         <button
           onClick={() => setShowCalculator(true)}
-          className="p-2 text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors"
+          className="p-2 text-faint hover:text-training-text hover:bg-training-soft rounded-full transition-colors"
           title="Plate Calculator"
         >
           <Calculator className="w-4 h-4" />
@@ -353,7 +353,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
           onClick={quickFinish}
           className={`p-2 rounded-full transition-colors ${allSetsCompleted
             ? 'text-green-600 bg-green-50 hover:bg-green-100'
-            : 'text-slate-300 hover:text-green-600 hover:bg-green-50'
+            : 'text-faint hover:text-green-600 hover:bg-green-50'
             }`}
           title={allSetsCompleted ? "Mark all as incomplete" : "Mark all as done"}
         >
@@ -361,7 +361,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
         </button>
         <button
           onClick={() => onDelete(log.id)}
-          className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+          className="p-2 text-faint hover:text-destructive-text hover:bg-destructive/10 rounded-full transition-colors"
         >
           <Trash2 className="w-4 h-4" />
         </button>
@@ -370,7 +370,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
 
     {/* Inline Sets Editor */}
     <div className="space-y-3">
-      <div className="grid grid-cols-10 gap-2 px-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center">
+      <div className="grid grid-cols-10 gap-2 px-2 text-[10px] font-bold text-faint uppercase tracking-wider text-center">
         <div className="col-span-1">Set</div>
         <div className="col-span-3">Lbs</div>
         <div className="col-span-3">Reps</div>
@@ -388,7 +388,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
             className={`grid grid-cols-10 gap-2 items-center transition-all ${set.completed ? (isPR ? 'opacity-100' : 'opacity-50') : 'opacity-100'}`}
           >
             <div className="col-span-1 flex justify-center">
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${isPR ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-500'}`}>
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${isPR ? 'bg-amber-100 text-amber-600' : 'bg-muted text-muted-foreground'}`}>
                 {idx + 1}
               </div>
             </div>
@@ -403,9 +403,9 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
                 onBlur={handleBlur}
                 disabled={set.completed}
                 placeholder="-"
-                className={`w-full text-center py-2 border rounded-lg outline-none font-bold text-base sm:text-sm disabled:bg-slate-100 transition-all ${isPR
+                className={`w-full text-center py-2 border rounded-lg outline-none font-bold text-base sm:text-sm disabled:bg-muted transition-all ${isPR
                   ? 'bg-amber-50 border-amber-200'
-                  : 'bg-slate-50 border-slate-200 text-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100'
+                  : 'bg-muted border-border text-foreground focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100'
                   }`}
               />
             </div>
@@ -420,9 +420,9 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
                 onBlur={handleBlur}
                 disabled={set.completed}
                 placeholder="-"
-                className={`w-full text-center py-2 border rounded-lg outline-none font-bold text-base sm:text-sm disabled:bg-slate-100 transition-all ${isPR
+                className={`w-full text-center py-2 border rounded-lg outline-none font-bold text-base sm:text-sm disabled:bg-muted transition-all ${isPR
                   ? 'bg-amber-50 border-amber-200'
-                  : 'bg-slate-50 border-slate-200 text-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100'
+                  : 'bg-muted border-border text-foreground focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100'
                   }`}
               />
             </div>
@@ -432,8 +432,8 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
                 className={`p-1.5 rounded-lg transition-all shadow-sm ${set.completed
                   ? 'bg-green-500 text-white ring-2 ring-green-200'
                   : (!set.weight || !set.reps)
-                    ? 'bg-slate-100 text-slate-300 cursor-not-allowed'
-                    : 'bg-slate-200 text-slate-400 hover:bg-slate-300'
+                    ? 'bg-muted text-faint cursor-not-allowed'
+                    : 'bg-muted text-faint hover:bg-muted/80'
                   }`}
               >
                 {set.completed ? <Check className="w-5 h-5" /> : <Check className="w-5 h-5 opacity-0" />}
@@ -446,7 +446,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
               {!set.completed ? (
                 <button
                   onClick={() => removeSet(idx)}
-                  className="text-slate-300 hover:text-red-500 p-1"
+                  className="text-faint hover:text-destructive-text p-1"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -462,7 +462,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
 
       <button
         onClick={addSet}
-        className="w-full py-3 mt-2 border border-dashed border-indigo-200 rounded-xl text-indigo-500 font-bold text-sm hover:bg-indigo-50 transition-all flex items-center justify-center gap-2"
+        className="w-full py-3 mt-2 border border-dashed border-training-soft-border rounded-xl text-training-text font-bold text-sm hover:bg-training-soft transition-all flex items-center justify-center gap-2"
       >
         <Plus className="w-4 h-4" />
         Add Set

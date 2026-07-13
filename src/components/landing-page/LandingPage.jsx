@@ -11,7 +11,7 @@ export default function LandingPage() {
   const [showAuth, setShowAuth] = useState(false);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-card">
       {/* Navigation */}
       <nav className="absolute top-0 left-0 right-0 z-50 p-6 flex justify-between items-center max-w-7xl mx-auto w-full">
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => setShowAuth(false)}>
@@ -22,12 +22,12 @@ export default function LandingPage() {
               <circle cx="50" cy="50" r="14" fill="#EBE9E4" />
             </svg>
           </div>
-          <span className="text-xl font-bold text-indigo-600">Liftly</span>
+          <span className="text-xl font-bold text-training-text">Liftly</span>
         </div>
         {!showAuth && (
-          <button 
+          <button
             onClick={() => setShowAuth(true)}
-            className="px-5 py-2 bg-white/80 backdrop-blur-sm border border-slate-200 rounded-full text-sm font-semibold text-slate-900 hover:bg-slate-50 transition-colors"
+            className="px-5 py-2 bg-card/80 backdrop-blur-sm border border-border rounded-full text-sm font-semibold text-foreground hover:bg-muted transition-colors"
           >
             Sign In
           </button>
@@ -39,7 +39,7 @@ export default function LandingPage() {
         title={
           <>
             Train Hard. <br />
-            <span className="text-indigo-600">Fuel Right.</span>
+            <span className="text-training-text">Fuel Right.</span>
           </>
         }
         subtitle="Track workouts with built-in PR detection, logging meals instantly via AI scanning. Training-day aware nutrition targets keep you fueled for the next session."

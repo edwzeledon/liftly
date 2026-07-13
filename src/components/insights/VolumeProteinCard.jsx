@@ -59,8 +59,8 @@ export default function VolumeProteinCard({ data }) {
         </ResponsiveContainer>
       </div>
       <div className="flex gap-4 mt-2 text-xs font-semibold">
-        <span className="flex items-center gap-1.5 text-slate-500"><span className="w-3 h-3 rounded bg-slate-200 inline-block" />Weekly volume (lb)</span>
-        <span className="flex items-center gap-1.5 text-protein-strong"><span className="w-3 h-1 rounded bg-protein inline-block" />Avg protein (g/day)</span>
+        <span className="flex items-center gap-1.5 text-muted-foreground"><span className="w-3 h-3 rounded bg-slate-200 inline-block" />Weekly volume (lb)</span>
+        <span className="flex items-center gap-1.5 text-protein-text"><span className="w-3 h-1 rounded bg-protein inline-block" />Avg protein (g/day)</span>
       </div>
     </InsightCard>
   );

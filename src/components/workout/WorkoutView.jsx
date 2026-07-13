@@ -753,10 +753,10 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       
       {/* Celebration Overlay */}
       {completedAnimation && (
-        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/90 backdrop-blur-sm animate-in fade-in duration-500">
+        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-card/90 backdrop-blur-sm animate-in fade-in duration-500">
           <Trophy className="w-24 h-24 text-yellow-500 mb-4 animate-bounce" />
-          <h2 className="text-3xl font-bold text-slate-800">Workout Complete!</h2>
-          <p className="text-slate-500">Great job crushing your goals today.</p>
+          <h2 className="text-3xl font-bold text-foreground">Workout Complete!</h2>
+          <p className="text-muted-foreground">Great job crushing your goals today.</p>
         </div>
       )}
 
@@ -774,21 +774,21 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       {/* Summary Modal */}
       {showSummary && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white rounded-3xl p-6 shadow-2xl w-full max-w-sm animate-in zoom-in-95 flex flex-col items-center text-center">
+          <div className="bg-card rounded-3xl p-6 shadow-2xl w-full max-w-sm animate-in zoom-in-95 flex flex-col items-center text-center">
             <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
               <Trophy className="w-10 h-10 text-yellow-600" />
             </div>
-            <h2 className="text-2xl font-bold text-slate-800 mb-2">You Crushed It!</h2>
-            <p className="text-slate-500 mb-6">Here&apos;s your summary:</p>
-            
+            <h2 className="text-2xl font-bold text-foreground mb-2">You Crushed It!</h2>
+            <p className="text-muted-foreground mb-6">Here&apos;s your summary:</p>
+
             <div className="grid grid-cols-2 gap-4 w-full mb-6">
-              <div className="bg-slate-50 p-4 rounded-2xl">
-                <p className="text-xs text-slate-400 uppercase font-bold tracking-wider mb-1">Duration</p>
-                <p className="text-xl font-bold text-slate-800">{formatTime(summaryData.duration)}</p>
+              <div className="bg-muted p-4 rounded-2xl">
+                <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider mb-1">Duration</p>
+                <p className="text-xl font-bold text-foreground">{formatTime(summaryData.duration)}</p>
               </div>
-              <div className="bg-slate-50 p-4 rounded-2xl">
-                <p className="text-xs text-slate-400 uppercase font-bold tracking-wider mb-1">Exercises</p>
-                <p className="text-xl font-bold text-slate-800">{summaryData.count}</p>
+              <div className="bg-muted p-4 rounded-2xl">
+                <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider mb-1">Exercises</p>
+                <p className="text-xl font-bold text-foreground">{summaryData.count}</p>
               </div>
             </div>
             
@@ -800,17 +800,17 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
                      <Trophy className="w-5 h-5" />
                    </div>
                    <div className="text-left">
-                     <p className="font-bold text-slate-800">New Records</p>
-                     <p className="text-xs text-slate-500">Personal Bests Crushed</p>
+                     <p className="font-bold text-foreground">New Records</p>
+                     <p className="text-xs text-muted-foreground">Personal Bests Crushed</p>
                    </div>
                  </div>
                  <span className="text-2xl font-bold text-amber-600">{summaryData.records}</span>
               </div>
             )}
 
-            <button 
+            <button
               onClick={closeSummary}
-              className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold shadow-lg hover:bg-slate-800 active:scale-95 transition-all"
+              className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-bold shadow-lg hover:bg-primary/90 active:scale-95 transition-all"
             >
               Close
             </button>
@@ -821,20 +821,20 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       {/* Save Template Modal */}
       {showSaveTemplate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white rounded-3xl p-6 shadow-2xl w-full max-w-sm animate-in zoom-in-95">
-            <h3 className="text-xl font-bold text-slate-800 mb-4">Save Routine</h3>
-            <input 
-              type="text" 
-              placeholder="Routine Name (e.g., Leg Day)" 
+          <div className="bg-card rounded-3xl p-6 shadow-2xl w-full max-w-sm animate-in zoom-in-95">
+            <h3 className="text-xl font-bold text-foreground mb-4">Save Routine</h3>
+            <input
+              type="text"
+              placeholder="Routine Name (e.g., Leg Day)"
               value={templateName}
               onChange={e => setTemplateName(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 mb-4 focus:border-indigo-500 outline-none"
+              className="w-full px-4 py-3 rounded-xl border border-border mb-4 focus:border-indigo-500 outline-none"
               autoFocus
             />
             <div className="flex gap-2">
-              <button 
+              <button
                 onClick={() => setShowSaveTemplate(false)}
-                className="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl font-medium"
+                className="flex-1 py-3 bg-muted text-muted-foreground rounded-xl font-medium"
               >
                 Cancel
               </button>
@@ -860,43 +860,43 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       {/* Load Template Modal */}
       {showLoadTemplate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white rounded-3xl p-6 shadow-2xl w-full max-w-sm animate-in zoom-in-95 max-h-[80vh] flex flex-col">
+          <div className="bg-card rounded-3xl p-6 shadow-2xl w-full max-w-sm animate-in zoom-in-95 max-h-[80vh] flex flex-col">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-slate-800">My Routines</h3>
-              <button onClick={() => setShowLoadTemplate(false)} className="p-2 bg-slate-100 rounded-full text-slate-500">
+              <h3 className="text-xl font-bold text-foreground">My Routines</h3>
+              <button onClick={() => setShowLoadTemplate(false)} className="p-2 bg-muted rounded-full text-muted-foreground">
                 <X className="w-4 h-4" />
               </button>
             </div>
-            
+
             <div className="flex-1 overflow-y-auto space-y-2">
               {isLoadingTemplate ? (
-                <div className="flex flex-col items-center justify-center py-12 text-indigo-600">
+                <div className="flex flex-col items-center justify-center py-12 text-training-text">
                   <Loader2 className="w-8 h-8 animate-spin mb-2" />
                   <p className="text-sm font-medium">Loading Routine...</p>
                 </div>
               ) : templates.length === 0 ? (
-                <div className="text-center py-8 text-slate-400">
+                <div className="text-center py-8 text-faint">
                   <Folder className="w-12 h-12 mx-auto mb-2 opacity-20" />
                   <p>No saved templates yet.</p>
                 </div>
               ) : (
                 templates.map(temp => (
-                  <div key={temp.id} className="bg-slate-50 p-4 rounded-xl flex items-center justify-between group">
+                  <div key={temp.id} className="bg-muted p-4 rounded-xl flex items-center justify-between group">
                     <div>
-                      <h4 className="font-bold text-slate-700">{temp.name}</h4>
-                      <p className="text-xs text-slate-400">{temp.exercises.length} Exercises</p>
+                      <h4 className="font-bold text-foreground">{temp.name}</h4>
+                      <p className="text-xs text-faint">{temp.exercises.length} Exercises</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <button 
+                      <button
                         onClick={() => handleLoadTemplate(temp)}
-                        className="p-2 bg-indigo-100 text-indigo-600 rounded-lg hover:bg-indigo-200 transition-colors"
+                        className="p-2 bg-training-soft-border text-training-text rounded-lg hover:bg-training-soft-border/80 transition-colors"
                         title="Load Routine"
                       >
                         <Play className="w-4 h-4 fill-current" />
                       </button>
-                      <button 
+                      <button
                         onClick={() => deleteTemplate(temp.id)}
-                        className="p-2 text-slate-300 hover:text-red-500"
+                        className="p-2 text-faint hover:text-destructive-text"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -912,26 +912,26 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       {!showPicker && (
         <div className="flex items-center justify-between mb-6 md:max-w-xl w-full md:mx-auto">
           <div className="flex flex-col">
-            <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-              <Dumbbell className="w-6 h-6 text-indigo-600" />
+            <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+              <Dumbbell className="w-6 h-6 text-training-text" />
               Lifting Log
             </h2>
             {workoutLogs.length > 0 && (
-              <p className="text-sm font-mono text-indigo-600 font-medium ml-8 mt-1">
+              <p className="text-sm font-mono text-training-text font-medium ml-8 mt-1">
                 {formatTime(elapsedTime)}
               </p>
             )}
           </div>
-          
+
           {/* Finish Workout moved to top right */}
           {workoutLogs.length > 0 && (
-            <button 
+            <button
               onClick={handleCompleteWorkout}
               disabled={!workoutLogs.some(log => log.sets.some(s => s.completed))}
               className={`px-4 py-2 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2 text-sm ${
                 !workoutLogs.some(log => log.sets.some(s => s.completed))
-                  ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none' 
-                  : 'bg-slate-900 text-white hover:bg-slate-800 active:scale-95'
+                  ? 'bg-muted text-faint cursor-not-allowed shadow-none'
+                  : 'bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95'
               }`}
             >
               <Check className="w-4 h-4" />
@@ -952,23 +952,23 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
           {/* Today's List */}
           <div className="flex-1 overflow-y-auto space-y-4 pb-4 no-scrollbar md:max-w-xl w-full md:mx-auto">
              {workoutLogs.length === 0 ? (
-               <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
-                 <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm">
-                   <Dumbbell className="w-8 h-8 text-indigo-300" />
+               <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6 bg-muted rounded-3xl border-2 border-dashed border-border">
+                 <div className="w-16 h-16 bg-card rounded-full flex items-center justify-center mb-4 shadow-sm">
+                   <Dumbbell className="w-8 h-8 text-training-text/50" />
                  </div>
-                 <h3 className="text-lg font-bold text-slate-700 mb-1">Start your Workout</h3>
-                 <p className="text-slate-400 text-sm mb-6">Add exercises to build your daily plan.</p>
+                 <h3 className="text-lg font-bold text-foreground mb-1">Start your Workout</h3>
+                 <p className="text-faint text-sm mb-6">Add exercises to build your daily plan.</p>
                  <div className="flex flex-col gap-3 w-full">
-                   <button 
+                   <button
                      onClick={() => setShowPicker(true)}
                      className="w-full px-4 py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-95 flex items-center justify-center gap-2"
                    >
                      <Plus className="w-5 h-5" />
                      Add Exercise
                    </button>
-                   <button 
+                   <button
                      onClick={() => setShowLoadTemplate(true)}
-                     className="w-full px-4 py-3 bg-white border border-indigo-100 text-indigo-600 rounded-xl font-bold hover:bg-indigo-50 transition-all flex items-center justify-center gap-2"
+                     className="w-full px-4 py-3 bg-card border border-training-soft-border text-training-text rounded-xl font-bold hover:bg-training-soft transition-all flex items-center justify-center gap-2"
                    >
                      <Download className="w-5 h-5" />
                      Load Template
@@ -988,9 +988,9 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
 
                  {/* Add Buttons Row */}
                  <div className="flex gap-2">
-                   <button 
+                   <button
                      onClick={() => setShowPicker(true)}
-                     className="flex-1 py-4 border-2 border-dashed border-indigo-200 rounded-2xl text-indigo-500 font-bold hover:bg-indigo-50 hover:border-indigo-300 transition-all flex items-center justify-center gap-2"
+                     className="flex-1 py-4 border-2 border-dashed border-training-soft-border rounded-2xl text-training-text font-bold hover:bg-training-soft hover:border-training-text/40 transition-all flex items-center justify-center gap-2"
                    >
                      <Plus className="w-5 h-5" />
                      Add Exercise
@@ -999,9 +999,9 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
 
                  {/* Discard & Save Actions */}
                  <div className="pt-8 pb-4 flex flex-col gap-3">
-                   <button 
+                   <button
                      onClick={() => setShowSaveTemplate(true)}
-                     className="w-full py-3 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-50 transition-all flex items-center justify-center gap-2 text-sm"
+                     className="w-full py-3 bg-card border border-border text-muted-foreground rounded-xl font-bold hover:bg-muted transition-all flex items-center justify-center gap-2 text-sm"
                    >
                      <Save className="w-4 h-4" />
                      Save as Template
