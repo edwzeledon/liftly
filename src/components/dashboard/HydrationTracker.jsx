@@ -1,8 +1,8 @@
 import React from 'react';
 import { Droplet } from 'lucide-react';
 
-export default function HydrationTracker({ waterIntake = 0, onUpdateWater }) {
-  
+export default function HydrationTracker({ waterIntake = 0, goal = 8, onUpdateWater }) {
+
   const toggleGlass = (index) => {
     // Star-rating behavior: click index `i` sets count to `i + 1`.
     // Clicking the currently-topmost filled glass toggles it off (count - 1).
@@ -16,9 +16,9 @@ export default function HydrationTracker({ waterIntake = 0, onUpdateWater }) {
         <Droplet className="w-5 h-5 text-deficit" />
         Hydration
       </h3>
-      
+
       <div className="flex flex-wrap gap-2 justify-center">
-        {[...Array(8)].map((_, i) => (
+        {[...Array(goal)].map((_, i) => (
           <button
             key={i}
             onClick={() => toggleGlass(i)}
@@ -35,7 +35,7 @@ export default function HydrationTracker({ waterIntake = 0, onUpdateWater }) {
         ))}
       </div>
       <p className="text-center text-sm text-faint mt-4 font-medium shrink-0">
-        {waterIntake} / 8 Glasses
+        {waterIntake} / {goal} Glasses
       </p>
     </div>
   );

@@ -12,7 +12,7 @@ import WeeklyReviewCard from './dashboard/WeeklyReviewCard';
 import Sheet from './ui/Sheet';
 import { useToast } from '@/hooks/useToast';
 
-export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percentComplete, weeklyData, todaysLogs, user, onLogDeleted, onUpdateGoal, onEditLog, onLogAdded, onAddMeal, streak, streakStatus, trainingDay = false, calorieOffset = 0, trainingOffset = 250, offsetSkipped = false, onToggleBumpSkip }) {
+export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percentComplete, weeklyData, todaysLogs, user, onLogDeleted, onUpdateGoal, onEditLog, onLogAdded, onAddMeal, streak, streakStatus, trainingDay = false, calorieOffset = 0, trainingOffset = 250, offsetSkipped = false, onToggleBumpSkip, waterGoal = 8 }) {
   const effectiveGoal = dailyGoal + calorieOffset;
   const remaining = effectiveGoal - caloriesToday;
   const [aiModal, setAiModal] = useState({ open: false, type: '', step: 'confirm', content: '', loading: false });
@@ -224,7 +224,7 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percen
 
       {/* Row 5: Hydration (demoted) */}
       <div className="w-full px-6 md:px-0">
-        <HydrationTracker waterIntake={dailyStats.water_intake} onUpdateWater={handleUpdateWater} />
+        <HydrationTracker waterIntake={dailyStats.water_intake} goal={waterGoal} onUpdateWater={handleUpdateWater} />
       </div>
 
       {/* AI Modal */}

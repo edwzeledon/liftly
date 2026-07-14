@@ -28,6 +28,7 @@ export default function TodayPage() {
       trainingOffset={app.trainingOffset}
       offsetSkipped={app.offsetSkipped}
       onToggleBumpSkip={app.handleToggleBumpSkip}
+      waterGoal={app.waterGoal}
     />
   );
 }
