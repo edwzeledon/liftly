@@ -29,6 +29,8 @@ export default function AppProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [dailyGoal, setDailyGoal] = useState(2000);
   const [macroGoals, setMacroGoals] = useState({ protein: 150, carbs: 200, fats: 65 });
+  const [weightUnit, setWeightUnit] = useState('lb');
+  const [waterGoal, setWaterGoal] = useState(8);
   const [editingLog, setEditingLog] = useState(null);
   const [scanCount, setScanCount] = useState(0);
   const [streak, setStreak] = useState(0);
@@ -99,6 +101,8 @@ export default function AppProvider({ children }) {
           setShowOnboarding(true);
         }
         if (settings.daily_goal) setDailyGoal(settings.daily_goal);
+        setWeightUnit(settings.weight_unit === 'kg' ? 'kg' : 'lb');
+        setWaterGoal(settings.water_goal || 8);
 
         // Sync Timezone
         const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -167,6 +171,8 @@ export default function AppProvider({ children }) {
           if (cachedSettings) {
             const settings = JSON.parse(cachedSettings);
             if (settings.daily_goal) setDailyGoal(settings.daily_goal);
+            setWeightUnit(settings.weight_unit === 'kg' ? 'kg' : 'lb');
+            setWaterGoal(settings.water_goal || 8);
             setMacroGoals({
               protein: settings.protein_goal || Math.round((settings.daily_goal * 0.3) / 4),
               carbs: settings.carbs_goal || Math.round((settings.daily_goal * 0.4) / 4),
@@ -241,6 +247,18 @@ export default function AppProvider({ children }) {
       }
     } catch (e) {
       console.error("Error saving goal", e);
+    }
+  };
+
+  const handleUpdatePreferences = async (updates) => {
+    if (!user) return false;
+    try {
+      await updateUserSettings(user.id, updates);
+      await fetchData();
+      return true;
+    } catch (e) {
+      console.error('Error saving preference', e);
+      return false;
     }
   };
 
@@ -350,6 +368,8 @@ export default function AppProvider({ children }) {
     setActiveWorkoutLogs,
     dailyGoal,
     macroGoals,
+    weightUnit,
+    waterGoal,
     editingLog,
     setEditingLog,
     scanCount,
@@ -369,6 +389,7 @@ export default function AppProvider({ children }) {
     fetchData,
     handleToggleBumpSkip,
     handleUpdateGoal,
+    handleUpdatePreferences,
     handleUpdateLog,
     handleOnboardingComplete,
     handleLogout,

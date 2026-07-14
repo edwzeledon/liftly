@@ -130,6 +130,14 @@ export async function POST(request) {
     if (body.timezone) updates.timezone = body.timezone;
   }
 
+  // Preference passthroughs — outside the if/else so they apply in both
+  // branches (onboarding carries weightUnit alongside profile data; the
+  // Settings screen sends preferences alone).
+  if (body.weightUnit) updates.weight_unit = body.weightUnit === 'kg' ? 'kg' : 'lb';
+  if (body.waterGoal !== undefined) {
+    updates.water_goal = Math.min(16, Math.max(4, parseInt(body.waterGoal) || 8));
+  }
+
   const { data, error } = await supabase
     .from('user_settings')
     .upsert({ 
