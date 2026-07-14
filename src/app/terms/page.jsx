@@ -11,7 +11,7 @@ export default function TermsPage() {
         <h1 className="font-display font-bold uppercase text-3xl md:text-4xl mb-6">Terms of Service</h1>
         <p className="text-muted-foreground mb-8">
           This policy is being drafted. Liftly stores your workout and nutrition logs solely to
-          provide the service. Contact: yessirskiwspg@gmail.com.
+          provide the service. Contact: edwzeledon80@gmail.com.
         </p>
         <Link href="/" className="text-protein-text font-bold hover:underline">← Back to Liftly</Link>
       </div>
