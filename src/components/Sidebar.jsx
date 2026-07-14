@@ -1,10 +1,24 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Home, Plus, Calendar, LogOut, Settings, Dumbbell, BarChart3 } from 'lucide-react';
 import Logo from './ui/Logo';
 
-export default function Sidebar({ activeTab, setActiveTab, onLogout, onOpenLog }) {
+// R3: pathname-based nav. The sidebar no longer receives tab-key props; it
+// renders real <Link>s and derives the active item from usePathname().
+const NAV_ITEMS = [
+  { href: '/today', icon: Home, label: 'Today' },
+  { href: '/train', icon: Dumbbell, label: 'Train' },
+  { href: '/insights', icon: BarChart3, label: 'Insights' },
+  { href: '/history', icon: Calendar, label: 'History' },
+];
+
+export default function Sidebar({ onLogout, onOpenLog }) {
+  const pathname = usePathname();
+  const settingsActive = pathname === '/settings';
+
   return (
     <div className="hidden md:flex flex-col w-64 bg-card border-r border-border p-6 h-full shrink-0">
       <div className="flex items-center gap-2 mb-10">
@@ -15,45 +29,22 @@ export default function Sidebar({ activeTab, setActiveTab, onLogout, onOpenLog }
       </div>
 
       <nav className="flex-1 space-y-2">
-        <button
-          onClick={() => setActiveTab('home')}
-          className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
-            activeTab === 'home' ? 'bg-training-soft text-training-text font-medium' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-          }`}
-        >
-          <Home className="w-5 h-5" />
-          <span>Today</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('workouts')}
-          className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
-            activeTab === 'workouts' ? 'bg-training-soft text-training-text font-medium' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-          }`}
-        >
-          <Dumbbell className="w-5 h-5" />
-          <span>Train</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('insights')}
-          className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
-            activeTab === 'insights' ? 'bg-training-soft text-training-text font-medium' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-          }`}
-        >
-          <BarChart3 className="w-5 h-5" />
-          <span>Insights</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('history')}
-          className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
-            activeTab === 'history' ? 'bg-training-soft text-training-text font-medium' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-          }`}
-        >
-          <Calendar className="w-5 h-5" />
-          <span>History</span>
-        </button>
+        {NAV_ITEMS.map(({ href, icon: Icon, label }) => {
+          const active = pathname === href;
+          return (
+            <Link
+              key={href}
+              href={href}
+              aria-current={active ? 'page' : undefined}
+              className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
+                active ? 'bg-training-soft text-training-text font-medium' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+              }`}
+            >
+              <Icon className="w-5 h-5" />
+              <span>{label}</span>
+            </Link>
+          );
+        })}
       </nav>
 
       <button
@@ -65,15 +56,16 @@ export default function Sidebar({ activeTab, setActiveTab, onLogout, onOpenLog }
       </button>
 
       <div className="border-t border-border pt-2 space-y-1">
-        <button
-          onClick={() => setActiveTab('settings')}
+        <Link
+          href="/settings"
+          aria-current={settingsActive ? 'page' : undefined}
           className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
-            activeTab === 'settings' ? 'bg-training-soft text-training-text font-medium' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+            settingsActive ? 'bg-training-soft text-training-text font-medium' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
           }`}
         >
           <Settings className="w-5 h-5" />
           <span>Settings</span>
-        </button>
+        </Link>
 
         <button
           onClick={onLogout}

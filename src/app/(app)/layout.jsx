@@ -1,11 +1,11 @@
 'use client';
 
 // App shell: auth gate + provider + chrome. Screen content renders via {children}.
-// Chrome JSX is MOVED from src/app/page.jsx (R2). The nav wiring is a thin router
-// adapter this task: dock/sidebar/action-sheet call router.push(path); active
-// styling derives from usePathname(). R3 swaps these for real <Link>s and deletes
-// page.jsx.
+// R3: nav is real <Link> navigation. NavButton/Sidebar/header derive their active
+// styling from usePathname(); the [+] dock button and Log CTA open the action
+// sheet, whose tiles router.push to /train | /add. The tab-key adapter is gone.
 import React, { Suspense, useEffect } from 'react';
+import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Loader2, Utensils, LogOut, Home, Plus, Calendar, Settings, Dumbbell, BarChart3 } from 'lucide-react';
 import AppProvider, { useApp } from '@/components/app/AppProvider';
@@ -15,31 +15,20 @@ import OnboardingForm from '@/components/OnboardingForm';
 import Sheet from '@/components/ui/Sheet';
 import Logo from '@/components/ui/Logo';
 
-// Copied verbatim from page.jsx — the mobile dock button look.
-const NavButton = ({ active, onClick, icon: Icon, label }) => (
-  <button
-    onClick={onClick}
+// Mobile dock item: real <Link> with the SPA's original button look. Active +
+// aria-current derive from the caller's pathname comparison.
+const NavButton = ({ href, active, icon: Icon, label }) => (
+  <Link
+    href={href}
+    aria-current={active ? 'page' : undefined}
     className={`flex flex-col items-center gap-1 p-2 min-w-16 rounded-xl transition-colors ${
       active ? 'text-training-text' : 'text-faint hover:text-muted-foreground'
     }`}
   >
     <Icon className="w-6 h-6" />
     <span className="text-xs font-medium">{label}</span>
-  </button>
+  </Link>
 );
-
-// Nav adapter: the SPA's chrome speaks in tab keys ('home', 'workouts', ...).
-// Map those to routes so the existing Sidebar/dock components work unchanged
-// while we push real navigation.
-const TAB_TO_PATH = {
-  home: '/today',
-  workouts: '/train',
-  insights: '/insights',
-  history: '/history',
-  settings: '/settings',
-  add: '/add',
-};
-const PATH_TO_TAB = Object.fromEntries(Object.entries(TAB_TO_PATH).map(([tab, path]) => [path, tab]));
 
 function AppShell({ children }) {
   const app = useApp();
@@ -65,15 +54,13 @@ function AppShell({ children }) {
 
   if (!app.user) return null; // redirect in flight
 
-  // Tab-key equivalence for active styling + push-based nav.
-  const activeTab = PATH_TO_TAB[pathname] ?? 'home';
-  const goToTab = (tab) => router.push(TAB_TO_PATH[tab] ?? '/today');
+  const settingsActive = pathname === '/settings';
 
   return (
     <div className="flex h-screen bg-background font-sans text-foreground overflow-hidden">
 
       {/* Desktop Sidebar */}
-      <Sidebar activeTab={activeTab} setActiveTab={goToTab} onLogout={app.handleLogout} onOpenLog={() => app.setShowActionSheet(true)} />
+      <Sidebar onLogout={app.handleLogout} onOpenLog={() => app.setShowActionSheet(true)} />
 
       {/* Main Content Container */}
       <div className="flex-1 flex flex-col h-full relative overflow-hidden">
@@ -87,14 +74,15 @@ function AppShell({ children }) {
             </h1>
           </div>
           <div className="flex items-center gap-1">
-            <button
-              onClick={() => goToTab('settings')}
+            <Link
+              href="/settings"
               aria-label="Settings"
-              className={`p-2 rounded-full transition-colors min-h-11 min-w-11 flex items-center justify-center ${activeTab === 'settings' ? 'text-training-text bg-training-soft' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}
+              aria-current={settingsActive ? 'page' : undefined}
+              className={`p-2 rounded-full transition-colors min-h-11 min-w-11 flex items-center justify-center ${settingsActive ? 'text-training-text bg-training-soft' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}
               title="Settings"
             >
               <Settings className="w-5 h-5" />
-            </button>
+            </Link>
             <button
               onClick={app.handleLogout}
               aria-label="Sign out"
@@ -125,8 +113,8 @@ function AppShell({ children }) {
 
         {/* Mobile Bottom Navigation (Hidden on Desktop) */}
         <nav className="md:hidden absolute bottom-0 left-0 right-0 bg-card border-t border-border px-4 py-2 flex justify-between items-center z-20 pb-safe">
-          <NavButton active={activeTab === 'home'} onClick={() => goToTab('home')} icon={Home} label="Today" />
-          <NavButton active={activeTab === 'workouts'} onClick={() => goToTab('workouts')} icon={Dumbbell} label="Train" />
+          <NavButton href="/today" active={pathname === '/today'} icon={Home} label="Today" />
+          <NavButton href="/train" active={pathname === '/train'} icon={Dumbbell} label="Train" />
 
           <button
             onClick={() => app.setShowActionSheet(true)}
@@ -136,8 +124,8 @@ function AppShell({ children }) {
             <Plus className="w-7 h-7" />
           </button>
 
-          <NavButton active={activeTab === 'insights'} onClick={() => goToTab('insights')} icon={BarChart3} label="Insights" />
-          <NavButton active={activeTab === 'history'} onClick={() => goToTab('history')} icon={Calendar} label="History" />
+          <NavButton href="/insights" active={pathname === '/insights'} icon={BarChart3} label="Insights" />
+          <NavButton href="/history" active={pathname === '/history'} icon={Calendar} label="History" />
         </nav>
 
         {/* Render Edit Modal if active */}
@@ -161,7 +149,7 @@ function AppShell({ children }) {
             <button
               onClick={() => {
                 app.setShowActionSheet(false);
-                goToTab('workouts');
+                router.push('/train');
               }}
               className="flex flex-col items-center gap-3 sm:gap-4 p-6 sm:p-8 rounded-2xl bg-training-soft border-2 border-training-soft-border hover:bg-training-soft-border hover:border-training-soft-border transition-all active:scale-95"
             >
@@ -176,7 +164,7 @@ function AppShell({ children }) {
             <button
               onClick={() => {
                 app.setShowActionSheet(false);
-                goToTab('add');
+                router.push('/add');
               }}
               className="flex flex-col items-center gap-3 sm:gap-4 p-6 sm:p-8 rounded-2xl bg-ai-soft border-2 border-ai-soft-border hover:bg-ai-soft-border hover:border-ai/20 transition-all active:scale-95"
             >
