@@ -63,7 +63,12 @@ export default function Sections({ onCtaClick }) {
         <div className="flex items-center gap-6">
           <a href="/privacy" className="hover:text-foreground">Privacy</a>
           <a href="/terms" className="hover:text-foreground">Terms</a>
-          <span className="text-faint">Photo: Sven Mieke / Unsplash</span>
+          {/* Scoped override, not the shared `text-faint` token (~30 other
+              usages elsewhere, out of scope here): #71717A on this footer's
+              #0B0B0F background is 4.06:1, under WCAG AA's 4.5:1 for
+              normal-size text (Lighthouse a11y: color-contrast, found during
+              RT5). #8a8a92 clears it at 5.7:1, staying visually close. */}
+          <span className="text-[#8a8a92]">Photo: Sven Mieke / Unsplash</span>
         </div>
       </footer>
     </>

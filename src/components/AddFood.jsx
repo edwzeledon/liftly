@@ -469,7 +469,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                 {/* 7. Close Preview Button */}
                 {preview && !analyzing && (
                   <button 
-                    onClick={() => { setPreview(null); setForm({foodItem: '', calories: '', protein: '', carbs: '', fats: '', mealType: 'snack'}); }} 
+                    onClick={() => { setPreview(null); setForm(INITIAL_FORM); }}
                     className="absolute top-4 right-4 p-2 bg-black/50 text-white rounded-full backdrop-blur-md z-20 hover:bg-black/70 transition-colors"
                   >
                     <X className="w-4 h-4" />
