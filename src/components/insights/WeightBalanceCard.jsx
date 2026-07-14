@@ -6,11 +6,12 @@ import { ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, CartesianG
 import InsightTooltip from './InsightTooltip';
 import { InsightCard, EmptyCard } from './ChartStates';
 import { AXIS_TICK, REF_LINE, SERIES, gridProps } from './chartTheme';
+import { toDisplay } from '@/lib/units';
 
 const fmtDay = (d) => new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
-export default function WeightBalanceCard({ data }) {
-  const rows = data.weightSeries || [];
+export default function WeightBalanceCard({ data, unit = 'lb' }) {
+  const rows = (data.weightSeries || []).map((r) => ({ ...r, weight: toDisplay(r.weight, unit) }));
   if (rows.length < 2) {
     return <EmptyCard title="Weight vs Calorie Balance" icon={Scale} message="Log your weight a few more days" />;
   }
@@ -24,7 +25,7 @@ export default function WeightBalanceCard({ data }) {
             <YAxis yAxisId="w" domain={['dataMin - 2', 'dataMax + 2']} axisLine={false} tickLine={false} tick={AXIS_TICK} width={36} />
             <YAxis yAxisId="b" hide />
             <Tooltip content={<InsightTooltip formatter={(e) =>
-              e.dataKey === 'weight' ? `Weight: ${e.value} lb` : `Balance: ${e.value > 0 ? '+' : ''}${e.value} kcal vs goal`} />}
+              e.dataKey === 'weight' ? `Weight: ${e.value} ${unit}` : `Balance: ${e.value > 0 ? '+' : ''}${e.value} kcal vs goal`} />}
               labelFormatter={fmtDay} />
             <ReferenceLine yAxisId="b" y={0} stroke={REF_LINE} strokeDasharray="3 3" />
             <Bar yAxisId="b" dataKey="balance" name="Balance" fillOpacity={SERIES.balanceOpacity} isAnimationActive={false} maxBarSize={16} radius={[3, 3, 0, 0]}>

@@ -12,6 +12,7 @@ export default function HistoryPage() {
       user={app.user}
       onLogDeleted={app.fetchData}
       onEditLog={app.setEditingLog}
+      weightUnit={app.weightUnit}
     />
   );
 }

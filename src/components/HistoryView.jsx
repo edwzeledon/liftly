@@ -4,6 +4,7 @@ import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Utensils, Image as ImageIcon, Trash2, Edit2, Dumbbell, X } from 'lucide-react';
 import { deleteLog, deleteWorkoutLog } from '@/lib/api';
+import { formatWeight } from '@/lib/units';
 import SegmentedControl from '@/components/ui/SegmentedControl';
 import ConfirmModal from './ConfirmModal';
 import WorkoutCard from './workout/WorkoutCard';
@@ -11,7 +12,7 @@ import { useToast } from '@/hooks/useToast';
 
 const VIEW_MODES = [{ label: 'Meals', value: 'meals' }, { label: 'Workouts', value: 'workouts' }];
 
-export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted, onEditLog }) {
+export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted, onEditLog, weightUnit = 'lb' }) {
   const [viewMode, setViewMode] = useState('workouts'); // 'meals' | 'workouts'
   const [editingDay, setEditingDay] = useState(null); // { label, logs }
   const [optimisticallyDeletedIds, setOptimisticallyDeletedIds] = useState(new Set());
@@ -282,9 +283,9 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
             <div className="max-w-xl mx-auto space-y-4">
               {viewMode === 'workouts' ? (
                 editingDay.logs.map(log => (
-                  <WorkoutCard 
-                    key={log.id} 
-                    log={log} 
+                  <WorkoutCard
+                    key={log.id}
+                    log={log}
                     onDelete={(id) => {
                       // Handle delete within modal
                       handleDeleteLog(id, log.exercise || log.exercise_name);
@@ -294,6 +295,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
                       }));
                     }}
                     onUpdate={handleUpdateLog}
+                    weightUnit={weightUnit}
                   />
                 ))
               ) : (
@@ -411,7 +413,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
                           <div className="text-right">
                             <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider mb-0.5">Best Set</p>
                             <p className="font-display text-sm font-semibold tabular-nums text-foreground">
-                              {bestSet ? `${bestSet.weight}lbs × ${bestSet.reps}` : '-'}
+                              {bestSet ? `${formatWeight(bestSet.weight, weightUnit)} × ${bestSet.reps}` : '-'}
                             </p>
                           </div>
                         </div>

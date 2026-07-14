@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Dumbbell, Trophy, Scale, Plus, Check, X } from 'lucide-react';
 import { getInsights, updateDailyStats } from '@/lib/api';
+import { toLb } from '@/lib/units';
 import SegmentedControl from '@/components/ui/SegmentedControl';
 import { useToast } from '@/hooks/useToast';
 import { LockedCard, SkeletonCard } from './ChartStates';
@@ -16,7 +17,7 @@ const UNLOCK_DAYS = 7;
 // Minimal weight-entry affordance moved here from the retired WeightTrend card.
 // Reuses the existing updateDailyStats API pattern; calls onSaved so the parent
 // can refetch insights (the WeightBalanceCard picks up the new point).
-function WeightEntry({ user, onSaved }) {
+function WeightEntry({ user, onSaved, weightUnit = 'lb' }) {
   const [isLogging, setIsLogging] = useState(false);
   const [weight, setWeight] = useState('');
   const [saving, setSaving] = useState(false);
@@ -30,7 +31,7 @@ function WeightEntry({ user, onSaved }) {
     try {
       await updateDailyStats({
         date: new Date().toLocaleDateString('en-CA'),
-        weight: weightVal,
+        weight: toLb(weightVal, weightUnit),
       });
       setIsLogging(false);
       setWeight('');
@@ -63,7 +64,7 @@ function WeightEntry({ user, onSaved }) {
             value={weight}
             onChange={(e) => setWeight(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); }}
-            placeholder="0.0"
+            placeholder={weightUnit === 'kg' ? 'kg' : 'lb'}
             className="w-24 px-3 py-2 rounded-xl border-2 border-training-soft-border focus:border-ring focus:ring-2 focus:ring-ring outline-none font-bold text-foreground"
             autoFocus
           />
@@ -98,7 +99,7 @@ function WeightEntry({ user, onSaved }) {
   );
 }
 
-export default function InsightsView({ user, onGoLogProtein }) {
+export default function InsightsView({ user, onGoLogProtein, weightUnit = 'lb' }) {
   const [range, setRange] = useState(4);
   const [data, setData] = useState(null);
   const [state, setState] = useState('loading'); // loading | ready | error
@@ -127,7 +128,7 @@ export default function InsightsView({ user, onGoLogProtein }) {
         />
       </div>
 
-      <WeightEntry user={user} onSaved={() => setRefreshKey((k) => k + 1)} />
+      <WeightEntry user={user} onSaved={() => setRefreshKey((k) => k + 1)} weightUnit={weightUnit} />
 
       {state === 'loading' && (<><SkeletonCard /><SkeletonCard /><SkeletonCard /></>)}
 
@@ -152,9 +153,9 @@ export default function InsightsView({ user, onGoLogProtein }) {
 
       {state === 'ready' && !locked && (
         <>
-          <VolumeProteinCard data={data} />
-          <PrTimelineCard data={data} />
-          <WeightBalanceCard data={data} />
+          <VolumeProteinCard data={data} unit={weightUnit} />
+          <PrTimelineCard data={data} unit={weightUnit} />
+          <WeightBalanceCard data={data} unit={weightUnit} />
         </>
       )}
     </div>

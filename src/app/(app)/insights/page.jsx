@@ -7,5 +7,5 @@ import { useApp } from '@/components/app/AppProvider';
 export default function InsightsPage() {
   const app = useApp();
   const router = useRouter();
-  return <InsightsView user={app.user} onGoLogProtein={() => router.push('/today')} />;
+  return <InsightsView user={app.user} onGoLogProtein={() => router.push('/today')} weightUnit={app.weightUnit} />;
 }

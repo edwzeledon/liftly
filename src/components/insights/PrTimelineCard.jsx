@@ -6,10 +6,11 @@ import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tool
 import InsightTooltip from './InsightTooltip';
 import { InsightCard, EmptyCard } from './ChartStates';
 import { AXIS_TICK, SERIES, gridProps } from './chartTheme';
+import { toDisplay } from '@/lib/units';
 
 const fmtDay = (d) => new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
-export default function PrTimelineCard({ data }) {
+export default function PrTimelineCard({ data, unit = 'lb' }) {
   const prEvents = data.prEvents || [];
   const weightSeries = data.weightSeries || [];
   // Build a daily calorie series from weightSeries days + PR days (both carry day nutrition)
@@ -50,7 +51,7 @@ export default function PrTimelineCard({ data }) {
         {[...prEvents].reverse().slice(0, 6).map((p) => (
           <li key={p.exercise + p.date} className="py-2.5 flex items-center justify-between text-sm">
             <div>
-              <p className="font-semibold text-foreground">{p.exercise} — <span className="tabular-nums">{p.weight}×{p.reps}</span></p>
+              <p className="font-semibold text-foreground">{p.exercise} — <span className="tabular-nums">{toDisplay(p.weight, unit)}×{p.reps}</span></p>
               <p className="text-xs text-faint">{fmtDay(p.date)}</p>
             </div>
             <p className="text-xs text-muted-foreground tabular-nums text-right">
