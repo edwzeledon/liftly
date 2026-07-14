@@ -2,13 +2,15 @@
 
 import React, { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { AnimatePresence, motion } from 'framer-motion';
-import { supabase } from '@/lib/supabaseClient';
+import dynamicImport from 'next/dynamic';
+import { AnimatePresence, LazyMotion, m } from 'framer-motion';
 import PhotoBackdrop from './PhotoBackdrop';
 import HeroContent from './HeroContent';
 import Sections from './sections';
-import AuthView from './AuthView';
 import Logo from '../ui/Logo';
+
+const AuthView = dynamicImport(() => import('./AuthView'), { ssr: false, loading: () => null });
+const loadFeatures = () => import('./motionFeatures').then((mod) => mod.default);
 
 // Whitelist of in-app destinations a ?next= param may target. Anything else
 // (external URLs, unknown paths, '/') falls through to the default /today —
@@ -64,12 +66,17 @@ export default function LandingPage() {
   // getSession redirect forwards it to /today — next is lost for OAuth, which is
   // acceptable since OAuth is only ever initiated from the generic Sign In CTA.)
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session?.user) {
-        router.replace(validateNext(nextRef.current) || '/today');
-      }
+    let subscription;
+    let cancelled = false;
+    import('@/lib/supabaseClient').then(({ supabase }) => {
+      if (cancelled) return;
+      ({ data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_IN' && session?.user) {
+          router.replace(validateNext(nextRef.current) || '/today');
+        }
+      }));
     });
-    return () => subscription.unsubscribe();
+    return () => { cancelled = true; subscription?.unsubscribe(); };
   }, [router]);
 
   const scrollToFeatures = () => {
@@ -84,42 +91,44 @@ export default function LandingPage() {
   }, [showAuth]);
 
   return (
-    <div className={`bg-background text-foreground ${showAuth ? 'h-dvh overflow-hidden' : 'min-h-screen'}`}>
-      <Suspense fallback={null}>
-        <AuthParamListener onOpen={() => setShowAuth(true)} onNext={captureNext} />
-      </Suspense>
-      {/* Nav hidden entirely during auth — AuthView owns its own top bar (logo left, close right) */}
-      {!showAuth && (
-        <nav className="absolute top-0 left-0 right-0 z-50 p-6 flex justify-between items-center max-w-7xl mx-auto w-full">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => setShowAuth(false)}>
-            <Logo size={36} />
-            <span className="text-xl font-bold text-training-text">Liftly</span>
-          </div>
-          <button
-            onClick={() => setShowAuth(true)}
-            className="px-5 py-2 bg-card/80 backdrop-blur-sm border border-border rounded-full text-sm font-semibold text-foreground hover:bg-muted transition-colors"
-          >
-            Sign In
-          </button>
-        </nav>
-      )}
+    <LazyMotion features={loadFeatures} strict>
+      <div className={`bg-background text-foreground ${showAuth ? 'h-dvh overflow-hidden' : 'min-h-screen'}`}>
+        <Suspense fallback={null}>
+          <AuthParamListener onOpen={() => setShowAuth(true)} onNext={captureNext} />
+        </Suspense>
+        {/* Nav hidden entirely during auth — AuthView owns its own top bar (logo left, close right) */}
+        {!showAuth && (
+          <nav className="absolute top-0 left-0 right-0 z-50 p-6 flex justify-between items-center max-w-7xl mx-auto w-full">
+            <div className="flex items-center gap-2 cursor-pointer" onClick={() => setShowAuth(false)}>
+              <Logo size={36} />
+              <span className="text-xl font-bold text-training-text">Liftly</span>
+            </div>
+            <button
+              onClick={() => setShowAuth(true)}
+              className="px-5 py-2 bg-card/80 backdrop-blur-sm border border-border rounded-full text-sm font-semibold text-foreground hover:bg-muted transition-colors"
+            >
+              Sign In
+            </button>
+          </nav>
+        )}
 
-      {/* The one full-viewport room: photo persists, content swaps */}
-      <section className={`relative ${showAuth ? 'h-dvh' : 'min-h-dvh'}`}>
-        <PhotoBackdrop deepen={showAuth} />
-        <AnimatePresence mode="wait">
-          {showAuth ? (
-            <AuthView onBack={() => setShowAuth(false)} />
-          ) : (
-            <motion.div key="hero" className="absolute inset-0">
-              <HeroContent onCtaClick={() => setShowAuth(true)} onSecondaryClick={scrollToFeatures} />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </section>
+        {/* The one full-viewport room: photo persists, content swaps */}
+        <section className={`relative ${showAuth ? 'h-dvh' : 'min-h-dvh'}`}>
+          <PhotoBackdrop deepen={showAuth} />
+          <AnimatePresence mode="wait">
+            {showAuth ? (
+              <AuthView onBack={() => setShowAuth(false)} />
+            ) : (
+              <m.div key="hero" className="absolute inset-0">
+                <HeroContent onCtaClick={() => setShowAuth(true)} onSecondaryClick={scrollToFeatures} />
+              </m.div>
+            )}
+          </AnimatePresence>
+        </section>
 
-      {/* Nothing below auth — sections unmount entirely */}
-      {!showAuth && <Sections onCtaClick={() => setShowAuth(true)} />}
-    </div>
+        {/* Nothing below auth — sections unmount entirely */}
+        {!showAuth && <Sections onCtaClick={() => setShowAuth(true)} />}
+      </div>
+    </LazyMotion>
   );
 }

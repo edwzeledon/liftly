@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useReducedMotion } from 'framer-motion';
+import { m, useReducedMotion } from 'framer-motion';
 import { X } from 'lucide-react';
 import AuthScreen from '../AuthScreen';
 import Logo from '../ui/Logo';
@@ -8,7 +8,7 @@ import Logo from '../ui/Logo';
 export default function AuthView({ onBack }) {
   const reduce = useReducedMotion();
   return (
-    <motion.div key="auth" initial={{ opacity: 0, y: reduce ? 0 : 16 }} animate={{ opacity: 1, y: 0 }}
+    <m.div key="auth" initial={{ opacity: 0, y: reduce ? 0 : 16 }} animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: reduce ? 0 : 16 }} transition={{ duration: 0.25 }}
       className="relative z-10 h-dvh flex flex-col">
       {/* Top row: AuthView owns its top bar — logo (left, matches landing nav) + close (right). The landing nav is hidden while auth is open. */}
@@ -29,6 +29,6 @@ export default function AuthView({ onBack }) {
           <AuthScreen embedded={true} compact={true} />
         </div>
       </div>
-    </motion.div>
+    </m.div>
   );
 }
