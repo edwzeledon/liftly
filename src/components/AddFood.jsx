@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Camera, Loader2, Check, Upload } from 'lucide-react';
 import { analyzeImageWithGemini, addLog, getDailyStats } from '@/lib/api';
+import { useSessionDraft } from '@/hooks/useSessionDraft';
 
 const MAX_DAILY_SCANS = 5;
 
@@ -12,6 +13,8 @@ const MEAL_TYPES = [
   { value: 'dinner', label: 'Dinner' },
   { value: 'snack', label: 'Snack' },
 ];
+
+const INITIAL_FORM = { foodItem: '', calories: '', protein: '', carbs: '', fats: '', mealType: 'snack' };
 
 const formatBase64 = (file) => {
   return new Promise((resolve, reject) => {
@@ -32,7 +35,8 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
   const [analyzing, setAnalyzing] = useState(false);
   const [preview, setPreview] = useState(null);
   const [capturedImage, setCapturedImage] = useState(null); // Holds image before confirmation
-  const [form, setForm] = useState({ foodItem: '', calories: '', protein: '', carbs: '', fats: '', mealType: 'snack' });
+  const [form, setForm, clearDraft] = useSessionDraft('snapcal_addfood_draft', INITIAL_FORM);
+  // Image/preview/camera/mode state remain ephemeral: don't persist across navigation/refresh
   const [error, setError] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -249,6 +253,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
         mealType: form.mealType,
         method: mode === 'scan' ? 'ai-scan' : 'manual'
       });
+      clearDraft();
       onSuccess();
     } catch (err) {
       console.error(err);
@@ -294,7 +299,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
       {!isFullScreenMode && (
         <div className="p-6 border-b border-border flex justify-between items-center bg-card z-10">
           <h2 className="text-2xl font-bold text-foreground">Add Meal</h2>
-          <button onClick={() => { stopCamera(); onCancel(); }} className="p-2 bg-muted rounded-full hover:bg-muted/80 transition-colors">
+          <button onClick={() => { stopCamera(); clearDraft(); onCancel(); }} className="p-2 bg-muted rounded-full hover:bg-muted/80 transition-colors">
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
