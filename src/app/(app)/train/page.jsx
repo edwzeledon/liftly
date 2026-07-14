@@ -11,6 +11,7 @@ export default function TrainPage() {
       onWorkoutComplete={app.fetchData}
       initialLogs={app.activeWorkoutLogs || []}
       onUpdateLogs={app.setActiveWorkoutLogs}
+      weightUnit={app.weightUnit}
     />
   );
 }

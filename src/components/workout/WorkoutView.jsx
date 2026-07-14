@@ -8,10 +8,11 @@ import ConfirmModal from '../ConfirmModal';
 
 import { getExercises } from '@/lib/api';
 import { logsVolume } from '@/lib/workoutStats';
+import { toDisplayVolume } from '@/lib/units';
 import { useToast } from '@/hooks/useToast';
 import { useModalBehavior } from '@/hooks/useModalBehavior';
 
-export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [], onUpdateLogs }) {
+export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [], onUpdateLogs, weightUnit = 'lb' }) {
   // Use props for logs if available, otherwise fallback to local state (though props should always be there now)
   const [localLogs, setLocalLogs] = useState([]);
   const workoutLogs = onUpdateLogs ? initialLogs : localLogs;
@@ -823,7 +824,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
                 <p className="text-xs text-muted-foreground">Exercises</p>
               </div>
               <div className="bg-muted rounded-xl p-3 text-center">
-                <p className="font-display text-2xl font-bold tabular-nums text-foreground">{(summaryData.volume || 0).toLocaleString()}</p>
+                <p className="font-display text-2xl font-bold tabular-nums text-foreground">{toDisplayVolume(summaryData.volume || 0, weightUnit).toLocaleString()}</p>
                 <p className="text-xs text-muted-foreground">Volume</p>
               </div>
             </div>
@@ -1029,11 +1030,12 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
              ) : (
                <>
                  {workoutLogs.map(log => (
-                   <WorkoutCard 
-                      key={log.id} 
-                      log={log} 
-                      onDelete={deleteWorkout} 
+                   <WorkoutCard
+                      key={log.id}
+                      log={log}
+                      onDelete={deleteWorkout}
                       onUpdate={handleUpdateLog}
+                      weightUnit={weightUnit}
                    />
                  ))}
 

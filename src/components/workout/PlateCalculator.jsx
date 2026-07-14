@@ -1,19 +1,16 @@
 import React, { useState } from 'react';
 import { X, Check, RotateCcw, Minus, Plus } from 'lucide-react';
 import { useModalBehavior } from '@/hooks/useModalBehavior';
+import { BARS, PLATES } from '@/lib/units';
 
-export default function PlateCalculator({ isOpen, onClose, onApply }) {
+const BAR_OPTIONS = { lb: [45, 35, 25, 0], kg: [20, 15, 10, 0] };
+const emptyRack = (unit) => Object.fromEntries(PLATES[unit].map((p) => [p, 0]));
+
+export default function PlateCalculator({ isOpen, onClose, onApply, unit = 'lb' }) {
   // Always-rendered (key-remounted) with an isOpen gate — pass the boolean.
   const { closeRef } = useModalBehavior(isOpen, onClose);
-  const [barWeight, setBarWeight] = useState(45);
-  const [plates, setPlates] = useState({
-    45: 0,
-    35: 0,
-    25: 0,
-    10: 0,
-    5: 0,
-    2.5: 0
-  });
+  const [barWeight, setBarWeight] = useState(BARS[unit]);
+  const [plates, setPlates] = useState(() => emptyRack(unit));
 
   if (!isOpen) return null;
 
@@ -33,14 +30,7 @@ export default function PlateCalculator({ isOpen, onClose, onApply }) {
   };
 
   const reset = () => {
-    setPlates({
-      45: 0,
-      35: 0,
-      25: 0,
-      10: 0,
-      5: 0,
-      2.5: 0
-    });
+    setPlates(emptyRack(unit));
   };
 
   return (
@@ -59,7 +49,7 @@ export default function PlateCalculator({ isOpen, onClose, onApply }) {
             <p className="text-primary-foreground/80 text-xs uppercase font-bold tracking-wider mb-1">Total Weight</p>
             <div className="text-5xl font-bold tracking-tight">
               {calculateTotal()}
-              <span className="text-2xl text-primary-foreground/70 ml-1">lbs</span>
+              <span className="text-2xl text-primary-foreground/70 ml-1">{unit === 'kg' ? 'kg' : 'lb'}</span>
             </div>
             <p className="text-primary-foreground/70 text-xs mt-2">
                Bar ({barWeight}) + Plates ({calculateTotal() - barWeight})
@@ -76,13 +66,13 @@ export default function PlateCalculator({ isOpen, onClose, onApply }) {
            <p className="text-xs text-faint uppercase font-bold tracking-wider mb-2 text-center">Bar Weight</p>
            <div className="flex justify-center">
              <div className="bg-muted p-1 rounded-xl flex text-sm font-bold overflow-x-auto max-w-full">
-                {[45, 35, 25, 0].map(w => (
+                {BAR_OPTIONS[unit].map(w => (
                   <button
                     key={w}
                     onClick={() => setBarWeight(w)}
                     className={`px-3 py-2 rounded-lg transition-all whitespace-nowrap ${barWeight === w ? 'bg-card text-foreground' : 'text-faint'}`}
                   >
-                    {w} lbs
+                    {w} {unit === 'kg' ? 'kg' : 'lb'}
                   </button>
                 ))}
              </div>
@@ -91,11 +81,11 @@ export default function PlateCalculator({ isOpen, onClose, onApply }) {
 
         {/* Plates Grid */}
         <div className="grid grid-cols-2 gap-3 mb-6">
-          {[45, 35, 25, 10, 5, 2.5].map(weight => (
+          {PLATES[unit].map(weight => (
             <div key={weight} className="bg-muted p-3 rounded-xl flex items-center justify-between">
                <div className="flex flex-col">
                  <span className="font-bold text-foreground text-lg">{weight}</span>
-                 <span className="text-[10px] text-faint uppercase font-bold">lbs</span>
+                 <span className="text-[10px] text-faint uppercase font-bold">{unit === 'kg' ? 'kg' : 'lb'}</span>
                </div>
 
                <div className="flex items-center gap-3 bg-card rounded-lg p-1">

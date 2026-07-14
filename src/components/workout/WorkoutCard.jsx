@@ -2,8 +2,34 @@ import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { CheckCircle, Trash2, Check, X, Plus, Trophy, Calculator } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import PlateCalculator from './PlateCalculator';
+import { toDisplay, toLb } from '@/lib/units';
 
-export default function WorkoutCard({ log, onDelete, onUpdate }) {
+// Controlled lb-state input that edits in the user's display unit. While
+// focused, the raw draft string is shown so typing "102.5" isn't fought by
+// round-trip rounding; state (and storage) stay canonical lb.
+function WeightInput({ valueLb, unit, onCommit, onFocus, onBlur, className }) {
+  const [draft, setDraft] = useState(null);
+  const settled = valueLb === '' || valueLb == null ? '' : String(toDisplay(valueLb, unit));
+  return (
+    <input
+      type="number"
+      inputMode="decimal"
+      min="0"
+      placeholder="-"
+      value={draft !== null ? draft : settled}
+      onChange={(e) => {
+        const raw = e.target.value;
+        setDraft(raw);
+        onCommit(raw === '' ? '' : String(toLb(raw, unit)));
+      }}
+      onFocus={(e) => { setDraft(settled); if (onFocus) onFocus(e); }}
+      onBlur={(e) => { setDraft(null); if (onBlur) onBlur(e); }}
+      className={className}
+    />
+  );
+}
+
+export default function WorkoutCard({ log, onDelete, onUpdate, weightUnit = 'lb' }) {
   const [sets, setSets] = useState(log.sets || []);
   const [bestSet, setBestSet] = useState(null);
   const [showCalculator, setShowCalculator] = useState(false);
@@ -106,17 +132,18 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
   }, [log.exercise_name, log.exercise]);
 
   const handleApplyWeight = (weight) => {
+    const lbStr = String(toLb(weight, weightUnit));
     if (sets.length > 0) {
       // Apply only to sets that are NOT completed
       const newSets = sets.map(set => (
-        set.completed ? set : { ...set, weight: weight }
+        set.completed ? set : { ...set, weight: lbStr }
       ));
       setSets(newSets);
       updateParent(newSets);
       saveSets(newSets); // debounced
     } else {
       // If no sets, create one
-      const newSets = [{ weight: weight, reps: '', completed: false }];
+      const newSets = [{ weight: lbStr, reps: '', completed: false }];
       setSets(newSets);
       updateParent(newSets);
       saveSets(newSets); // debounced
@@ -381,7 +408,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
     <div className="space-y-3">
       <div className="grid grid-cols-10 gap-2 px-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider text-center">
         <div className="col-span-1">Set</div>
-        <div className="col-span-3">Lbs</div>
+        <div className="col-span-3">{weightUnit === 'kg' ? 'Kg' : 'Lbs'}</div>
         <div className="col-span-3">Reps</div>
         <div className="col-span-2">Done</div>
         <div className="col-span-1"></div>
@@ -402,15 +429,12 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
               </div>
             </div>
             <div className="col-span-3">
-              <input
-                type="number"
-                inputMode="decimal"
-                min="0"
-                value={set.weight}
-                onChange={e => updateSet(idx, 'weight', e.target.value)}
+              <WeightInput
+                valueLb={set.weight}
+                unit={weightUnit}
+                onCommit={(lbStr) => updateSet(idx, 'weight', lbStr)}
                 onFocus={handleFocus}
                 onBlur={handleBlur}
-                placeholder="-"
                 className={`w-full text-center py-2 border rounded-lg outline-none font-bold text-base sm:text-sm transition-all ${isPR
                   ? 'bg-streak-soft border-streak-soft-border focus:border-streak'
                   : set.completed
@@ -488,6 +512,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
       isOpen={showCalculator}
       onClose={() => setShowCalculator(false)}
       onApply={handleApplyWeight}
+      unit={weightUnit}
     /> </div>
 );
 }
