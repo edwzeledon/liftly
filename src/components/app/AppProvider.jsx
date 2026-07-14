@@ -275,11 +275,15 @@ export default function AppProvider({ children }) {
   };
 
   const handleLogout = async () => {
+    try { sessionStorage.removeItem('snapcal_addfood_draft'); } catch { /* ignore */ }
     loggingOutRef.current = true; // set BEFORE signOut — its auth event nulls `user` ahead of the replace below
-    await supabase.auth.signOut();
-    // R2 behavioral addition: routed app has no LandingPage fallback of its own,
-    // so send the signed-out user back to the public landing route.
-    router.replace('/');
+    try {
+      await supabase.auth.signOut();
+    } finally {
+      // R2 behavioral addition: routed app has no LandingPage fallback of its own,
+      // so send the signed-out user back to the public landing route.
+      router.replace('/');
+    }
   };
 
   // --- Derived State ---
