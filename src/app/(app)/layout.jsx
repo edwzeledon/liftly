@@ -37,12 +37,14 @@ function AppShell({ children }) {
 
   // Auth gate: once the session resolves, bounce unauthed users to the landing
   // auth view, preserving the intended destination. Redirect lives in the effect
-  // (no setState) to stay eslint-safe.
+  // (no setState) to stay eslint-safe. Skipped during an intentional logout —
+  // handleLogout sets loggingOutRef before signOut (whose auth event nulls `user`
+  // ahead of handleLogout's own replace('/')) and owns that navigation.
   useEffect(() => {
-    if (!app.loading && !app.user) {
+    if (!app.loading && !app.user && !app.loggingOutRef.current) {
       router.replace(`/?auth=1&next=${encodeURIComponent(pathname)}`);
     }
-  }, [app.loading, app.user, pathname, router]);
+  }, [app.loading, app.user, app.loggingOutRef, pathname, router]);
 
   if (app.loading) {
     return (

@@ -4,7 +4,7 @@
 // Holds all auth/data state, effects, handlers, and derived values that the SPA's
 // tab blocks and chrome consume. Exposes them via useApp(). Copy semantics this
 // task: page.jsx keeps its own copy until R3 deletes it.
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import { getLogs, getUserSettings, updateUserSettings, updateLog, getDailyStats, updateDailyStats, getWorkoutLogs, getActiveWorkoutLogs } from '@/lib/api';
@@ -38,6 +38,12 @@ export default function AppProvider({ children }) {
   const [showActionSheet, setShowActionSheet] = useState(false);
   const [bumpSkipped, setBumpSkipped] = useState(false);
   const [staleData, setStaleData] = useState(false); // fetchData failed → showing cached data
+  // Logout coordination: signOut() notifies onAuthStateChange subscribers (user →
+  // null) BEFORE handleLogout's own replace('/') line runs, so the app layout's
+  // auth gate would race in a `/?auth=1&next=...` redirect. The gate skips its
+  // redirect while this flag is set; handleLogout owns the navigation. No reset
+  // needed — the provider unmounts when the user leaves the app tree.
+  const loggingOutRef = useRef(false);
   const { toastEl, showToast } = useToast();
 
   // Stable date key (en-CA => YYYY-MM-DD) for per-day training-bump skip state
@@ -269,6 +275,7 @@ export default function AppProvider({ children }) {
   };
 
   const handleLogout = async () => {
+    loggingOutRef.current = true; // set BEFORE signOut — its auth event nulls `user` ahead of the replace below
     await supabase.auth.signOut();
     // R2 behavioral addition: routed app has no LandingPage fallback of its own,
     // so send the signed-out user back to the public landing route.
@@ -351,6 +358,7 @@ export default function AppProvider({ children }) {
     setShowActionSheet,
     bumpSkipped,
     staleData,
+    loggingOutRef,
     showToast,
     toastEl,
     // Handlers

@@ -16,7 +16,6 @@ export default function RootPage() {
       if (session?.user) {
         router.replace('/today');
       } else {
-        // eslint-disable-next-line react-hooks/set-state-in-effect -- async session resolution, not synchronous render state
         setChecking(false);
       }
     });
