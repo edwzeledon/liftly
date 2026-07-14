@@ -408,7 +408,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate, weightUnit = 'lb'
     <div className="space-y-3">
       <div className="grid grid-cols-10 gap-2 px-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider text-center">
         <div className="col-span-1">Set</div>
-        <div className="col-span-3">{weightUnit === 'kg' ? 'Kg' : 'Lbs'}</div>
+        <div className="col-span-3">{weightUnit === 'kg' ? 'Kg' : 'Lb'}</div>
         <div className="col-span-3">Reps</div>
         <div className="col-span-2">Done</div>
         <div className="col-span-1"></div>

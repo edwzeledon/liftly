@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import { getLogs, getUserSettings, updateUserSettings, updateLog, getDailyStats, updateDailyStats, getWorkoutLogs, getActiveWorkoutLogs } from '@/lib/api';
 import { useToast } from '@/hooks/useToast';
+import { toLb } from '@/lib/units';
 
 const AppContext = createContext(null);
 
@@ -282,7 +283,7 @@ export default function AppProvider({ children }) {
         try {
             await updateDailyStats({
                 date: new Date().toLocaleDateString('en-CA'),
-                weight: data.originalWeight
+                weight: toLb(data.originalWeight, data.weightUnit === 'kg' ? 'kg' : 'lb')
             });
         } catch (e) {
             console.error("Error logging initial weight", e);
