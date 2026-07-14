@@ -135,7 +135,10 @@ export async function POST(request) {
   // Settings screen sends preferences alone).
   if (body.weightUnit) updates.weight_unit = body.weightUnit === 'kg' ? 'kg' : 'lb';
   if (body.waterGoal !== undefined) {
-    updates.water_goal = Math.min(16, Math.max(4, parseInt(body.waterGoal) || 8));
+    const parsedWaterGoal = parseInt(body.waterGoal);
+    updates.water_goal = Number.isFinite(parsedWaterGoal)
+      ? Math.min(16, Math.max(4, parsedWaterGoal))
+      : 8;
   }
 
   const { data, error } = await supabase
