@@ -4,13 +4,28 @@ import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Utensils, Image as ImageIcon, Trash2, Edit2, Dumbbell, X } from 'lucide-react';
 import { deleteLog, deleteWorkoutLog } from '@/lib/api';
+import { formatWeight } from '@/lib/units';
+import SegmentedControl from '@/components/ui/SegmentedControl';
 import ConfirmModal from './ConfirmModal';
 import WorkoutCard from './workout/WorkoutCard';
+import { useToast } from '@/hooks/useToast';
 
-export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted, onEditLog }) {
+const VIEW_MODES = [{ label: 'Meals', value: 'meals' }, { label: 'Workouts', value: 'workouts' }];
+
+export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted, onEditLog, weightUnit = 'lb' }) {
   const [viewMode, setViewMode] = useState('workouts'); // 'meals' | 'workouts'
   const [editingDay, setEditingDay] = useState(null); // { label, logs }
   const [optimisticallyDeletedIds, setOptimisticallyDeletedIds] = useState(new Set());
+  const { toastEl, showToast } = useToast();
+
+  const unhideLog = (logId) => {
+    setOptimisticallyDeletedIds(prev => {
+      const next = new Set(prev);
+      next.delete(logId);
+      return next;
+    });
+  };
+
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
     title: '',
@@ -21,27 +36,54 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
 
   const handleDeleteLog = async (logId, exerciseName = null) => {
     if(!user) return;
-    
+
+    // Meal rows: optimistic hide + undoable toast. The real deleteLog runs on the
+    // toast's onCommit; Undo cancels it. No confirm dialog for single meals.
+    if (viewMode === 'meals') {
+      setOptimisticallyDeletedIds(prev => new Set(prev).add(logId));
+      showToast({
+        message: 'Meal deleted',
+        action: {
+          label: 'Undo',
+          onAction: () => unhideLog(logId),
+        },
+        onCommit: () => {
+          deleteLog(logId, user.id)
+            .then(async () => {
+              if (onLogDeleted) await onLogDeleted();
+              // Prune the id once the refetch has landed — the row is gone from
+              // props by now, so this can't flash it back.
+              unhideLog(logId);
+            })
+            .catch((e) => {
+              console.error("Error deleting", e);
+              // Commit failed: unhide and surface the error.
+              unhideLog(logId);
+              showToast({ message: "Couldn't delete meal", variant: 'error' });
+            });
+        },
+      });
+      return;
+    }
+
+    // Workout rows keep the confirm dialog (destructive, no undo path).
     setConfirmModal({
       isOpen: true,
       title: 'Delete Entry',
       message: 'Are you sure you want to delete this entry? This cannot be undone.',
       isDestructive: true,
+      confirmLabel: 'Delete',
       onConfirm: async () => {
         setConfirmModal(prev => ({ ...prev, isOpen: false }));
-        
+
         // Optimistic update
         setOptimisticallyDeletedIds(prev => new Set(prev).add(logId));
 
         try {
-          if (viewMode === 'meals') {
-            await deleteLog(logId, user.id);
-          } else {
-            await deleteWorkoutLog(logId);
-            // Clear PR cache if exercise name is provided
-            if (exerciseName) {
-              localStorage.removeItem(`snapcal_pr_${exerciseName}`);
-            }
+          await deleteWorkoutLog(logId);
+          // Clear PR cache if exercise name is provided
+          if (exerciseName) {
+            localStorage.removeItem(`snapcal_pr_${exerciseName}`);
           }
           if (onLogDeleted) onLogDeleted();
         } catch (e) {
@@ -65,6 +107,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
       title: 'Delete Workout Session',
       message: 'Are you sure you want to delete this entire workout session? All exercises will be removed.',
       isDestructive: true,
+      confirmLabel: 'Delete',
       onConfirm: async () => {
         setConfirmModal(prev => ({ ...prev, isOpen: false }));
         
@@ -109,6 +152,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
       title: 'Delete Day Logs',
       message: 'Are you sure you want to delete all meal logs for this day?',
       isDestructive: true,
+      confirmLabel: 'Delete',
       onConfirm: async () => {
         setConfirmModal(prev => ({ ...prev, isOpen: false }));
         
@@ -209,47 +253,26 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
   return (
     <div className="p-6 md:p-0 min-h-full pb-20 md:pb-0">
       <div className="flex items-center justify-between mb-6 md:mb-8">
-        <h2 className="text-2xl font-bold text-slate-800">History</h2>
-        
-        <div className="flex bg-slate-100 p-1 rounded-xl">
-          <button
-            onClick={() => setViewMode('meals')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              viewMode === 'meals' 
-                ? 'bg-white text-indigo-600 shadow-sm' 
-                : 'text-slate-500 hover:text-slate-700'
-            }`}
-          >
-            Meals
-          </button>
-          <button
-            onClick={() => setViewMode('workouts')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              viewMode === 'workouts' 
-                ? 'bg-white text-indigo-600 shadow-sm' 
-                : 'text-slate-500 hover:text-slate-700'
-            }`}
-          >
-            Workouts
-          </button>
-        </div>
+        <h2 className="text-2xl font-bold text-foreground">History</h2>
+
+        <SegmentedControl options={VIEW_MODES} value={viewMode} onChange={setViewMode} />
       </div>
-      
+
       {/* Edit Workout Modal */}
       {editingDay && (
-        <div className="fixed inset-0 z-50 flex flex-col bg-slate-50 animate-in slide-in-from-bottom-10">
-          <div className="bg-white border-b border-slate-200 pt-safe shrink-0">
+        <div className="fixed inset-0 z-50 flex flex-col bg-background animate-in slide-in-from-bottom-10">
+          <div className="bg-card border-b border-border pt-safe shrink-0">
             <div className="px-6 py-4 flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold text-slate-800">Edit Workout</h2>
-                <p className="text-sm text-slate-500">{editingDay.label}</p>
+                <h2 className="text-xl font-bold text-foreground">Edit Workout</h2>
+                <p className="text-sm text-muted-foreground">{editingDay.label}</p>
               </div>
-              <button 
+              <button
                 onClick={() => {
                   setEditingDay(null);
                   if (onLogDeleted) onLogDeleted(); // Refresh parent data
                 }}
-                className="p-2 bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200 transition-colors"
+                className="p-2 bg-muted rounded-full text-muted-foreground hover:bg-muted/80 transition-colors"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -260,9 +283,9 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
             <div className="max-w-xl mx-auto space-y-4">
               {viewMode === 'workouts' ? (
                 editingDay.logs.map(log => (
-                  <WorkoutCard 
-                    key={log.id} 
-                    log={log} 
+                  <WorkoutCard
+                    key={log.id}
+                    log={log}
                     onDelete={(id) => {
                       // Handle delete within modal
                       handleDeleteLog(id, log.exercise || log.exercise_name);
@@ -272,28 +295,29 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
                       }));
                     }}
                     onUpdate={handleUpdateLog}
+                    weightUnit={weightUnit}
                   />
                 ))
               ) : (
                 editingDay.logs.map(log => (
-                  <div key={log.id} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex justify-between items-center">
+                  <div key={log.id} className="bg-card p-4 rounded-2xl border border-border flex justify-between items-center">
                      <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${log.method === 'ai-scan' ? 'bg-purple-100 text-purple-600' : 'bg-slate-100 text-slate-500'}`}>
+                        <div className={`p-2 rounded-lg ${log.method === 'ai-scan' ? 'bg-ai-soft-border text-ai' : 'bg-muted text-muted-foreground'}`}>
                           {log.method === 'ai-scan' ? <ImageIcon className="w-4 h-4" /> : <Utensils className="w-4 h-4" />}
                         </div>
                         <div>
-                          <p className="font-medium text-slate-800">{log.food_item}</p>
-                          <p className="text-xs text-slate-400">{log.calories} cal</p>
+                          <p className="font-medium text-foreground">{log.food_item}</p>
+                          <p className="text-xs font-display font-semibold tabular-nums text-muted-foreground">{log.calories} kcal</p>
                         </div>
                      </div>
                      <div className="flex items-center gap-2">
-                        <button 
+                        <button
                           onClick={() => onEditLog(log)}
-                          className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                          className="p-2 text-faint hover:text-training-text hover:bg-training-soft rounded-lg transition-colors"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
-                        <button 
+                        <button
                            onClick={() => {
                              handleDeleteLog(log.id);
                              setEditingDay(prev => ({
@@ -301,7 +325,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
                                logs: prev.logs.filter(l => l.id !== log.id)
                              }));
                            }}
-                           className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                           className="p-2 text-faint hover:text-destructive-text hover:bg-destructive/10 rounded-lg transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -310,7 +334,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
                 ))
               )}
               {editingDay.logs.length === 0 && (
-                <div className="text-center py-12 text-slate-400">
+                <div className="text-center py-12 text-muted-foreground">
                   <p>No entries left in this session.</p>
                 </div>
               )}
@@ -320,7 +344,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
       )}
 
       {groupedLogs.length === 0 ? (
-         <div className="flex flex-col items-center justify-center h-64 text-slate-400 bg-white rounded-3xl border border-slate-100">
+         <div className="flex flex-col items-center justify-center h-64 text-muted-foreground bg-card rounded-2xl border border-border">
            {viewMode === 'meals' ? (
              <Utensils className="w-12 h-12 mb-2 opacity-20" />
            ) : (
@@ -340,56 +364,56 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
               exit={{ opacity: 0, y: -20, scale: 0.95 }}
               transition={{ duration: 0.2 }}
             >
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 sticky top-0 bg-slate-50 py-2 z-10 backdrop-blur-sm">
+              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3 sticky top-0 bg-background/90 backdrop-blur py-2 z-10">
                 {label}
               </h3>
-              
+
               {viewMode === 'workouts' ? (
                 // Grouped Workout Card
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden p-5">
-                  <div className="flex justify-between items-center mb-4 border-b border-slate-50 pb-4">
+                <div className="bg-card rounded-2xl border border-border overflow-hidden p-5">
+                  <div className="flex justify-between items-center mb-4 border-b border-border pb-4">
                     <div>
-                      <h4 className="font-bold text-slate-800 text-lg">Workout Session</h4>
-                      <p className="text-xs text-slate-400">
+                      <h4 className="font-bold text-foreground text-lg">Workout Session</h4>
+                      <p className="text-xs text-muted-foreground">
                         {dayLogs.length} Exercises • {formatDuration(dayLogs[0]?.duration)}
                       </p>
                     </div>
                     <div className="flex gap-1">
-                      <button 
+                      <button
                         onClick={() => setEditingDay({ label, logs: dayLogs })}
-                        className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                        className="p-2 text-faint hover:text-training-text hover:bg-training-soft rounded-lg transition-colors"
                         title="Edit Session"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
-                      <button 
+                      <button
                         onClick={() => handleDeleteDayWorkout(dayLogs)}
-                        className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        className="p-2 text-faint hover:text-destructive-text hover:bg-destructive/10 rounded-lg transition-colors"
                         title="Delete Session"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-3">
                     {dayLogs.map((log) => {
                       const bestSet = getBestSet(log.sets);
                       return (
-                        <div key={log.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                        <div key={log.id} className="flex items-center justify-between p-3 bg-muted rounded-xl">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-indigo-600 font-bold text-xs shadow-sm">
+                            <div className="w-8 h-8 rounded-lg bg-card flex items-center justify-center text-training-text font-bold text-xs">
                               {(log.exercise || log.exercise_name || '?').charAt(0)}
                             </div>
                             <div>
-                              <p className="font-bold text-slate-700 text-sm">{log.exercise || log.exercise_name}</p>
-                              <p className="text-xs text-slate-400">{log.sets?.length || 0} Sets</p>
+                              <p className="font-bold text-foreground text-sm">{log.exercise || log.exercise_name}</p>
+                              <p className="text-xs text-muted-foreground">{log.sets?.length || 0} Sets</p>
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="text-xs text-slate-400 uppercase font-bold tracking-wider mb-0.5">Best Set</p>
-                            <p className="font-mono text-sm font-medium text-slate-800">
-                              {bestSet ? `${bestSet.weight}lbs × ${bestSet.reps}` : '-'}
+                            <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider mb-0.5">Best Set</p>
+                            <p className="font-display text-sm font-semibold tabular-nums text-foreground">
+                              {bestSet ? `${formatWeight(bestSet.weight, weightUnit)} × ${bestSet.reps}` : '-'}
                             </p>
                           </div>
                         </div>
@@ -399,50 +423,50 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
                 </div>
               ) : (
                 // Grouped Meal Card
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden p-5">
-                  <div className="flex justify-between items-center mb-4 border-b border-slate-50 pb-4">
+                <div className="bg-card rounded-2xl border border-border overflow-hidden p-5">
+                  <div className="flex justify-between items-center mb-4 border-b border-border pb-4">
                     <div>
-                      <h4 className="font-bold text-slate-800 text-lg">Daily Nutrition</h4>
-                      <p className="text-xs text-slate-400">
-                        {dayLogs.length} Meals • {dayLogs.reduce((sum, item) => sum + (parseInt(item.calories)||0), 0)} Calories
+                      <h4 className="font-bold text-foreground text-lg">Daily Nutrition</h4>
+                      <p className="text-xs text-muted-foreground">
+                        {dayLogs.length} Meals • {dayLogs.reduce((sum, item) => sum + (parseInt(item.calories)||0), 0)} kcal
                       </p>
                     </div>
                     <div className="flex gap-1">
-                      <button 
+                      <button
                         onClick={() => setEditingDay({ label, logs: dayLogs })}
-                        className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                        className="p-2 text-faint hover:text-training-text hover:bg-training-soft rounded-lg transition-colors"
                         title="Edit Meals"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
-                      <button 
+                      <button
                         onClick={() => handleDeleteDayMeals(dayLogs)}
-                        className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        className="p-2 text-faint hover:text-destructive-text hover:bg-destructive/10 rounded-lg transition-colors"
                         title="Delete All Meals"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-3">
                     {dayLogs.map((log) => (
-                      <div key={log.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl group">
+                      <div key={log.id} className="flex items-center justify-between p-3 bg-muted rounded-xl group">
                         <div className="flex items-center gap-3">
-                           <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs shadow-sm ${log.method === 'ai-scan' ? 'bg-purple-100 text-purple-600' : 'bg-white text-slate-500'}`}>
+                           <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs ${log.method === 'ai-scan' ? 'bg-ai-soft-border text-ai' : 'bg-card text-muted-foreground'}`}>
                              {log.method === 'ai-scan' ? <ImageIcon className="w-4 h-4" /> : <Utensils className="w-4 h-4" />}
                            </div>
                            <div>
-                             <p className="font-bold text-slate-700 text-sm">{log.food_item}</p>
-                             <p className="text-xs text-slate-400 flex flex-wrap gap-2">
+                             <p className="font-bold text-foreground text-sm">{log.food_item}</p>
+                             <p className="text-xs text-muted-foreground flex flex-wrap gap-2">
                                <span>{new Date(log.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                                {(log.protein || log.carbs || log.fats) && (
                                  <>
-                                   <span className="text-slate-300">•</span>
+                                   <span className="text-faint">•</span>
                                    <span className="flex gap-1">
-                                     {log.protein > 0 && <span className="text-blue-600 font-medium">P:{log.protein}</span>}
-                                     {log.carbs > 0 && <span className="text-amber-600 font-medium">C:{log.carbs}</span>}
-                                     {log.fats > 0 && <span className="text-rose-600 font-medium">F:{log.fats}</span>}
+                                     {log.protein > 0 && <span className="text-protein-text font-medium">P:{log.protein}</span>}
+                                     {log.carbs > 0 && <span className="text-carb font-medium">C:{log.carbs}</span>}
+                                     {log.fats > 0 && <span className="text-fat font-medium">F:{log.fats}</span>}
                                    </span>
                                  </>
                                )}
@@ -450,7 +474,7 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
                            </div>
                         </div>
                         <div className="text-right">
-                          <span className="font-mono text-sm font-medium text-slate-800">{log.calories} cal</span>
+                          <span className="font-display text-sm font-semibold tabular-nums text-foreground">{log.calories} kcal</span>
                         </div>
                       </div>
                     ))}
@@ -462,14 +486,16 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
           </AnimatePresence>
         </div>
       )}
-      <ConfirmModal 
+      <ConfirmModal
         isOpen={confirmModal.isOpen}
         title={confirmModal.title}
         message={confirmModal.message}
         onConfirm={confirmModal.onConfirm}
         onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
         isDestructive={confirmModal.isDestructive}
+        confirmLabel={confirmModal.confirmLabel}
       />
+      {toastEl}
     </div>
   );
 }

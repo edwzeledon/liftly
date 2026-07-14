@@ -1,64 +1,99 @@
-import React, { useState, useEffect } from 'react';
-import { Flame, Sparkles, Check, X, Beef, Wheat, Droplet, Brain } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Flame, Sparkles, Brain } from 'lucide-react';
+import CountUp from './CountUp';
+import { useModalBehavior } from '@/hooks/useModalBehavior';
 
-const CircleChart = ({ value, max, color, label, icon: Icon, onClick }) => {
-  const [isMounted, setIsMounted] = useState(false);
-
+const DualRing = ({ protein, proteinGoal, calories, calorieGoal, baseCalorieGoal, onEditProtein }) => {
+  const [mounted, setMounted] = useState(false);
   useEffect(() => {
-    const timer = setTimeout(() => setIsMounted(true), 100);
-    return () => clearTimeout(timer);
+    const t = setTimeout(() => setMounted(true), 100);
+    return () => clearTimeout(t);
   }, []);
 
-  const radius = 36;
-  const circumference = 2 * Math.PI * radius;
-  const targetPercent = Math.min(Math.max(value / max, 0), 1);
-  const percent = isMounted ? targetPercent : 0;
-  const offset = circumference - (percent * circumference);
+  const outer = { r: 42, w: 9 }; // protein
+  const inner = { r: 31, w: 5 }; // calories
+  const ring = (r) => 2 * Math.PI * r;
+  const pct = (v, m) => Math.min(Math.max(v / (m || 1), 0), 1);
+  const offset = (r, v, m) => ring(r) - (mounted ? pct(v, m) : 0) * ring(r);
+  // ghost notch: marks the base (rest-day) goal position on the calorie ring
+  const notchAngle = pct(baseCalorieGoal, calorieGoal) * 360 - 90;
 
   return (
-    <div className="flex flex-col items-center gap-3 cursor-pointer group" onClick={onClick}>
-      <div className="relative w-48 h-48 lg:w-40 lg:h-40 flex items-center justify-center">
-        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 96 96">
-          <circle
-            cx="48"
-            cy="48"
-            r={radius}
-            fill="transparent"
-            stroke="currentColor"
-            strokeWidth="6"
-            className="text-slate-100"
-          />
-          <circle
-            cx="48"
-            cy="48"
-            r={radius}
-            fill="transparent"
-            stroke="currentColor"
-            strokeWidth="6"
-            strokeDasharray={circumference}
-            strokeDashoffset={offset}
-            strokeLinecap="round"
-            className={`${color} transition-all duration-700 ease-out`}
-          />
-        </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <Icon className={`w-6 h-6 mb-1 ${color.replace('text-', 'text-opacity-80 text-')}`} />
-          <span className="text-2xl font-bold text-slate-700">{value}</span>
-          <span className="text-xs text-slate-400 font-medium">/ {max}</span>
-          <span className="text-[10px] text-slate-400 font-medium mt-1">
-            {max - value > 0 ? `${max - value} left` : `${value - max} over`}
-          </span>
-        </div>
-      </div>
-      <span className="text-sm font-semibold text-slate-500 group-hover:text-indigo-600 transition-colors">{label}</span>
+    <div className="relative w-64 h-64 md:w-72 md:h-72 mx-auto">
+      <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r={outer.r} fill="none" strokeWidth={outer.w} className="stroke-muted" stroke="currentColor" />
+        <circle cx="50" cy="50" r={outer.r} fill="none" strokeWidth={outer.w} strokeLinecap="round"
+          stroke="var(--color-protein)" strokeDasharray={ring(outer.r)} strokeDashoffset={offset(outer.r, protein, proteinGoal)}
+          className="transition-all duration-700 ease-out motion-reduce:transition-none" />
+        <circle cx="50" cy="50" r={inner.r} fill="none" strokeWidth={inner.w} className="stroke-muted" stroke="currentColor" />
+        <circle cx="50" cy="50" r={inner.r} fill="none" strokeWidth={inner.w} strokeLinecap="round"
+          stroke="var(--color-ring-calorie)" strokeDasharray={ring(inner.r)} strokeDashoffset={offset(inner.r, calories, calorieGoal)}
+          className="transition-all duration-700 ease-out motion-reduce:transition-none" />
+        {baseCalorieGoal !== calorieGoal && (
+          /* Invariant: notch must sit at the base-goal fraction along the calorie arc; the arc starts at 12 o'clock (svg -rotate-90), and this line is drawn at svg-top, so it needs rotate(notchAngle + 180). */
+          <line x1="50" y1={50 - inner.r - inner.w / 2} x2="50" y2={50 - inner.r + inner.w / 2}
+            stroke="var(--color-ring-notch)" strokeWidth="1.5" transform={`rotate(${notchAngle + 180} 50 50)`} />
+        )}
+      </svg>
+      <button onClick={onEditProtein}
+        className="absolute inset-0 flex flex-col items-center justify-center rounded-full focus-visible:ring-2 focus-visible:ring-protein"
+        aria-label={`Protein ${protein} of ${proteinGoal} grams. Edit goal.`}>
+        <CountUp value={protein} className="font-display text-6xl md:text-7xl font-black text-foreground tabular-nums leading-none" />
+        <span className="text-sm font-semibold text-protein-text tabular-nums">/ {proteinGoal} g protein</span>
+        <span className="text-sm text-muted-foreground tabular-nums mt-1">{calories} / {calorieGoal} kcal · {Math.max(0, calorieGoal - calories)} left</span>
+      </button>
     </div>
   );
 };
 
-export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, todaysLogs, onUpdateGoal, onSuggestMeal, onAnalyzeDay, suggestionCount = 0, overviewCount = 0, streak = 0, streakStatus = 'broken' }) {
-  const remaining = dailyGoal - caloriesToday;
+const MacroBar = ({ label, value, max, barClass, onClick }) => (
+  <button onClick={onClick} className="flex-1 text-left group" aria-label={`${label} ${value} of ${max} grams. Edit goal.`}>
+    <div className="flex justify-between text-xs font-semibold mb-1">
+      <span className="text-muted-foreground group-hover:text-foreground">{label}</span>
+      <span className="text-faint tabular-nums">{value} / {max} g</span>
+    </div>
+    <div className="h-2 rounded-full bg-muted overflow-hidden">
+      <div className={`h-full rounded-full ${barClass} transition-all duration-700 motion-reduce:transition-none`}
+        style={{ width: `${Math.min(100, (value / (max || 1)) * 100)}%` }} />
+    </div>
+  </button>
+);
+
+export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, todaysLogs, onUpdateGoal, onSuggestMeal, onAnalyzeDay, suggestionCount = 0, overviewCount = 0, streak = 0, streakStatus = 'broken', trainingDay = false, calorieOffset = 0, trainingOffset = 250, offsetSkipped = false, onToggleBumpSkip }) {
   const [editingGoal, setEditingGoal] = useState(null);
   const [tempGoalValue, setTempGoalValue] = useState('');
+  const [showBumpPopover, setShowBumpPopover] = useState(false);
+  const bumpRef = useRef(null);
+  const bumpTriggerRef = useRef(null);
+
+  // Goal-editor overlay: Escape-to-close, scroll lock, focus capture/restore.
+  // The training-bump popover below has its own Escape/outside-click effect, but
+  // the two are mutually exclusive — opening the editor from the popover's Adjust
+  // button first sets showBumpPopover=false, so the popover's keydown listener is
+  // unregistered before this one runs. No Escape double-handling can occur.
+  const { closeRef: goalCloseRef } = useModalBehavior(!!editingGoal, () => setEditingGoal(null));
+
+  // Close the training-bump popover on outside click or Escape
+  useEffect(() => {
+    if (!showBumpPopover) return;
+    const handleClick = (e) => {
+      if (bumpRef.current && !bumpRef.current.contains(e.target)) {
+        setShowBumpPopover(false);
+      }
+    };
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setShowBumpPopover(false);
+        bumpTriggerRef.current?.focus();
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showBumpPopover]);
 
   const suggestionDisabled = suggestionCount >= 1;
   const overviewDisabled = overviewCount >= 1;
@@ -78,122 +113,142 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
     fats: macroGoals?.fats || Math.round((dailyGoal * 0.3) / 9)
   };
 
+  // Rest-day offset is intentionally not applied here; if a rest-offset UI is ever added, apply calorieOffset unconditionally to match the budget math in page.jsx/Dashboard.jsx.
+  const effectiveCalorieGoal = currentGoals.calories + (trainingDay ? calorieOffset : 0);
+  const remaining = effectiveCalorieGoal - caloriesToday;
+
   const handleStartEdit = (type, value) => {
     setEditingGoal(type);
     setTempGoalValue(value.toString());
   };
 
-  // Lock body scroll when editing
-  useEffect(() => {
-    if (editingGoal) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [editingGoal]);
+  // (Body scroll lock for the goal editor is now handled by useModalBehavior.)
 
   const handleSaveGoal = () => {
     if (editingGoal === 'calories') {
       onUpdateGoal({ dailyGoal: parseInt(tempGoalValue) });
+    } else if (editingGoal === 'trainingOffset') {
+      onUpdateGoal({ trainingDayOffset: parseInt(tempGoalValue) });
     } else {
       onUpdateGoal({ [`${editingGoal}Goal`]: parseInt(tempGoalValue) });
     }
     setEditingGoal(null);
   };
 
+  const editLabel = editingGoal === 'trainingOffset' ? 'training bump' : editingGoal;
+
   return (
-    <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-full -mr-10 -mt-10 blur-2xl opacity-50"></div>
-      
-      <div className="relative z-10 mb-6">
-        <div className="flex justify-between items-start mb-6">
-          <div>
-            <h2 className="text-2xl font-bold text-slate-800">Daily Progress</h2>
-            <p className="text-slate-500 text-sm">Tap any ring to edit your goal</p>
-            {streakStatus === 'at_risk' && streak > 0 && (
-              <p className="text-xs font-medium text-rose-500 mt-1 animate-pulse">
-                🔥 Log a meal today to keep your {streak} day streak!
-              </p>
-            )}
-          </div>
+    <div className="px-6 pt-2 pb-6 md:px-0 relative">
+      <div className="mb-6">
+        {/* Status row: training pill (or Rest day) on the left, streak chip on the right */}
+        <div className="flex items-center justify-between mb-4">
+          {(trainingDay || offsetSkipped) ? (
+            <div ref={bumpRef} className="relative inline-block">
+              <button
+                ref={bumpTriggerRef}
+                onClick={() => setShowBumpPopover((v) => !v)}
+                aria-expanded={showBumpPopover}
+                aria-haspopup="dialog"
+                className={`px-3 py-1 rounded-full text-xs font-bold border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                  trainingDay
+                    ? 'bg-training-soft text-training-text border-training-soft-border'
+                    : 'bg-muted text-faint border-border'
+                }`}
+              >
+                {trainingDay ? `Training day +${calorieOffset}` : 'Training bump off (+0)'}
+              </button>
+              {showBumpPopover && (
+                <div role="dialog" aria-label="Training bump options"
+                  className="absolute top-full left-0 mt-2 bg-card rounded-2xl border border-border p-4 w-64 z-20">
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Training days adjust your calorie target. Base goal stays marked on the ring.
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => { setShowBumpPopover(false); handleStartEdit('trainingOffset', trainingOffset); }}
+                      className="flex-1 py-2 text-xs font-bold bg-muted rounded-xl text-muted-foreground hover:bg-muted/80 transition-colors">
+                      Adjust
+                    </button>
+                    <button
+                      onClick={() => { setShowBumpPopover(false); onToggleBumpSkip && onToggleBumpSkip(); }}
+                      className="flex-1 py-2 text-xs font-bold bg-training text-white rounded-xl hover:bg-training/90 transition-colors">
+                      {trainingDay ? 'Skip today' : 'Re-apply'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <span className="text-faint text-xs">Rest day</span>
+          )}
           {streak > 0 && (
             <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border animate-in fade-in slide-in-from-right-4 ${
-              streakStatus === 'safe' 
-                ? 'bg-orange-50 border-orange-100' 
-                : 'bg-slate-50 border-slate-100'
+              streakStatus === 'safe'
+                ? 'bg-streak-soft border-streak-soft-border'
+                : 'bg-muted border-border'
             }`}>
               <Flame className={`w-5 h-5 ${
-                streakStatus === 'safe' ? 'text-orange-500 fill-orange-500' : 'text-slate-300 fill-slate-300'
+                streakStatus === 'safe' ? 'text-streak fill-streak' : 'text-faint fill-faint'
               }`} />
               <span className={`font-bold text-lg ${
-                streakStatus === 'safe' ? 'text-orange-600' : 'text-slate-400'
+                streakStatus === 'safe' ? 'text-streak' : 'text-faint'
               }`}>{streak}</span>
             </div>
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 justify-items-center">
-          <CircleChart 
-            value={caloriesToday} 
-            max={currentGoals.calories} 
-            color="text-indigo-500" 
-            label="Calories" 
-            icon={Flame}
-            onClick={() => handleStartEdit('calories', currentGoals.calories)}
-          />
-          <CircleChart 
-            value={macros.protein} 
-            max={currentGoals.protein} 
-            color="text-blue-500" 
-            label="Protein" 
-            icon={Beef}
-            onClick={() => handleStartEdit('protein', currentGoals.protein)}
-          />
-          <CircleChart 
-            value={macros.carbs} 
-            max={currentGoals.carbs} 
-            color="text-amber-500" 
-            label="Carbs" 
-            icon={Wheat}
-            onClick={() => handleStartEdit('carbs', currentGoals.carbs)}
-          />
-          <CircleChart 
-            value={macros.fats} 
-            max={currentGoals.fats} 
-            color="text-rose-500" 
-            label="Fats" 
-            icon={Droplet}
-            onClick={() => handleStartEdit('fats', currentGoals.fats)}
-          />
+        {streakStatus === 'at_risk' && streak > 0 && (
+          <p className="text-xs font-medium text-destructive-text mb-4">
+            Log food or train today to keep your {streak} day streak!
+          </p>
+        )}
+
+        <DualRing
+          protein={macros.protein} proteinGoal={currentGoals.protein}
+          calories={caloriesToday} calorieGoal={effectiveCalorieGoal} baseCalorieGoal={currentGoals.calories}
+          onEditProtein={() => handleStartEdit('protein', currentGoals.protein)}
+        />
+        <div className="flex gap-6 mt-6">
+          <MacroBar label="Carbs" value={macros.carbs} max={currentGoals.carbs} barClass="bg-carb"
+            onClick={() => handleStartEdit('carbs', currentGoals.carbs)} />
+          <MacroBar label="Fats" value={macros.fats} max={currentGoals.fats} barClass="bg-fat"
+            onClick={() => handleStartEdit('fats', currentGoals.fats)} />
+        </div>
+        <div className="mt-3">
+          <button onClick={() => handleStartEdit('calories', currentGoals.calories)}
+            className="text-xs font-semibold text-faint hover:text-muted-foreground">
+            Edit calorie goal
+          </button>
         </div>
       </div>
 
       {/* Edit Goal Overlay */}
       {editingGoal && (
-        <div className="fixed inset-0 z-100 bg-white/95 backdrop-blur-sm flex items-center justify-center p-6 animate-in fade-in duration-200">
-            <div className="w-full max-w-sm">
-                <h3 className="text-xl font-bold text-slate-800 mb-2 text-center capitalize">Update {editingGoal} Goal</h3>
-                <p className="text-slate-400 text-sm text-center mb-6">Enter your new daily target</p>
-                
+        <div className="fixed inset-0 z-100 bg-card/95 backdrop-blur-sm flex items-center justify-center p-6 animate-in fade-in duration-200" onClick={() => setEditingGoal(null)}>
+            <div className="w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+                <h3 className="text-xl font-bold text-foreground mb-2 text-center capitalize">Update {editLabel}{editingGoal === 'trainingOffset' ? '' : ' Goal'}</h3>
+                <p className="text-faint text-sm text-center mb-6">
+                  {editingGoal === 'trainingOffset' ? 'Extra calories added on training days' : 'Enter your new daily target'}
+                </p>
+
                 <div className="flex gap-3">
-                    <input 
-                        type="number" 
+                    <label className="sr-only" htmlFor="goal-input">Enter {editLabel} goal</label>
+                    <input
+                        ref={goalCloseRef}
+                        id="goal-input"
+                        type="number"
                         value={tempGoalValue}
                         onChange={e => setTempGoalValue(e.target.value)}
-                        className="flex-1 px-4 py-3 rounded-2xl border-2 border-indigo-100 text-2xl font-bold text-center text-slate-800 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 outline-none transition-all"
-                        autoFocus
+                        className="flex-1 px-4 py-3 rounded-2xl border-2 border-training-soft-border text-2xl font-bold text-center text-foreground focus:border-ring focus:ring-4 focus:ring-ring/20 outline-none transition-all"
                         placeholder="0"
                         onKeyDown={(e) => e.key === 'Enter' && handleSaveGoal()}
                     />
                 </div>
                 <div className="flex gap-3 mt-4">
-                    <button onClick={() => setEditingGoal(null)} className="flex-1 py-3 bg-slate-100 text-slate-500 font-bold rounded-xl hover:bg-slate-200 transition-colors">
+                    <button onClick={() => setEditingGoal(null)} className="flex-1 py-3 bg-muted text-muted-foreground font-bold rounded-xl hover:bg-muted/80 transition-colors">
                         Cancel
                     </button>
-                    <button onClick={handleSaveGoal} className="flex-1 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200">
+                    <button onClick={handleSaveGoal} disabled={Number.isNaN(parseInt(tempGoalValue))} className={`flex-1 py-3 font-bold rounded-xl transition-colors ${Number.isNaN(parseInt(tempGoalValue)) ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-40' : 'bg-training text-white hover:bg-training/90'}`}>
                         Save
                     </button>
                 </div>
@@ -202,30 +257,30 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
       )}
 
       {/* AI Suggestion Buttons */}
-      <div className="mt-2 pt-4 border-t border-slate-50 flex gap-3">
-        <button 
+      <div className="mt-2 pt-4 border-t border-border flex gap-3">
+        <button
           onClick={onSuggestMeal}
           disabled={suggestionDisabled}
           className={`flex-1 flex items-center justify-center gap-2 text-sm font-semibold transition-colors px-4 py-2 rounded-xl active:scale-95 ${
-            suggestionDisabled 
-              ? 'bg-slate-100 text-slate-400 cursor-not-allowed' 
-              : 'text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100'
+            suggestionDisabled
+              ? 'bg-muted text-faint cursor-not-allowed'
+              : 'text-training-text hover:text-training-text/80 bg-training-soft hover:bg-training-soft-border'
           }`}
         >
           <Sparkles className="w-4 h-4" />
-          {remaining > 0 ? "Chef's Suggestion" : "Diet Rescue"} {suggestionDisabled ? "(0/1)" : "(1/1)"}
+          {remaining > 0 ? "Chef's Suggestion" : "Diet Rescue"} ({suggestionDisabled ? 0 : 1} of 1 left)
         </button>
-        <button 
+        <button
           onClick={onAnalyzeDay}
           disabled={overviewDisabled}
           className={`flex-1 flex items-center justify-center gap-2 text-sm font-semibold transition-colors px-4 py-2 rounded-xl active:scale-95 ${
-            overviewDisabled 
-              ? 'bg-slate-100 text-slate-400 cursor-not-allowed' 
-              : 'text-purple-600 hover:text-purple-800 bg-purple-50 hover:bg-purple-100'
+            overviewDisabled
+              ? 'bg-muted text-faint cursor-not-allowed'
+              : 'text-ai hover:text-ai/80 bg-ai-soft hover:bg-ai-soft-border'
           }`}
         >
           <Brain className="w-4 h-4" />
-          Daily Overview {overviewDisabled ? "(0/1)" : "(1/1)"}
+          Daily Overview ({overviewDisabled ? 0 : 1} of 1 left)
         </button>
       </div>
     </div>

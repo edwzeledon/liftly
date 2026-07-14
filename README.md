@@ -1,42 +1,49 @@
-# Liftly - AI-Powered Nutrition Tracker
+# Liftly — The Lifting App Where Nutrition Serves Your Training
 
-Liftly is an intelligent nutrition tracking application that simplifies the process of logging meals. By leveraging computer vision and AI, it transforms the tedious task of manual calorie counting into a seamless, single-step process.
+Liftly is a strength-training app that makes it effortless to track workouts, fuel your training, and visualize progress. Every feature is built around one mission: help lifters train harder, smarter, and more consistently by removing friction from workout logging and nutrition tracking.
 
 ## Inspiration
-I wanted an easier way to track calories because its a pain by hand. Most calorie trackers make you search for ingredients, guess portion sizes, and log everything by hand. Liftly solves that by “seeing” your food and logging it automatically, so hitting your nutrition goals doesn’t feel like a chore.
+I wanted to build something for lifters who already care about their training. Most fitness apps make you choose: do I track my workout or my nutrition? Liftly lets you do both seamlessly. Log a PR in seconds, snap your meal and get macros instantly, and never miss a day because the UI is faster than your phone’s camera app.
 
 ## What it does
-Liftly provides a comprehensive dashboard for tracking daily nutrition and fitness.
-*   **AI Food Scanning:** Users can snap a photo of their meal, and the app automatically identifies the food, estimates portion sizes, and calculates calories and macros (Protein, Carbs, Fats).
-*   **Workout Tracking:** A complete workout logger allowing users to track exercises, sets, reps, and weight, with features like history pre-filling to ensure progressive overload.
-*   **Gamified Consistency:** A streak system that tracks consecutive days of logging to keep users motivated and accountable.
-*   **Smart Dashboard:** Visualizes daily progress with dynamic circular charts for calories and macros.
-*   **Intelligent Insights:** Offers "Chef's Suggestions" for healthy meal ideas based on remaining macro goals and a "Daily Overview" that analyzes eating patterns.
-*   **Secure Tracking:** Keeps a secure, persistent history of all logs, workouts, and user settings.
+Liftly integrates training and nutrition into a unified app designed for strength athletes:
+*   **Workout Tracking with PR Detection:** Log exercises, sets, reps, and weight. The app auto-fills history and flags personal records to celebrate progress. Includes a plate calculator for barbell math.
+*   **Quick Protein 2-Tap Logging:** Save preset meals (e.g., “Chicken + Rice + Broccoli”) and log protein intake in two taps. Editable presets let you adapt on the fly.
+*   **Training-Day-Aware Nutrition Targets:** Automatically adjust calorie targets on training days (+250 kcal default). Skip or manually adjust the pill per session.
+*   **Training × Nutrition Insights:** Weekly volume vs. protein chart, PRs on nutrition timeline, weight trend vs. calorie balance. Locked until 7 food-logged days to ensure data quality.
+*   **Weekly AI Review:** Once per week, get a 4-part structured summary: training volume, fuel quality, weekly win, and one focus area.
+*   **AI Food Scanning (Power Tool):** Snap a photo of your meal (5/day limit), and Gemini instantly returns calories and macros. Manual logging remains available.
 
 ## How I built it
-*   **Next.js 14 (App Router):** Serves as the full-stack framework, handling both the React frontend and server-side API routes for optimal performance.
-*   **Google Gemini Vision API:** The core intelligence engine that analyzes food images and returns structured nutritional JSON data.
-*   **Supabase (PostgreSQL):** Manages the relational database for user logs and settings, utilizing Row Level Security (RLS) for robust data privacy.
-*   **Tailwind CSS:** Used for styling a responsive, mobile-first interface with a clean, modern aesthetic.
-*   **Framer Motion:** Powers the smooth animations and transitions, particularly in the authentication and modal interfaces.
+*   **Next.js 15 (App Router) + React 19:** Full-stack framework handling frontend and server-side API routes. Server Actions power form submissions and database mutations.
+*   **Google Gemini (3.5-flash, 2.5 fallback):** Multimodal vision model analyzing food images and returning structured JSON macros. Rate-limited to 5 scans/day server-side.
+*   **Supabase (PostgreSQL + RLS):** Relational database for logs, workouts, daily stats, and user settings. Row-level security ensures users only access their own data.
+*   **Tailwind CSS 4 + Framer Motion:** Mobile-first responsive styling with smooth animations on entry sheets, modals, and the hero ring.
+*   **Recharts:** Data visualization for weekly volume charts, PR timelines, and weight trends.
+*   **Jest:** 25 passing unit tests covering `workoutStats`, `streak`, and `insights` utilities.
 
 ## Challenges I ran into
-*   **Prompt Engineering:** Fine-tuning the Gemini API prompts to consistently return valid JSON without hallucinating non-existent ingredients was a significant iteration process.
-*   **State Management:** Coordinating the optimistic UI updates (updating the dashboard immediately before the server responds) to ensure the app felt instant and responsive.
-*   **Rate Limiting:** Implementing a secure, database-backed rate limiting system to restrict expensive AI calls (3 scans/day) without relying solely on client-side logic.
+*   **Prompt Engineering:** Tuning Gemini prompts to parse macros consistently without hallucinating ingredients—especially protein-heavy meals and prepared foods that don't have standard labels.
+*   **Optimistic UI Updates:** Coordinating instant dashboard feedback (streak ring animations, calorie ring updates, weight chart) before server responses to keep the app snappy on mobile networks.
+*   **Secure Rate Limiting:** Implementing database-backed rate limiting (5 AI scans/day) at the server layer to prevent client-side bypass, while keeping the UX frictionless on hits.
 
 ## Accomplishments that I'm proud of
-*   **Seamless Image-to-Data Pipeline:** Successfully reducing the time it takes to log a complex meal from ~45 seconds to under 5 seconds.
-*   **Security First:** Implementing strict Row Level Security (RLS) policies that ensure users can strictly only access their own data, even if the API layer were compromised.
-*   **Mobile-First Design:** Creating a "floating card" interface for the camera that adapts perfectly from desktop drag-and-drop to a native-feeling mobile full-screen experience.
+*   **Sub-5-Second Meal Logging:** Image-to-structured-macros pipeline that gets from camera roll to dashboard in under 5 seconds—faster than searching a food database by hand.
+*   **Database-Level Security:** Row-level security (RLS) policies ensuring users can *only* access their own data, even if the API were compromised. Schema migrations tracked in version control.
+*   **Adaptive UI by Device:** The camera interface scales from desktop drag-and-drop to full-screen mobile native feel; insights charts reflow from overlays (desktop) to small multiples (375px mobile).
 
 ## What I learned
-*   **Server Actions:** Gained deep experience in using Next.js Server Actions to handle form submissions and database mutations securely.
-*   **AI Integration:** Learned the nuances of working with multimodal AI models (text + image) and how to handle non-deterministic outputs in a structured application.
-*   **Database Design:** Reinforced the importance of normalized schemas and database-level security policies.
+*   **Next.js Server Actions:** Deep experience building forms, database mutations, and AI calls server-side. RLS policies pair naturally with Server Actions—no separate API auth layer needed.
+*   **Multimodal AI in Production:** How to structure prompts for consistent JSON output, handle image resize/quality tradeoffs, and implement tiered fallbacks (3.5-flash → 2.5 on quota).
+*   **Training Data Visualization:** How lifters think about progress (PRs matter more than raw volume; weight trends need context). Charts need custom tooltips and mobile collapse strategies.
 
 ## What's next for Liftly
-*   **Recipe Generation:** Expanding the "Chef's Suggestion" to generate full shopping lists and step-by-step recipes.
-*   **Social Features:** Allowing users to share meal photos and progress with friends for accountability.
-*   **Wearable Integration:** Syncing data with Apple Health and Google Fit.
+*   **Adaptive TDEE Coaching:** Track calorie vs. weight trends and auto-adjust TDEE targets to keep weight progress on track week-over-week.
+*   **Quick Protein Chips in Quick-Log Sheet:** Mirror Quick Protein chips into the quick-log sheet for streamlined meal logging.
+*   **Wearable Integration:** Sync with Apple Health and Oura for sleep/HRV context on recovery and training readiness.
+
+---
+
+## Codebase & Architecture
+
+See `docs/codebase-reference.md` for a guided tour of workoutStats, streak, and insights utilities. Design spec: `docs/superpowers/specs/2026-07-11-lifter-first-repositioning-design.md`. Full implementation plan: `docs/superpowers/plans/2026-07-11-lifter-first-repositioning.md`.

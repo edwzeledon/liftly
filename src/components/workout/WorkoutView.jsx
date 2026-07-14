@@ -1,13 +1,18 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Dumbbell, Plus, Download, Folder, Save, Ban, Check, Trophy, X, Play, Trash2, Loader2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import WorkoutCard from './WorkoutCard';
 import PickerView from './PickerView';
+import SessionTimer from './SessionTimer';
 import ConfirmModal from '../ConfirmModal';
 
 import { getExercises } from '@/lib/api';
+import { logsVolume } from '@/lib/workoutStats';
+import { toDisplayVolume } from '@/lib/units';
+import { useToast } from '@/hooks/useToast';
+import { useModalBehavior } from '@/hooks/useModalBehavior';
 
-export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [], onUpdateLogs }) {
+export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [], onUpdateLogs, weightUnit = 'lb' }) {
   // Use props for logs if available, otherwise fallback to local state (though props should always be there now)
   const [localLogs, setLocalLogs] = useState([]);
   const workoutLogs = onUpdateLogs ? initialLogs : localLogs;
@@ -25,12 +30,32 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
     }
   };
 
+  const { toastEl, showToast } = useToast();
   const [showPicker, setShowPicker] = useState(false);
   const [completedAnimation, setCompletedAnimation] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
-  const [elapsedTime, setElapsedTime] = useState(0);
-  const [timerInterval, setTimerInterval] = useState(null);
   const [allExercises, setAllExercises] = useState([]);
+  const [exercisesLoading, setExercisesLoading] = useState(true);
+  const [exercisesError, setExercisesError] = useState(null);
+
+  // Session start timestamp for the sticky-header timer. A ref, not state:
+  // SessionTimer now owns its own 1s tick internally (see SessionTimer.jsx), so
+  // WorkoutView no longer needs to re-render every second just to show elapsed
+  // time. Derived synchronously in render (not an effect) from workoutLogs[0]'s
+  // persisted date — same source the old ticking-state version used — so the
+  // very first render that shows the sticky header already has a valid
+  // startedAt; an effect would run one tick after the render and could leave
+  // SessionTimer reading a stale/null value until some unrelated re-render.
+  // No pause/resume/accumulated-offset state existed in the prior
+  // implementation — elapsed time was always freshly derived from the first
+  // log's timestamp (that's what gave it reload/cross-device persistence), so
+  // there is nothing to preserve beyond that derivation.
+  const sessionStartRef = useRef(null);
+  if (workoutLogs.length > 0 && !showSummary) {
+    sessionStartRef.current = new Date(workoutLogs[0].date).getTime();
+  } else if (workoutLogs.length === 0) {
+    sessionStartRef.current = null;
+  }
   
   // Confirmation Modal State
   const [confirmModal, setConfirmModal] = useState({
@@ -49,6 +74,14 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
   const [templateName, setTemplateName] = useState('');
   const [templates, setTemplates] = useState([]);
 
+  // Escape/scroll-lock/focus for the three inline overlays. Always-mounted
+  // component with per-overlay open booleans; the close handlers are referenced
+  // via inline arrows so these can sit above their definitions. Only one of the
+  // three is ever open at a time, so their Escape listeners never overlap.
+  const { closeRef: summaryCloseRef } = useModalBehavior(showSummary, () => closeSummary());
+  const { closeRef: saveTemplateCloseRef } = useModalBehavior(showSaveTemplate, () => setShowSaveTemplate(false));
+  const { closeRef: loadTemplateCloseRef } = useModalBehavior(showLoadTemplate, () => setShowLoadTemplate(false));
+
   // Fetch Logs
   const fetchLogs = async () => {
     if (!user) return;
@@ -63,44 +96,6 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       console.error("Error fetching logs", e);
     }
   };
-
-  // Timer Logic
-  useEffect(() => {
-    if (workoutLogs.length > 0 && !showSummary) {
-      // Use the timestamp of the first exercise as the start time
-      // This ensures persistence across reloads/devices
-      const startTime = new Date(workoutLogs[0].date).getTime();
-      
-      const updateTimer = () => {
-        const now = Date.now();
-        const seconds = Math.floor((now - startTime) / 1000);
-        setElapsedTime(seconds > 0 ? seconds : 0);
-      };
-
-      updateTimer(); // Immediate update
-      
-      // Clear any existing interval
-      if (timerInterval) clearInterval(timerInterval);
-
-      const interval = setInterval(updateTimer, 1000);
-      setTimerInterval(interval);
-
-      return () => clearInterval(interval);
-    } else if (showSummary) {
-      // Stop timer but keep elapsed time for summary display
-      if (timerInterval) {
-        clearInterval(timerInterval);
-        setTimerInterval(null);
-      }
-    } else {
-      // Reset if no logs and not showing summary
-      setElapsedTime(0);
-      if (timerInterval) {
-        clearInterval(timerInterval);
-        setTimerInterval(null);
-      }
-    }
-  }, [workoutLogs, showSummary]);
 
   const formatTime = (seconds) => {
     const hrs = Math.floor(seconds / 3600);
@@ -144,19 +139,23 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
   };
 
   const fetchExercises = async () => {
+    setExercisesLoading(true);
+    setExercisesError(null);
+
     const cacheKey = 'snapcal_exercises_list';
     const cached = localStorage.getItem(cacheKey);
-    
+
     // Use cache if available
     if (cached) {
       try {
         setAllExercises(JSON.parse(cached));
+        setExercisesLoading(false);
         return;
       } catch (e) {
         console.error("Error parsing cached exercises", e);
       }
     }
-    
+
     // Fetch from API and cache
     try {
       const data = await getExercises();
@@ -164,6 +163,9 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       localStorage.setItem(cacheKey, JSON.stringify(data));
     } catch (error) {
       console.error("Failed to load exercises", error);
+      setExercisesError("Couldn't load exercises. Check your connection and try again.");
+    } finally {
+      setExercisesLoading(false);
     }
   };
 
@@ -421,6 +423,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       title: 'Delete Template',
       message: 'Are you sure you want to delete this workout template? This cannot be undone.',
       isDestructive: true,
+      confirmLabel: 'Delete',
       onConfirm: async () => {
         setConfirmModal(prev => ({ ...prev, isOpen: false }));
         
@@ -456,6 +459,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       title: 'Remove Exercise',
       message: 'Are you sure you want to remove this exercise from your workout?',
       isDestructive: true,
+      confirmLabel: 'Remove',
       onConfirm: async () => {
         setConfirmModal(prev => ({ ...prev, isOpen: false }));
         
@@ -474,13 +478,9 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
         setWorkoutLogs(newLogs);
 
         // If this was the last exercise, clean up session state locally
+        // (sessionStartRef resets itself on the next render once workoutLogs is empty)
         if (newLogs.length === 0) {
             localStorage.removeItem('snapcal_activeWorkoutLogs');
-            setElapsedTime(0);
-            if (timerInterval) {
-                clearInterval(timerInterval);
-                setTimerInterval(null);
-            }
         }
 
         try {
@@ -490,7 +490,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
           if (!res.ok) {
             // Revert on failure
             setWorkoutLogs(previousLogs);
-            alert("Failed to delete workout");
+            showToast({ message: "Couldn't delete exercise", variant: 'error' });
             return;
           }
 
@@ -502,18 +502,29 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
           // Revert on error
           setWorkoutLogs(previousLogs);
           console.error("Error deleting workout", e);
+          showToast({ message: "Couldn't delete exercise", variant: 'error' });
         }
       }
     });
   }
 
   // Summary State
-  const [summaryData, setSummaryData] = useState({ duration: 0, count: 0 });
+  const [summaryData, setSummaryData] = useState({ duration: 0, count: 0, volume: 0 });
   const [isFinishing, setIsFinishing] = useState(false);
+  // Reentrancy guard for submitWorkout. A ref (not the isFinishing state) because
+  // the Retry toast action holds a stale closure whose isFinishing snapshot is
+  // always false — the ref is read live, so a double-tapped Retry can't double-POST.
+  const finishingRef = useRef(false);
 
   const submitWorkout = async () => {
     if (!user) return;
+    if (finishingRef.current) return; // already in flight — ignore reentrant calls
+    finishingRef.current = true;
     setIsFinishing(true);
+    // Captured once, up front, so the duration sent to /finish and the duration
+    // shown in the summary modal are the exact same number (previously both
+    // read the same ticking `elapsedTime` state; now both read this one value).
+    const sessionDuration = Math.floor((Date.now() - (sessionStartRef.current ?? Date.now())) / 1000);
     try {
       // 1. Prune incomplete sets and delete empty logs
       const results = await Promise.all(workoutLogs.map(async (log) => {
@@ -542,10 +553,8 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       if (validLogIds.length === 0) {
           // No valid logs, delete the session entirely
           await fetch('/api/workouts/active-session', { method: 'DELETE' });
-          
-          // Clear local state/cache
-          if (timerInterval) clearInterval(timerInterval);
-          setTimerInterval(null);
+
+          // Clear local cache (sessionStartRef resets itself once workoutLogs is empty)
           Object.keys(localStorage).forEach(key => {
             if (key.startsWith('snapcal_history_')) {
                 localStorage.removeItem(key);
@@ -558,9 +567,10 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       const res = await fetch('/api/workouts/finish', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          duration: elapsedTime,
-          ids: validLogIds
+        body: JSON.stringify({
+          duration: sessionDuration,
+          ids: validLogIds,
+          localDate: new Date().toLocaleDateString('en-CA')
         })
       });
 
@@ -602,43 +612,52 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
         
         // Capture summary data BEFORE clearing logs via onWorkoutComplete
         setSummaryData({
-          duration: elapsedTime,
+          duration: sessionDuration,
           count: workoutLogs.length,
-          records: recordsCount
+          records: recordsCount,
+          // Volume of work actually saved: completed sets only (incomplete sets are
+          // discarded on finish). Reuses the shared logsVolume helper — no new state.
+          volume: logsVolume(workoutLogs.map(l => ({ ...l, sets: (l.sets || []).filter(s => s.completed) })))
         });
         
         setCompletedAnimation(true);
         setShowSummary(true);
         setConfirmModal(prev => ({ ...prev, isOpen: false }));
         
-        // Trigger Celebration Confetti
-        const duration = 2000;
-        const end = Date.now() + duration;
+        // Trigger Celebration Confetti — skipped under prefers-reduced-motion.
+        // canvas-confetti is a raw canvas particle burst outside Tailwind's
+        // motion-reduce variant system; full-viewport particles for 2s are
+        // exactly the large-scale motion that preference exists to suppress.
+        // The trophy/summary UI still conveys the celebration without it.
+        const reduceMotion = typeof window !== 'undefined' &&
+          window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
-        (function frame() {
-          confetti({
-            particleCount: 5,
-            angle: 60,
-            spread: 55,
-            origin: { x: 0 },
-            colors: ['#FFD700', '#FFA500', '#6366f1']
-          });
-          confetti({
-            particleCount: 5,
-            angle: 120,
-            spread: 55,
-            origin: { x: 1 },
-            colors: ['#FFD700', '#FFA500', '#6366f1']
-          });
+        if (!reduceMotion) {
+          const duration = 2000;
+          const end = Date.now() + duration;
 
-          if (Date.now() < end) {
-            requestAnimationFrame(frame);
-          }
-        }());
+          (function frame() {
+            confetti({
+              particleCount: 5,
+              angle: 60,
+              spread: 55,
+              origin: { x: 0 },
+              colors: ['#FFD700', '#FFA500', '#6366f1']
+            });
+            confetti({
+              particleCount: 5,
+              angle: 120,
+              spread: 55,
+              origin: { x: 1 },
+              colors: ['#FFD700', '#FFA500', '#6366f1']
+            });
 
-        if (timerInterval) clearInterval(timerInterval);
-        setTimerInterval(null);
-        
+            if (Date.now() < end) {
+              requestAnimationFrame(frame);
+            }
+          }());
+        }
+
         // Clear workout history caches so next workout gets fresh data
         Object.keys(localStorage).forEach(key => {
           if (key.startsWith('snapcal_history_')) {
@@ -647,10 +666,29 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
         });
         
         if (onWorkoutComplete) onWorkoutComplete();
+      } else {
+        // Finish failed: leave the session fully intact (logs kept, timer still
+        // running) and offer a Retry. submitWorkout is safe to call again — the
+        // prune/delete steps are idempotent and no state has been cleared.
+        console.error("Failed to finish workout", res.status);
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        showToast({
+          message: "Couldn't save your workout",
+          variant: 'error',
+          action: { label: 'Retry', onAction: submitWorkout },
+        });
       }
     } catch (e) {
       console.error("Error finishing workout", e);
+      // Network/throw failure: session state is untouched; let the user retry.
+      setConfirmModal(prev => ({ ...prev, isOpen: false }));
+      showToast({
+        message: "Couldn't save your workout",
+        variant: 'error',
+        action: { label: 'Retry', onAction: submitWorkout },
+      });
     } finally {
+      finishingRef.current = false;
       setIsFinishing(false);
     }
   };
@@ -667,7 +705,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
         title: 'Incomplete Sets',
         message: 'Any incomplete sets will be discarded. Are you sure you want to finish?',
         isDestructive: false,
-        confirmText: 'Finish Anyway',
+        confirmLabel: 'Finish Anyway',
         onConfirm: async () => {
           await submitWorkout();
         }
@@ -679,7 +717,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
         title: 'Finish Workout',
         message: 'Great job! Are you ready to finish this workout?',
         isDestructive: false,
-        confirmText: 'Finish',
+        confirmLabel: 'Finish',
         onConfirm: async () => {
           await submitWorkout();
         }
@@ -691,7 +729,6 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
     setShowSummary(false);
     setCompletedAnimation(false);
     setWorkoutLogs([]);
-    setElapsedTime(0);
   };
 
   const handleDiscardWorkout = async () => {
@@ -702,6 +739,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       title: 'Discard Workout',
       message: "Are you sure you want to discard today's entire workout? This cannot be undone.",
       isDestructive: true,
+      confirmLabel: 'Discard',
       onConfirm: async () => {
         setConfirmModal(prev => ({ ...prev, isOpen: false }));
         
@@ -717,13 +755,9 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
         });
 
         // Optimistic Update: Clear UI immediately
+        // (sessionStartRef resets itself on the next render once workoutLogs is empty)
         setWorkoutLogs([]);
         localStorage.removeItem('snapcal_activeWorkoutLogs');
-        setElapsedTime(0);
-        if (timerInterval) {
-            clearInterval(timerInterval);
-            setTimerInterval(null);
-        }
 
         try {
           const promises = logsToDelete.map(log => 
@@ -752,10 +786,10 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       
       {/* Celebration Overlay */}
       {completedAnimation && (
-        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/90 backdrop-blur-sm animate-in fade-in duration-500">
-          <Trophy className="w-24 h-24 text-yellow-500 mb-4 animate-bounce" />
-          <h2 className="text-3xl font-bold text-slate-800">Workout Complete!</h2>
-          <p className="text-slate-500">Great job crushing your goals today.</p>
+        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-card/90 backdrop-blur-sm animate-in fade-in duration-500">
+          <Trophy className="w-24 h-24 text-streak mb-4 animate-bounce motion-reduce:animate-none" />
+          <h2 className="text-3xl font-bold text-foreground">Workout Complete!</h2>
+          <p className="text-muted-foreground">Great job crushing your goals today.</p>
         </div>
       )}
 
@@ -766,50 +800,55 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
         onConfirm={confirmModal.onConfirm}
         onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
         isDestructive={confirmModal.isDestructive}
-        confirmText={confirmModal.confirmText}
+        confirmLabel={confirmModal.confirmLabel}
         isLoading={isFinishing}
       />
 
       {/* Summary Modal */}
       {showSummary && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white rounded-3xl p-6 shadow-2xl w-full max-w-sm animate-in zoom-in-95 flex flex-col items-center text-center">
-            <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
-              <Trophy className="w-10 h-10 text-yellow-600" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in" onClick={closeSummary}>
+          <div className="bg-card rounded-2xl p-6 w-full max-w-sm animate-in zoom-in-95 flex flex-col items-center text-center" onClick={(e) => e.stopPropagation()}>
+            <div className="w-20 h-20 bg-streak-soft rounded-full flex items-center justify-center mb-4">
+              <Trophy className="w-10 h-10 text-streak" />
             </div>
-            <h2 className="text-2xl font-bold text-slate-800 mb-2">You Crushed It!</h2>
-            <p className="text-slate-500 mb-6">Here&apos;s your summary:</p>
-            
-            <div className="grid grid-cols-2 gap-4 w-full mb-6">
-              <div className="bg-slate-50 p-4 rounded-2xl">
-                <p className="text-xs text-slate-400 uppercase font-bold tracking-wider mb-1">Duration</p>
-                <p className="text-xl font-bold text-slate-800">{formatTime(summaryData.duration)}</p>
+            <h2 className="text-2xl font-bold text-foreground mb-2">You Crushed It!</h2>
+            <p className="text-muted-foreground mb-6">Here&apos;s your summary:</p>
+
+            <div className="grid grid-cols-3 gap-3 w-full mb-6">
+              <div className="bg-muted rounded-xl p-3 text-center">
+                <p className="font-display text-2xl font-bold tabular-nums text-foreground">{formatTime(summaryData.duration)}</p>
+                <p className="text-xs text-muted-foreground">Duration</p>
               </div>
-              <div className="bg-slate-50 p-4 rounded-2xl">
-                <p className="text-xs text-slate-400 uppercase font-bold tracking-wider mb-1">Exercises</p>
-                <p className="text-xl font-bold text-slate-800">{summaryData.count}</p>
+              <div className="bg-muted rounded-xl p-3 text-center">
+                <p className="font-display text-2xl font-bold tabular-nums text-foreground">{summaryData.count}</p>
+                <p className="text-xs text-muted-foreground">Exercises</p>
+              </div>
+              <div className="bg-muted rounded-xl p-3 text-center">
+                <p className="font-display text-2xl font-bold tabular-nums text-foreground">{toDisplayVolume(summaryData.volume || 0, weightUnit).toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground">Volume</p>
               </div>
             </div>
             
             {/* New Records Section */}
             {summaryData.records > 0 && (
-              <div className="w-full bg-amber-50 p-4 rounded-2xl mb-6 flex items-center justify-between animate-in zoom-in-95 duration-500 delay-150">
+              <div className="w-full bg-streak-soft p-4 rounded-2xl mb-6 flex items-center justify-between animate-in zoom-in-95 duration-500 delay-150">
                  <div className="flex items-center gap-3">
-                   <div className="p-2 bg-amber-100 rounded-full text-amber-600">
+                   <div className="p-2 bg-streak-soft rounded-full text-streak">
                      <Trophy className="w-5 h-5" />
                    </div>
                    <div className="text-left">
-                     <p className="font-bold text-slate-800">New Records</p>
-                     <p className="text-xs text-slate-500">Personal Bests Crushed</p>
+                     <p className="font-bold text-foreground">New Records</p>
+                     <p className="text-xs text-muted-foreground">Personal Bests Crushed</p>
                    </div>
                  </div>
-                 <span className="text-2xl font-bold text-amber-600">{summaryData.records}</span>
+                 <span className="text-2xl font-bold text-streak">{summaryData.records}</span>
               </div>
             )}
 
-            <button 
+            <button
+              ref={summaryCloseRef}
               onClick={closeSummary}
-              className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold shadow-lg hover:bg-slate-800 active:scale-95 transition-all"
+              className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-bold hover:bg-primary/90 active:scale-95 transition-all"
             >
               Close
             </button>
@@ -819,28 +858,28 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
 
       {/* Save Template Modal */}
       {showSaveTemplate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white rounded-3xl p-6 shadow-2xl w-full max-w-sm animate-in zoom-in-95">
-            <h3 className="text-xl font-bold text-slate-800 mb-4">Save Routine</h3>
-            <input 
-              type="text" 
-              placeholder="Routine Name (e.g., Leg Day)" 
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in" onClick={() => setShowSaveTemplate(false)}>
+          <div className="bg-card rounded-2xl p-6 w-full max-w-sm animate-in zoom-in-95" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-xl font-bold text-foreground mb-4">Save Routine</h3>
+            <input
+              ref={saveTemplateCloseRef}
+              type="text"
+              placeholder="Routine Name (e.g., Leg Day)"
               value={templateName}
               onChange={e => setTemplateName(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 mb-4 focus:border-indigo-500 outline-none"
-              autoFocus
+              className="w-full px-4 py-3 rounded-xl border border-border mb-4 focus:border-ring outline-none"
             />
             <div className="flex gap-2">
-              <button 
+              <button
                 onClick={() => setShowSaveTemplate(false)}
-                className="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl font-medium"
+                className="flex-1 py-3 bg-muted text-muted-foreground rounded-xl font-medium"
               >
                 Cancel
               </button>
               <button 
                 onClick={handleSaveTemplate}
                 disabled={!templateName.trim() || isSavingTemplate}
-                className="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-medium disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 py-3 bg-training text-white rounded-xl font-medium disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {isSavingTemplate ? (
                   <>
@@ -858,44 +897,44 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
 
       {/* Load Template Modal */}
       {showLoadTemplate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white rounded-3xl p-6 shadow-2xl w-full max-w-sm animate-in zoom-in-95 max-h-[80vh] flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in" onClick={() => setShowLoadTemplate(false)}>
+          <div className="bg-card rounded-2xl p-6 w-full max-w-sm animate-in zoom-in-95 max-h-[80vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-slate-800">My Routines</h3>
-              <button onClick={() => setShowLoadTemplate(false)} className="p-2 bg-slate-100 rounded-full text-slate-500">
+              <h3 className="text-xl font-bold text-foreground">My Routines</h3>
+              <button ref={loadTemplateCloseRef} onClick={() => setShowLoadTemplate(false)} className="p-2 bg-muted rounded-full text-muted-foreground">
                 <X className="w-4 h-4" />
               </button>
             </div>
-            
+
             <div className="flex-1 overflow-y-auto space-y-2">
               {isLoadingTemplate ? (
-                <div className="flex flex-col items-center justify-center py-12 text-indigo-600">
+                <div className="flex flex-col items-center justify-center py-12 text-training-text">
                   <Loader2 className="w-8 h-8 animate-spin mb-2" />
                   <p className="text-sm font-medium">Loading Routine...</p>
                 </div>
               ) : templates.length === 0 ? (
-                <div className="text-center py-8 text-slate-400">
+                <div className="text-center py-8 text-faint">
                   <Folder className="w-12 h-12 mx-auto mb-2 opacity-20" />
                   <p>No saved templates yet.</p>
                 </div>
               ) : (
                 templates.map(temp => (
-                  <div key={temp.id} className="bg-slate-50 p-4 rounded-xl flex items-center justify-between group">
+                  <div key={temp.id} className="bg-muted p-4 rounded-xl flex items-center justify-between group">
                     <div>
-                      <h4 className="font-bold text-slate-700">{temp.name}</h4>
-                      <p className="text-xs text-slate-400">{temp.exercises.length} Exercises</p>
+                      <h4 className="font-bold text-foreground">{temp.name}</h4>
+                      <p className="text-xs text-faint">{temp.exercises.length} Exercises</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <button 
+                      <button
                         onClick={() => handleLoadTemplate(temp)}
-                        className="p-2 bg-indigo-100 text-indigo-600 rounded-lg hover:bg-indigo-200 transition-colors"
+                        className="p-2 bg-training-soft-border text-training-text rounded-lg hover:bg-training-soft-border/80 transition-colors"
                         title="Load Routine"
                       >
                         <Play className="w-4 h-4 fill-current" />
                       </button>
-                      <button 
+                      <button
                         onClick={() => deleteTemplate(temp.id)}
-                        className="p-2 text-slate-300 hover:text-red-500"
+                        className="p-2 text-faint hover:text-destructive-text"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -908,66 +947,80 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
         </div>
       )}
 
-      {!showPicker && (
-        <div className="flex items-center justify-between mb-6 md:max-w-xl w-full md:mx-auto">
-          <div className="flex flex-col">
-            <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-              <Dumbbell className="w-6 h-6 text-indigo-600" />
-              Lifting Log
-            </h2>
-            {workoutLogs.length > 0 && (
-              <p className="text-sm font-mono text-indigo-600 font-medium ml-8 mt-1">
-                {formatTime(elapsedTime)}
-              </p>
-            )}
-          </div>
-          
-          {/* Finish Workout moved to top right */}
-          {workoutLogs.length > 0 && (
-            <button 
+      {/* Sticky Active Session header (sticks to the page <main> scroll container).
+          -mx / px cancel the WorkoutView root padding (p-6 / md:p-8) so the bar is
+          edge-to-edge with no horizontal scrollbar; inner content stays aligned to
+          the md:max-w-xl list column below. */}
+      {!showPicker && workoutLogs.length > 0 && (
+        <div className="sticky top-0 z-10 -mx-6 md:-mx-8 px-6 md:px-8 py-3 mb-6 bg-background/90 backdrop-blur border-b border-border">
+          <div className="flex items-center justify-between md:max-w-xl w-full md:mx-auto">
+            <div>
+              <h2 className="font-display text-xl font-bold text-foreground">Active Session</h2>
+              <SessionTimer
+                startedAt={sessionStartRef.current ?? Date.now()}
+                className="font-display text-2xl font-bold text-training-text leading-none"
+              />
+            </div>
+
+            {/* Finish Workout — handler + disabled logic preserved; classes restyled */}
+            <button
               onClick={handleCompleteWorkout}
               disabled={!workoutLogs.some(log => log.sets.some(s => s.completed))}
-              className={`px-4 py-2 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2 text-sm ${
+              className={`rounded-xl font-bold transition-all flex items-center gap-2 px-5 py-2.5 ${
                 !workoutLogs.some(log => log.sets.some(s => s.completed))
-                  ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none' 
-                  : 'bg-slate-900 text-white hover:bg-slate-800 active:scale-95'
+                  ? 'bg-muted text-faint cursor-not-allowed'
+                  : 'bg-training text-white active:scale-95'
               }`}
             >
               <Check className="w-4 h-4" />
               Finish
             </button>
-          )}
+          </div>
+        </div>
+      )}
+
+      {!showPicker && workoutLogs.length === 0 && (
+        <div className="flex items-center justify-between mb-6 md:max-w-xl w-full md:mx-auto">
+          <div className="flex flex-col">
+            <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+              <Dumbbell className="w-6 h-6 text-training-text" />
+              Train
+            </h2>
+          </div>
         </div>
       )}
 
       {showPicker ? (
-        <PickerView 
-          onBack={() => setShowPicker(false)} 
-          onAddExercise={handleAddExerciseToDay} 
+        <PickerView
+          onBack={() => setShowPicker(false)}
+          onAddExercise={handleAddExerciseToDay}
           exercises={allExercises}
+          loading={exercisesLoading}
+          error={exercisesError}
+          onRetry={fetchExercises}
         />
       ) : (
         <div className="flex flex-col h-full">
           {/* Today's List */}
           <div className="flex-1 overflow-y-auto space-y-4 pb-4 no-scrollbar md:max-w-xl w-full md:mx-auto">
              {workoutLogs.length === 0 ? (
-               <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
-                 <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm">
-                   <Dumbbell className="w-8 h-8 text-indigo-300" />
+               <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6 bg-muted rounded-2xl border-2 border-dashed border-border">
+                 <div className="w-16 h-16 bg-card rounded-full flex items-center justify-center mb-4">
+                   <Dumbbell className="w-8 h-8 text-training-text/50" />
                  </div>
-                 <h3 className="text-lg font-bold text-slate-700 mb-1">Start your Workout</h3>
-                 <p className="text-slate-400 text-sm mb-6">Add exercises to build your daily plan.</p>
+                 <h3 className="text-lg font-bold text-foreground mb-1">Start your Workout</h3>
+                 <p className="text-faint text-sm mb-6">Add exercises to build your daily plan.</p>
                  <div className="flex flex-col gap-3 w-full">
-                   <button 
+                   <button
                      onClick={() => setShowPicker(true)}
-                     className="w-full px-4 py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-95 flex items-center justify-center gap-2"
+                     className="w-full px-4 py-3 bg-training text-white rounded-xl font-bold hover:bg-training/90 transition-all active:scale-95 flex items-center justify-center gap-2"
                    >
                      <Plus className="w-5 h-5" />
                      Add Exercise
                    </button>
-                   <button 
+                   <button
                      onClick={() => setShowLoadTemplate(true)}
-                     className="w-full px-4 py-3 bg-white border border-indigo-100 text-indigo-600 rounded-xl font-bold hover:bg-indigo-50 transition-all flex items-center justify-center gap-2"
+                     className="w-full px-4 py-3 bg-card border border-training-soft-border text-training-text rounded-xl font-bold hover:bg-training-soft transition-all flex items-center justify-center gap-2"
                    >
                      <Download className="w-5 h-5" />
                      Load Template
@@ -977,19 +1030,20 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
              ) : (
                <>
                  {workoutLogs.map(log => (
-                   <WorkoutCard 
-                      key={log.id} 
-                      log={log} 
-                      onDelete={deleteWorkout} 
+                   <WorkoutCard
+                      key={log.id}
+                      log={log}
+                      onDelete={deleteWorkout}
                       onUpdate={handleUpdateLog}
+                      weightUnit={weightUnit}
                    />
                  ))}
 
                  {/* Add Buttons Row */}
                  <div className="flex gap-2">
-                   <button 
+                   <button
                      onClick={() => setShowPicker(true)}
-                     className="flex-1 py-4 border-2 border-dashed border-indigo-200 rounded-2xl text-indigo-500 font-bold hover:bg-indigo-50 hover:border-indigo-300 transition-all flex items-center justify-center gap-2"
+                     className="flex-1 py-4 border-2 border-dashed border-training-soft-border rounded-2xl text-training-text font-bold hover:bg-training-soft hover:border-training-text/40 transition-all flex items-center justify-center gap-2"
                    >
                      <Plus className="w-5 h-5" />
                      Add Exercise
@@ -998,16 +1052,16 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
 
                  {/* Discard & Save Actions */}
                  <div className="pt-8 pb-4 flex flex-col gap-3">
-                   <button 
+                   <button
                      onClick={() => setShowSaveTemplate(true)}
-                     className="w-full py-3 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-50 transition-all flex items-center justify-center gap-2 text-sm"
+                     className="w-full py-3 bg-card border border-border text-muted-foreground rounded-xl font-bold hover:bg-muted transition-all flex items-center justify-center gap-2 text-sm"
                    >
                      <Save className="w-4 h-4" />
                      Save as Template
                    </button>
                    <button 
                      onClick={handleDiscardWorkout}
-                     className="w-full py-3 bg-red-500 text-white rounded-xl font-bold shadow-lg shadow-red-200 hover:bg-red-600 active:scale-95 transition-all flex items-center justify-center gap-2 text-sm"
+                     className="w-full py-3 bg-destructive text-white rounded-xl font-bold hover:bg-destructive/90 active:scale-95 transition-all flex items-center justify-center gap-2 text-sm"
                    >
                      <Ban className="w-4 h-4" />
                      Discard
@@ -1018,6 +1072,8 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
           </div>
         </div>
       )}
+
+      {toastEl}
     </div>
   );
 }

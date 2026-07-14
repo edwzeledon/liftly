@@ -2,7 +2,7 @@ export default function manifest() {
   return {
     name: 'Liftly',
     short_name: 'Liftly',
-    description: 'AI Powered Calorie Tracker',
+    description: 'The lifting app where nutrition serves your training',
     start_url: '/',
     display: 'standalone',
     background_color: '#3B3042',

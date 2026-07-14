@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { advanceStreak } from '@/lib/streak';
 
 export async function POST(request) {
   const supabase = await createClient();
@@ -29,6 +30,9 @@ export async function POST(request) {
   if (sessionError) {
     return NextResponse.json({ error: sessionError.message }, { status: 500 });
   }
+
+  const today = body.localDate || new Date().toISOString().split('T')[0];
+  await advanceStreak(supabase, user.id, today);
 
   return NextResponse.json({ success: true });
 }

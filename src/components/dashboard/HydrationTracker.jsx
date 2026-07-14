@@ -1,52 +1,41 @@
 import React from 'react';
 import { Droplet } from 'lucide-react';
 
-export default function HydrationTracker({ waterIntake = 0, onUpdateWater }) {
-  
+export default function HydrationTracker({ waterIntake = 0, goal = 8, onUpdateWater }) {
+
   const toggleGlass = (index) => {
-    // If clicking the current level, decrease by 1 (toggle off). 
-    // If clicking a higher level, set to that level (index + 1).
-    // If clicking a lower level, set to that level (index + 1).
-    
-    // Logic: 
-    // If I have 3 glasses (indices 0, 1, 2 are filled).
-    // Clicking index 2 (3rd glass) -> should probably go to 2.
-    // Clicking index 3 (4th glass) -> should go to 4.
-    // Clicking index 0 (1st glass) -> should go to 1.
-    
-    // Let's simplify: Click index `i` sets count to `i + 1`.
-    // Unless we are clicking the last filled one, then maybe toggle off?
-    // Standard star rating behavior: click i -> set to i+1.
-    // If we want to allow clearing, maybe clicking the current max removes it?
-    
+    // Star-rating behavior: click index `i` sets count to `i + 1`.
+    // Clicking the currently-topmost filled glass toggles it off (count - 1).
     const newCount = index + 1 === waterIntake ? index : index + 1;
     onUpdateWater(newCount);
   };
 
   return (
-    <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 h-full flex flex-col justify-center">
-      <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2 shrink-0">
-        <Droplet className="w-5 h-5 text-blue-500" />
+    <div className="bg-card rounded-2xl p-6 border border-border h-full flex flex-col justify-center">
+      <h3 className="font-bold text-foreground mb-4 flex items-center gap-2 shrink-0">
+        <Droplet className="w-5 h-5 text-deficit" />
         Hydration
       </h3>
-      
+
       <div className="flex flex-wrap gap-2 justify-center">
-        {[...Array(8)].map((_, i) => (
+        {[...Array(goal)].map((_, i) => (
           <button
             key={i}
             onClick={() => toggleGlass(i)}
-            className={`p-2 rounded-xl transition-all duration-300 ${
-              i < waterIntake 
-                ? 'bg-blue-500 text-white shadow-md scale-105' 
-                : 'bg-slate-100 text-slate-300 hover:bg-blue-50 hover:text-blue-300'
+            aria-label={`Glass ${i + 1}`}
+            aria-pressed={i < waterIntake}
+            className={`p-2 rounded-xl transition-all duration-300 min-h-11 min-w-11 flex items-center justify-center ${
+              i < waterIntake
+                ? 'bg-deficit text-background scale-105'
+                : 'bg-muted text-faint hover:bg-deficit/15 hover:text-deficit'
             }`}
           >
             <Droplet className={`w-5 h-5 ${i < waterIntake ? 'fill-current' : ''}`} />
           </button>
         ))}
       </div>
-      <p className="text-center text-sm text-slate-400 mt-4 font-medium shrink-0">
-        {waterIntake} / 8 Bottles
+      <p className="text-center text-sm text-faint mt-4 font-medium shrink-0">
+        {waterIntake} / {goal} Glasses
       </p>
     </div>
   );

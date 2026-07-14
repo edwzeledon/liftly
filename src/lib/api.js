@@ -88,27 +88,6 @@ export async function getDailyStats(date) {
   return response.json();
 }
 
-export async function getWeightHistory(range) {
-  const cacheKey = `snapcal_weight_history_${range}`;
-  const cached = localStorage.getItem(cacheKey);
-  
-  // Use cached data if available (persists until new weight logged)
-  if (cached) {
-    try {
-      return JSON.parse(cached);
-    } catch (e) {
-      console.error("Error parsing cached weight history", e);
-    }
-  }
-  
-  // Fetch from API and cache
-  const response = await fetch(`/api/daily-stats?range=${range}`);
-  if (!response.ok) throw new Error('Failed to fetch weight history');
-  const data = await response.json();
-  localStorage.setItem(cacheKey, JSON.stringify(data));
-  return data;
-}
-
 export async function updateDailyStats(data) {
   const response = await fetch('/api/daily-stats', {
     method: 'POST',
@@ -152,4 +131,21 @@ export async function getExercises() {
   const response = await fetch('/api/exercises');
   if (!response.ok) throw new Error('Failed to fetch exercises');
   return response.json();
+}
+
+export async function getInsights(weeks = 4) {
+  const response = await fetch(`/api/insights?weeks=${weeks}`);
+  if (!response.ok) throw new Error('Failed to fetch insights');
+  return response.json();
+}
+
+export async function getWeeklyReview() {
+  const res = await fetch('/api/gemini/text', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: 'weekly-review' }),
+  });
+  const data = await res.json();
+  if (!res.ok) { const err = new Error(data.error || 'Failed'); err.status = res.status; throw err; }
+  return data;
 }

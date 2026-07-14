@@ -58,8 +58,10 @@ export async function POST(request) {
     let bmr = (10 * weight) + (6.25 * height) - (5 * age);
     if (gender === 'male') {
       bmr += 5;
-    } else {
+    } else if (gender === 'female') {
       bmr -= 161;
+    } else {
+      bmr -= 78; // unspecified: midpoint
     }
 
     const tdee = bmr * (ACTIVITY_FACTORS[activity] || 1.2);
@@ -87,6 +89,7 @@ export async function POST(request) {
             // Safety Caps
             if (targetCalories < 1200 && gender === 'female') targetCalories = 1200;
             if (targetCalories < 1500 && gender === 'male') targetCalories = 1500;
+            if (targetCalories < 1350 && gender !== 'male' && gender !== 'female') targetCalories = 1350; // midpoint floor for unspecified
         }
     }
 
@@ -122,7 +125,20 @@ export async function POST(request) {
     if (body.proteinGoal) updates.protein_goal = body.proteinGoal;
     if (body.carbsGoal) updates.carbs_goal = body.carbsGoal;
     if (body.fatsGoal) updates.fats_goal = body.fatsGoal;
+    if (body.trainingDayOffset !== undefined) updates.training_day_calorie_offset = parseInt(body.trainingDayOffset) || 0;
+    if (body.restDayOffset !== undefined) updates.rest_day_calorie_offset = parseInt(body.restDayOffset) || 0;
     if (body.timezone) updates.timezone = body.timezone;
+  }
+
+  // Preference passthroughs — outside the if/else so they apply in both
+  // branches (onboarding carries weightUnit alongside profile data; the
+  // Settings screen sends preferences alone).
+  if (body.weightUnit) updates.weight_unit = body.weightUnit === 'kg' ? 'kg' : 'lb';
+  if (body.waterGoal !== undefined) {
+    const parsedWaterGoal = parseInt(body.waterGoal);
+    updates.water_goal = Number.isFinite(parsedWaterGoal)
+      ? Math.min(16, Math.max(4, parsedWaterGoal))
+      : 8;
   }
 
   const { data, error } = await supabase

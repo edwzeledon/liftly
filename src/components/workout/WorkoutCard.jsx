@@ -2,8 +2,34 @@ import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { CheckCircle, Trash2, Check, X, Plus, Trophy, Calculator } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import PlateCalculator from './PlateCalculator';
+import { toDisplay, toLb } from '@/lib/units';
 
-export default function WorkoutCard({ log, onDelete, onUpdate }) {
+// Controlled lb-state input that edits in the user's display unit. While
+// focused, the raw draft string is shown so typing "102.5" isn't fought by
+// round-trip rounding; state (and storage) stay canonical lb.
+function WeightInput({ valueLb, unit, onCommit, onFocus, onBlur, className }) {
+  const [draft, setDraft] = useState(null);
+  const settled = valueLb === '' || valueLb == null ? '' : String(toDisplay(valueLb, unit));
+  return (
+    <input
+      type="number"
+      inputMode="decimal"
+      min="0"
+      placeholder="-"
+      value={draft !== null ? draft : settled}
+      onChange={(e) => {
+        const raw = e.target.value;
+        setDraft(raw);
+        onCommit(raw === '' ? '' : String(toLb(raw, unit)));
+      }}
+      onFocus={(e) => { setDraft(settled); if (onFocus) onFocus(e); }}
+      onBlur={(e) => { setDraft(null); if (onBlur) onBlur(e); }}
+      className={className}
+    />
+  );
+}
+
+export default function WorkoutCard({ log, onDelete, onUpdate, weightUnit = 'lb' }) {
   const [sets, setSets] = useState(log.sets || []);
   const [bestSet, setBestSet] = useState(null);
   const [showCalculator, setShowCalculator] = useState(false);
@@ -106,17 +132,18 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
   }, [log.exercise_name, log.exercise]);
 
   const handleApplyWeight = (weight) => {
+    const lbStr = String(toLb(weight, weightUnit));
     if (sets.length > 0) {
       // Apply only to sets that are NOT completed
       const newSets = sets.map(set => (
-        set.completed ? set : { ...set, weight: weight }
+        set.completed ? set : { ...set, weight: lbStr }
       ));
       setSets(newSets);
       updateParent(newSets);
       saveSets(newSets); // debounced
     } else {
       // If no sets, create one
-      const newSets = [{ weight: weight, reps: '', completed: false }];
+      const newSets = [{ weight: lbStr, reps: '', completed: false }];
       setSets(newSets);
       updateParent(newSets);
       saveSets(newSets); // debounced
@@ -187,8 +214,14 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
 
     const newSets = [...sets];
     newSets[index][field] = value;
+
+    // Invariant: completed ⇒ weight and reps non-empty; clearing either field un-completes the set.
+    if (newSets[index].completed && (!newSets[index].weight || !newSets[index].reps)) {
+      newSets[index].completed = false;
+    }
+
     setSets(newSets);
-    
+
     // Track that this set has been edited by the user
     userEditedSetsRef.current.add(index);
     
@@ -328,32 +361,34 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
   }, [bestSetIndex, sets]); // Depend on sets to access the data
 
   return (
-  <div className={`bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:border-indigo-100 transition-all ${isTemp ? 'opacity-60' : ''}`}>
+  <div className={`bg-card p-5 rounded-2xl border border-border hover:border-training-soft-border transition-all ${isTemp ? 'opacity-60' : ''}`}>
     <div className="flex justify-between items-start mb-4">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold">
+        <div className="w-10 h-10 rounded-xl bg-training-soft flex items-center justify-center text-training-text font-bold">
           {(log.exercise_name || log.exercise || '?').charAt(0)}
         </div>
         <div>
-          <h3 className="font-bold text-slate-800">{log.exercise_name || log.exercise}</h3>
+          <h3 className="font-bold text-foreground">{log.exercise_name || log.exercise}</h3>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{log.category}</span>
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{log.category}</span>
           </div>
         </div>
       </div>
       <div className="flex items-center gap-1">
         <button
           onClick={() => setShowCalculator(true)}
-          className="p-2 text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors"
+          aria-label="Plate calculator"
+          className="p-2 text-faint hover:text-training-text hover:bg-training-soft rounded-full transition-colors min-h-11 min-w-11 flex items-center justify-center"
           title="Plate Calculator"
         >
           <Calculator className="w-4 h-4" />
         </button>
         <button
           onClick={quickFinish}
-          className={`p-2 rounded-full transition-colors ${allSetsCompleted
-            ? 'text-green-600 bg-green-50 hover:bg-green-100'
-            : 'text-slate-300 hover:text-green-600 hover:bg-green-50'
+          aria-label={allSetsCompleted ? "Mark all sets incomplete" : "Quick finish"}
+          className={`p-2 rounded-full transition-colors min-h-11 min-w-11 flex items-center justify-center ${allSetsCompleted
+            ? 'text-protein-text bg-protein-soft hover:bg-protein-soft/80'
+            : 'text-faint hover:text-protein-text hover:bg-protein-soft'
             }`}
           title={allSetsCompleted ? "Mark all as incomplete" : "Mark all as done"}
         >
@@ -361,7 +396,8 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
         </button>
         <button
           onClick={() => onDelete(log.id)}
-          className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+          aria-label="Delete exercise"
+          className="p-2 text-faint hover:text-destructive-text hover:bg-destructive/10 rounded-full transition-colors min-h-11 min-w-11 flex items-center justify-center"
         >
           <Trash2 className="w-4 h-4" />
         </button>
@@ -370,9 +406,9 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
 
     {/* Inline Sets Editor */}
     <div className="space-y-3">
-      <div className="grid grid-cols-10 gap-2 px-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center">
+      <div className="grid grid-cols-10 gap-2 px-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider text-center">
         <div className="col-span-1">Set</div>
-        <div className="col-span-3">Lbs</div>
+        <div className="col-span-3">{weightUnit === 'kg' ? 'Kg' : 'Lb'}</div>
         <div className="col-span-3">Reps</div>
         <div className="col-span-2">Done</div>
         <div className="col-span-1"></div>
@@ -385,27 +421,25 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
         return (
           <div
             key={idx}
-            className={`grid grid-cols-10 gap-2 items-center transition-all ${set.completed ? (isPR ? 'opacity-100' : 'opacity-50') : 'opacity-100'}`}
+            className={`grid grid-cols-10 gap-2 items-center transition-all ${set.completed && !isPR ? 'bg-protein-soft rounded-lg' : ''}`}
           >
             <div className="col-span-1 flex justify-center">
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${isPR ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-500'}`}>
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${isPR ? 'bg-streak-soft text-streak' : 'bg-muted text-muted-foreground'}`}>
                 {idx + 1}
               </div>
             </div>
             <div className="col-span-3">
-              <input
-                type="number"
-                inputMode="decimal"
-                min="0"
-                value={set.weight}
-                onChange={e => updateSet(idx, 'weight', e.target.value)}
+              <WeightInput
+                valueLb={set.weight}
+                unit={weightUnit}
+                onCommit={(lbStr) => updateSet(idx, 'weight', lbStr)}
                 onFocus={handleFocus}
                 onBlur={handleBlur}
-                disabled={set.completed}
-                placeholder="-"
-                className={`w-full text-center py-2 border rounded-lg outline-none font-bold text-base sm:text-sm disabled:bg-slate-100 transition-all ${isPR
-                  ? 'bg-amber-50 border-amber-200'
-                  : 'bg-slate-50 border-slate-200 text-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100'
+                className={`w-full text-center py-2 border rounded-lg outline-none font-bold text-base sm:text-sm transition-all ${isPR
+                  ? 'bg-streak-soft border-streak-soft-border focus:border-streak'
+                  : set.completed
+                    ? 'bg-protein-soft border-protein-soft text-protein-text focus:border-protein-text'
+                    : 'bg-muted border-border text-foreground focus:border-ring focus:ring-2 focus:ring-ring'
                   }`}
               />
             </div>
@@ -418,22 +452,26 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
                 onChange={e => updateSet(idx, 'reps', e.target.value)}
                 onFocus={handleFocus}
                 onBlur={handleBlur}
-                disabled={set.completed}
                 placeholder="-"
-                className={`w-full text-center py-2 border rounded-lg outline-none font-bold text-base sm:text-sm disabled:bg-slate-100 transition-all ${isPR
-                  ? 'bg-amber-50 border-amber-200'
-                  : 'bg-slate-50 border-slate-200 text-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100'
+                className={`w-full text-center py-2 border rounded-lg outline-none font-bold text-base sm:text-sm transition-all ${isPR
+                  ? 'bg-streak-soft border-streak-soft-border focus:border-streak'
+                  : set.completed
+                    ? 'bg-protein-soft border-protein-soft text-protein-text focus:border-protein-text'
+                    : 'bg-muted border-border text-foreground focus:border-ring focus:ring-2 focus:ring-ring'
                   }`}
               />
             </div>
             <div className="col-span-2 flex justify-center">
               <button
                 onClick={() => toggleSetCompletion(idx)}
-                className={`p-1.5 rounded-lg transition-all shadow-sm ${set.completed
-                  ? 'bg-green-500 text-white ring-2 ring-green-200'
+                disabled={!set.weight || !set.reps}
+                aria-label={`Mark set ${idx + 1} ${set.completed ? 'not done' : 'done'}`}
+                aria-pressed={set.completed}
+                className={`relative p-1.5 rounded-lg transition-all flex items-center justify-center before:absolute before:-inset-2 before:content-[''] ${set.completed
+                  ? 'bg-protein-soft text-protein ring-2 ring-protein/30'
                   : (!set.weight || !set.reps)
-                    ? 'bg-slate-100 text-slate-300 cursor-not-allowed'
-                    : 'bg-slate-200 text-slate-400 hover:bg-slate-300'
+                    ? 'bg-muted text-faint cursor-not-allowed opacity-40'
+                    : 'bg-input text-muted-foreground hover:bg-input/80'
                   }`}
               >
                 {set.completed ? <Check className="w-5 h-5" /> : <Check className="w-5 h-5 opacity-0" />}
@@ -446,13 +484,14 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
               {!set.completed ? (
                 <button
                   onClick={() => removeSet(idx)}
-                  className="text-slate-300 hover:text-red-500 p-1"
+                  aria-label={`Remove set ${idx + 1}`}
+                  className="relative text-faint hover:text-destructive-text p-1 flex items-center justify-center before:absolute before:-inset-2.5 before:content-['']"
                 >
                   <X className="w-4 h-4" />
                 </button>
               ) : isPR && (
-                <div className="animate-in zoom-in duration-500 text-amber-500 drop-shadow-sm">
-                  <Trophy className="w-5 h-5 fill-amber-100" />
+                <div className="animate-in zoom-in duration-500 text-streak">
+                  <Trophy className="w-5 h-5 fill-streak/20" />
                 </div>
               )}
             </div>
@@ -462,7 +501,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
 
       <button
         onClick={addSet}
-        className="w-full py-3 mt-2 border border-dashed border-indigo-200 rounded-xl text-indigo-500 font-bold text-sm hover:bg-indigo-50 transition-all flex items-center justify-center gap-2"
+        className="w-full py-3 mt-2 border border-dashed border-training-soft-border rounded-xl text-training-text font-bold text-sm hover:bg-training-soft transition-all flex items-center justify-center gap-2"
       >
         <Plus className="w-4 h-4" />
         Add Set
@@ -473,6 +512,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate }) {
       isOpen={showCalculator}
       onClose={() => setShowCalculator(false)}
       onApply={handleApplyWeight}
-    />    </div>
+      unit={weightUnit}
+    /> </div>
 );
 }

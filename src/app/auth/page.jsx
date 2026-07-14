@@ -1,22 +1,11 @@
-'use client';
+import { redirect } from 'next/navigation';
 
-import React, { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
-import AuthScreen from '@/components/AuthScreen';
-
-export default function AuthPage() {
-  const router = useRouter();
-
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        router.push('/');
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [router]);
-
-  return <AuthScreen />;
+// Legacy /auth entry point. Forwards to the landing route with ?auth=1 so the
+// LandingPage opens its auth panel. Preserves ?next= (a deep-link destination
+// captured by the (app) layout's auth gate) so post-sign-in navigation can
+// honor it. searchParams is a Promise in Next 15 server components.
+export default async function AuthRedirect({ searchParams }) {
+  const params = await searchParams;
+  const next = params?.next;
+  redirect('/?auth=1' + (next ? `&next=${encodeURIComponent(next)}` : ''));
 }

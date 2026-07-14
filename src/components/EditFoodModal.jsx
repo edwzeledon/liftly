@@ -3,8 +3,12 @@
 import React, { useState } from 'react';
 import { X, Edit2, Loader2, Save } from 'lucide-react';
 import { updateLog } from '@/lib/api';
+import { useModalBehavior } from '@/hooks/useModalBehavior';
 
 export default function EditFoodModal({ log, onClose, onUpdate }) {
+  // Conditionally mounted (parent renders only while editing) — pass `true`;
+  // unmount cleanup restores focus and scroll lock.
+  const { closeRef } = useModalBehavior(true, onClose);
   const [form, setForm] = useState({
     foodItem: log.food_item,
     calories: log.calories,
@@ -23,66 +27,66 @@ export default function EditFoodModal({ log, onClose, onUpdate }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl relative animate-in zoom-in-95 duration-200">
-        <button onClick={onClose} className="absolute top-4 right-4 p-2 bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200 transition-colors">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose}>
+      <div className="bg-card w-full max-w-sm rounded-2xl p-6 relative animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+        <button ref={closeRef} onClick={onClose} className="absolute top-4 right-4 p-2 bg-muted rounded-full text-muted-foreground hover:bg-muted/80 transition-colors">
           <X className="w-4 h-4" />
         </button>
-        
-        <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-          <Edit2 className="w-5 h-5 text-indigo-600" />
+
+        <h3 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
+          <Edit2 className="w-5 h-5 text-training-text" />
           Edit Meal
         </h3>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Food Name</label>
-            <input 
-              type="text" 
+            <label className="block text-xs font-bold text-muted-foreground mb-1 uppercase">Food Name</label>
+            <input
+              type="text"
               value={form.foodItem}
               onChange={e => setForm({...form, foodItem: e.target.value})}
-              className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition-all font-medium text-slate-800"
+              className="w-full px-4 py-2 bg-muted border border-border rounded-xl focus:border-ring focus:ring-2 focus:ring-ring outline-none transition-all font-medium text-foreground"
               required
             />
           </div>
-          
+
           <div>
-            <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">Calories</label>
-            <input 
-              type="number" 
+            <label className="block text-xs font-bold text-muted-foreground mb-1 uppercase">Calories</label>
+            <input
+              type="number"
               value={form.calories}
               onChange={e => setForm({...form, calories: e.target.value})}
-              className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition-all font-bold text-indigo-600"
+              className="w-full px-4 py-2 bg-muted border border-border rounded-xl focus:border-ring focus:ring-2 focus:ring-ring outline-none transition-all font-bold text-training-text"
               required
             />
           </div>
 
           <div className="grid grid-cols-3 gap-3">
              <div>
-              <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase">Protein</label>
-              <input 
-                type="number" 
+              <label className="block text-[10px] font-bold text-faint mb-1 uppercase">Protein</label>
+              <input
+                type="number"
                 value={form.protein}
                 onChange={e => setForm({...form, protein: e.target.value})}
-                className="w-full px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 focus:border-blue-500 outline-none text-sm text-center"
+                className="w-full px-3 py-2 bg-muted rounded-xl border border-border focus:border-protein outline-none text-sm text-center"
               />
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase">Carbs</label>
-              <input 
-                type="number" 
+              <label className="block text-[10px] font-bold text-faint mb-1 uppercase">Carbs</label>
+              <input
+                type="number"
                 value={form.carbs}
                 onChange={e => setForm({...form, carbs: e.target.value})}
-                className="w-full px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 focus:border-amber-500 outline-none text-sm text-center"
+                className="w-full px-3 py-2 bg-muted rounded-xl border border-border focus:border-carb outline-none text-sm text-center"
               />
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-slate-400 mb-1 uppercase">Fats</label>
-              <input 
-                type="number" 
+              <label className="block text-[10px] font-bold text-faint mb-1 uppercase">Fats</label>
+              <input
+                type="number"
                 value={form.fats}
                 onChange={e => setForm({...form, fats: e.target.value})}
-                className="w-full px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 focus:border-rose-500 outline-none text-sm text-center"
+                className="w-full px-3 py-2 bg-muted rounded-xl border border-border focus:border-fat outline-none text-sm text-center"
               />
             </div>
           </div>
@@ -90,7 +94,7 @@ export default function EditFoodModal({ log, onClose, onUpdate }) {
           <button 
             type="submit"
             disabled={saving}
-            className="w-full py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 active:scale-95 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2 mt-2"
+            className="w-full py-3 bg-training text-white font-bold rounded-xl hover:bg-training/90 active:scale-95 transition-all flex items-center justify-center gap-2 mt-2"
           >
             {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
             Save Changes
