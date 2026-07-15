@@ -1,19 +1,15 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, ChevronRight, Utensils, Image as ImageIcon, Trash2, Edit2, Dumbbell, X } from 'lucide-react';
 import { deleteLog, deleteWorkoutLog } from '@/lib/api';
 import { formatWeight, toDisplayVolume } from '@/lib/units';
 import { dayVolumeLb, macroSplit, dayDurationSec } from '@/lib/daySummary';
-import SegmentedControl from '@/components/ui/SegmentedControl';
 import ConfirmModal from './ConfirmModal';
 import WorkoutCard from './workout/WorkoutCard';
 import { useToast } from '@/hooks/useToast';
 import { useModalBehavior } from '@/hooks/useModalBehavior';
-
-const FILTERS = [{ label: 'All', value: 'all' }, { label: 'Meals', value: 'meals' }, { label: 'Workouts', value: 'workouts' }];
-const RANGES = [{ label: '7D', value: 7 }, { label: '30D', value: 30 }, { label: 'All', value: 0 }];
 
 function HistorySkeleton() {
   return (
@@ -37,17 +33,6 @@ function HistoryError({ onRetry }) {
       <p className="text-sm text-muted-foreground mb-3">Couldn&apos;t load your history.</p>
       <button onClick={onRetry} className="px-4 py-2 min-h-11 bg-training text-white text-sm font-bold rounded-xl">
         Retry
-      </button>
-    </div>
-  );
-}
-
-function HistoryRangeEmpty({ rangeDays, onShowAll }) {
-  return (
-    <div className="bg-card rounded-2xl p-6 border border-border text-center">
-      <p className="text-sm text-muted-foreground mb-3">Nothing in the last {rangeDays} days.</p>
-      <button onClick={onShowAll} className="min-h-11 px-3 text-xs font-bold text-training-text">
-        Show all →
       </button>
     </div>
   );
@@ -314,25 +299,19 @@ function DayCard({ label, dayMeals, dayWorkouts, weightUnit, onEditWorkouts, onD
   );
 }
 
-function HistoryEmpty({ filter, onCta }) {
-  const Icon = filter === 'meals' ? Utensils : filter === 'workouts' ? Dumbbell : Calendar;
-  const copy = filter === 'all' ? 'Nothing logged yet' : `No ${filter} logged yet`;
+function HistoryEmpty({ onCta }) {
   return (
     <div className="bg-card rounded-2xl p-6 border border-border">
       <div className="h-40 flex flex-col items-center justify-center gap-2 border-2 border-dashed border-border rounded-2xl text-center">
-        <Icon className="w-6 h-6 text-faint" />
-        <p className="text-sm text-muted-foreground">{copy}</p>
+        <Calendar className="w-6 h-6 text-faint" />
+        <p className="text-sm text-muted-foreground">Nothing logged yet</p>
         <div className="flex items-center gap-4">
-          {filter !== 'workouts' && (
-            <button onClick={() => onCta('meals')} className="min-h-11 px-3 text-xs font-bold text-protein-text">
-              Log a meal →
-            </button>
-          )}
-          {filter !== 'meals' && (
-            <button onClick={() => onCta('workouts')} className="min-h-11 px-3 text-xs font-bold text-training-text">
-              Log a workout →
-            </button>
-          )}
+          <button onClick={() => onCta('meals')} className="min-h-11 px-3 text-xs font-bold text-protein-text">
+            Log a meal →
+          </button>
+          <button onClick={() => onCta('workouts')} className="min-h-11 px-3 text-xs font-bold text-training-text">
+            Log a workout →
+          </button>
         </div>
       </div>
     </div>
@@ -340,9 +319,7 @@ function HistoryEmpty({ filter, onCta }) {
 }
 
 export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDeleted, onEditLog, weightUnit = 'lb', loading = false, staleData = false, onRetry, onLogCta }) {
-  const [filter, setFilter] = useState('all'); // 'all' | 'meals' | 'workouts'
-  const [rangeDays, setRangeDays] = useState(7); // 7 | 30 | 0 (all)
-  const [visibleDays, setVisibleDays] = useState(60); // All-range slice (day groups)
+  const [visibleDays, setVisibleDays] = useState(60); // rendered day-group slice
   const [editingDay, setEditingDay] = useState(null); // { label, logs, type: 'workouts' | 'meals' }
 
   // Day-editor modal: same close path for the X button and Escape, so both
@@ -374,12 +351,6 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
     }
   };
 
-  useEffect(() => {
-    // Intentional dependency-driven reset: the All-range slice must snap back
-    // to 60 groups whenever the filter or range changes.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setVisibleDays(60);
-  }, [filter, rangeDays]);
   const [optimisticallyDeletedIds, setOptimisticallyDeletedIds] = useState(new Set());
   const { toastEl, showToast } = useToast();
 
@@ -557,21 +528,11 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
     // but WorkoutCard handles the API call internally.
   };
 
-  // Merge meals + workouts into one group per date; range-filter first
-  // (rolling N days, local). Filter empties a source entirely, so
-  // hasAnyAllTime naturally spans the union under 'all' and the single
-  // source under a filter.
-  const { dayGroups, hasAnyAllTime } = useMemo(() => {
-    const meals = filter === 'workouts' ? [] : logs.filter(l => !optimisticallyDeletedIds.has(l.id));
-    const workouts = filter === 'meals' ? [] : workoutLogs.filter(l => !optimisticallyDeletedIds.has(l.id));
-
-    let cutoff = null;
-    if (rangeDays > 0) {
-      cutoff = new Date();
-      cutoff.setHours(0, 0, 0, 0);
-      cutoff.setDate(cutoff.getDate() - (rangeDays - 1));
-    }
-    const inRange = (log) => !cutoff || new Date(log.date) >= cutoff;
+  // Merge meals + workouts into one group per date, all-time. The 60-group
+  // slice below (Load older) is the only pagination.
+  const { dayGroups } = useMemo(() => {
+    const meals = logs.filter(l => !optimisticallyDeletedIds.has(l.id));
+    const workouts = workoutLogs.filter(l => !optimisticallyDeletedIds.has(l.id));
 
     const groups = {};
     const bucket = (log) => {
@@ -580,8 +541,8 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
       if (!groups[dateKey]) groups[dateKey] = { date: dateObj, meals: [], workouts: [] };
       return groups[dateKey];
     };
-    meals.filter(inRange).forEach(l => bucket(l).meals.push(l));
-    workouts.filter(inRange).forEach(l => bucket(l).workouts.push(l));
+    meals.forEach(l => bucket(l).meals.push(l));
+    workouts.forEach(l => bucket(l).workouts.push(l));
 
     const sorted = Object.values(groups)
       .sort((a, b) => b.date - a.date)
@@ -596,20 +557,14 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
         return { label, meals: group.meals, workouts: group.workouts };
       });
 
-    return { dayGroups: sorted, hasAnyAllTime: meals.length > 0 || workouts.length > 0 };
-  }, [logs, workoutLogs, filter, optimisticallyDeletedIds, rangeDays]);
+    return { dayGroups: sorted };
+  }, [logs, workoutLogs, optimisticallyDeletedIds]);
 
-  const renderedGroups = rangeDays === 0 ? dayGroups.slice(0, visibleDays) : dayGroups;
+  const renderedGroups = dayGroups.slice(0, visibleDays);
 
   return (
     <div className="p-6 md:p-0 space-y-6 max-w-3xl mx-auto min-h-full pb-20 md:pb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-display text-2xl font-bold text-foreground">History</h2>
-        <div className="flex flex-wrap items-center gap-2">
-          <SegmentedControl options={FILTERS} value={filter} onChange={setFilter} />
-          <SegmentedControl options={RANGES} value={rangeDays} onChange={setRangeDays} />
-        </div>
-      </div>
+      <h2 className="font-display text-2xl font-bold text-foreground">History</h2>
 
       {/* Edit Workout Modal */}
       {editingDay && (
@@ -704,18 +659,14 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
         </div>
       )}
 
-      {loading && !hasAnyAllTime ? (
+      {loading && dayGroups.length === 0 ? (
         <HistorySkeleton />
-      ) : staleData && !hasAnyAllTime ? (
+      ) : staleData && dayGroups.length === 0 ? (
         <HistoryError onRetry={onRetry} />
       ) : dayGroups.length === 0 ? (
-        hasAnyAllTime ? (
-          <HistoryRangeEmpty rangeDays={rangeDays} onShowAll={() => setRangeDays(0)} />
-        ) : (
-          <HistoryEmpty filter={filter} onCta={(mode) => onLogCta && onLogCta(mode)} />
-        )
+        <HistoryEmpty onCta={(mode) => onLogCta && onLogCta(mode)} />
       ) : (
-        <div className="space-y-6" key={filter}>
+        <div className="space-y-6">
           <AnimatePresence mode="popLayout">
           {renderedGroups.map(({ label, meals: dayMeals, workouts: dayWorkouts }) => (
             <motion.div
@@ -739,7 +690,7 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
             </motion.div>
           ))}
           </AnimatePresence>
-          {rangeDays === 0 && dayGroups.length > visibleDays && (
+          {dayGroups.length > visibleDays && (
             <button
               onClick={() => setVisibleDays(v => v + 60)}
               className="w-full min-h-11 bg-card border border-border rounded-xl text-sm font-bold text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -747,7 +698,7 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
               Load older
             </button>
           )}
-          {rangeDays === 0 && dayGroups.length > 0 && dayGroups.length <= visibleDays && (
+          {dayGroups.length > 0 && dayGroups.length <= visibleDays && (
             <p className="text-center text-xs text-faint py-2">You&apos;ve reached the beginning</p>
           )}
         </div>
