@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, Utensils, Image as ImageIcon, Trash2, Edit2, Dumbbell, X } from 'lucide-react';
+import { Calendar, ChevronRight, Utensils, Image as ImageIcon, Trash2, Edit2, Dumbbell, X } from 'lucide-react';
 import { deleteLog, deleteWorkoutLog } from '@/lib/api';
 import { formatWeight, toDisplayVolume } from '@/lib/units';
 import { dayVolumeLb, macroSplit, dayDurationSec } from '@/lib/daySummary';
@@ -99,22 +99,13 @@ function MacroBar({ split }) {
 }
 
 function TrainingSection({ dayWorkouts, weightUnit, onEdit, onDelete }) {
-  const volumeLb = dayVolumeLb(dayWorkouts);
-  const durationSec = dayDurationSec(dayWorkouts);
   return (
     <div>
-      <div className="flex justify-between items-center mb-4">
-        <div>
-          <h4 className="font-display text-lg font-bold text-foreground flex items-center gap-2">
-            <Dumbbell className="w-5 h-5 text-faint" />
-            Training
-          </h4>
-          <p className="text-xs text-muted-foreground">
-            {dayWorkouts.length} {dayWorkouts.length === 1 ? 'Exercise' : 'Exercises'}
-            {durationSec > 0 && <> • {formatDuration(durationSec)}</>}
-            {volumeLb > 0 && <> • {toDisplayVolume(volumeLb, weightUnit).toLocaleString()} {weightUnit}</>}
-          </p>
-        </div>
+      <div className="flex justify-between items-center mb-3">
+        <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+          <Dumbbell className="w-4 h-4 text-faint" />
+          Exercises
+        </p>
         <div className="flex gap-2">
           <button
             onClick={onEdit}
@@ -166,17 +157,11 @@ function TrainingSection({ dayWorkouts, weightUnit, onEdit, onDelete }) {
 function NutritionSection({ dayMeals, onEdit, onDelete, withDivider }) {
   return (
     <div className={withDivider ? 'border-t border-border pt-4 mt-4' : ''}>
-      <div className="flex justify-between items-center mb-4">
-        <div className="min-w-0 flex-1 mr-4">
-          <h4 className="font-display text-lg font-bold text-foreground flex items-center gap-2">
-            <Utensils className="w-5 h-5 text-faint" />
-            Nutrition
-          </h4>
-          <p className="text-xs text-muted-foreground">
-            {dayMeals.length} {dayMeals.length === 1 ? 'Meal' : 'Meals'} • {dayMeals.reduce((sum, item) => sum + (parseInt(item.calories) || 0), 0).toLocaleString()} kcal
-          </p>
-          <MacroBar split={macroSplit(dayMeals)} />
-        </div>
+      <div className="flex justify-between items-center mb-3">
+        <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+          <Utensils className="w-4 h-4 text-faint" />
+          Meals
+        </p>
         <div className="flex gap-2">
           <button
             onClick={onEdit}
@@ -226,6 +211,91 @@ function NutritionSection({ dayMeals, onEdit, onDelete, withDivider }) {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function DayCard({ label, dayMeals, dayWorkouts, weightUnit, onEditWorkouts, onDeleteWorkouts, onEditMeals, onDeleteMeals }) {
+  const [open, setOpen] = useState(false);
+  const volumeLb = dayVolumeLb(dayWorkouts);
+  const durationSec = dayDurationSec(dayWorkouts);
+  const kcal = dayMeals.reduce((sum, item) => sum + (parseInt(item.calories) || 0), 0);
+  const split = macroSplit(dayMeals);
+
+  const summaryParts = [];
+  if (dayWorkouts.length > 0) summaryParts.push(`${dayWorkouts.length} ${dayWorkouts.length === 1 ? 'exercise' : 'exercises'}`);
+  if (dayMeals.length > 0) summaryParts.push(`${dayMeals.length} ${dayMeals.length === 1 ? 'meal' : 'meals'}`);
+
+  return (
+    <div className="bg-card rounded-2xl border border-border overflow-hidden p-6">
+      <h3 className="font-display text-lg font-bold text-foreground">{label}</h3>
+
+      <div className="mt-3 flex flex-wrap gap-x-8 gap-y-3">
+        {dayWorkouts.length > 0 && (
+          <div>
+            {volumeLb > 0 ? (
+              <>
+                <p className="font-display text-2xl font-bold tabular-nums text-foreground">
+                  {toDisplayVolume(volumeLb, weightUnit).toLocaleString()} <span className="text-sm font-semibold text-muted-foreground">{weightUnit}</span>
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  volume{durationSec > 0 && <> · {formatDuration(durationSec)}</>}
+                </p>
+              </>
+            ) : durationSec > 0 ? (
+              <>
+                <p className="font-display text-2xl font-bold tabular-nums text-foreground">{formatDuration(durationSec)}</p>
+                <p className="text-xs text-muted-foreground">training</p>
+              </>
+            ) : (
+              <>
+                <p className="font-display text-2xl font-bold tabular-nums text-foreground">{dayWorkouts.length}</p>
+                <p className="text-xs text-muted-foreground">{dayWorkouts.length === 1 ? 'exercise' : 'exercises'}</p>
+              </>
+            )}
+          </div>
+        )}
+        {dayMeals.length > 0 && (
+          <div>
+            <p className="font-display text-2xl font-bold tabular-nums text-foreground">
+              {kcal.toLocaleString()} <span className="text-sm font-semibold text-muted-foreground">kcal</span>
+            </p>
+            <p className="text-xs text-muted-foreground">{dayMeals.length} {dayMeals.length === 1 ? 'meal' : 'meals'}</p>
+          </div>
+        )}
+      </div>
+
+      <MacroBar split={split} />
+
+      <button
+        onClick={() => setOpen(o => !o)}
+        aria-expanded={open}
+        className="mt-4 w-full min-h-11 flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-foreground transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <ChevronRight className={`w-4 h-4 transition-transform ${open ? 'rotate-90' : ''}`} />
+        {summaryParts.join(' · ')}
+      </button>
+
+      {open && (
+        <div className="mt-2">
+          {dayWorkouts.length > 0 && (
+            <TrainingSection
+              dayWorkouts={dayWorkouts}
+              weightUnit={weightUnit}
+              onEdit={onEditWorkouts}
+              onDelete={onDeleteWorkouts}
+            />
+          )}
+          {dayMeals.length > 0 && (
+            <NutritionSection
+              dayMeals={dayMeals}
+              onEdit={onEditMeals}
+              onDelete={onDeleteMeals}
+              withDivider={dayWorkouts.length > 0}
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -642,27 +712,16 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
               exit={{ opacity: 0, y: -20, scale: 0.95 }}
               transition={{ duration: 0.2 }}
             >
-              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3 sticky top-0 bg-background/90 backdrop-blur py-2 z-10">
-                {label}
-              </h3>
-              <div className="bg-card rounded-2xl border border-border overflow-hidden p-6">
-                {dayWorkouts.length > 0 && (
-                  <TrainingSection
-                    dayWorkouts={dayWorkouts}
-                    weightUnit={weightUnit}
-                    onEdit={() => setEditingDay({ label, logs: dayWorkouts, type: 'workouts' })}
-                    onDelete={() => handleDeleteDayWorkout(dayWorkouts)}
-                  />
-                )}
-                {dayMeals.length > 0 && (
-                  <NutritionSection
-                    dayMeals={dayMeals}
-                    onEdit={() => setEditingDay({ label, logs: dayMeals, type: 'meals' })}
-                    onDelete={() => handleDeleteDayMeals(dayMeals)}
-                    withDivider={dayWorkouts.length > 0}
-                  />
-                )}
-              </div>
+              <DayCard
+                label={label}
+                dayMeals={dayMeals}
+                dayWorkouts={dayWorkouts}
+                weightUnit={weightUnit}
+                onEditWorkouts={() => setEditingDay({ label, logs: dayWorkouts, type: 'workouts' })}
+                onDeleteWorkouts={() => handleDeleteDayWorkout(dayWorkouts)}
+                onEditMeals={() => setEditingDay({ label, logs: dayMeals, type: 'meals' })}
+                onDeleteMeals={() => handleDeleteDayMeals(dayMeals)}
+              />
             </motion.div>
           ))}
           </AnimatePresence>
