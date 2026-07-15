@@ -79,15 +79,22 @@ const formatDuration = (seconds) => {
 function MacroBar({ split }) {
   if (!split) return null;
   return (
-    <div
-      role="img"
-      aria-label={`Macros: ${split.p}% protein, ${split.c}% carbs, ${split.f}% fat`}
-      className="mt-2 h-1.5 rounded-full overflow-hidden bg-muted flex"
-    >
-      <div className="bg-protein h-full" style={{ width: `${split.p}%` }} />
-      <div className="bg-carb h-full" style={{ width: `${split.c}%` }} />
-      <div className="bg-fat h-full" style={{ width: `${split.f}%` }} />
-    </div>
+    <>
+      <div
+        role="img"
+        aria-label={`Macros: ${split.p}% protein, ${split.c}% carbs, ${split.f}% fat`}
+        className="mt-2 h-1.5 rounded-full overflow-hidden bg-muted flex"
+      >
+        <div className="bg-protein h-full" style={{ width: `${split.p}%` }} />
+        <div className="bg-carb h-full" style={{ width: `${split.c}%` }} />
+        <div className="bg-fat h-full" style={{ width: `${split.f}%` }} />
+      </div>
+      <p aria-hidden="true" className="mt-1.5 text-xs text-muted-foreground flex gap-2">
+        <span><span className="text-protein-text font-medium">P</span> {split.p}%</span>
+        <span><span className="text-carb-text font-medium">C</span> {split.c}%</span>
+        <span><span className="text-fat-text font-medium">F</span> {split.f}%</span>
+      </p>
+    </>
   );
 }
 
@@ -103,7 +110,7 @@ function TrainingSection({ dayWorkouts, weightUnit, onEdit, onDelete }) {
             Training
           </h4>
           <p className="text-xs text-muted-foreground">
-            {dayWorkouts.length} Exercises
+            {dayWorkouts.length} {dayWorkouts.length === 1 ? 'Exercise' : 'Exercises'}
             {durationSec > 0 && <> • {formatDuration(durationSec)}</>}
             {volumeLb > 0 && <> • {toDisplayVolume(volumeLb, weightUnit).toLocaleString()} {weightUnit}</>}
           </p>
@@ -129,16 +136,17 @@ function TrainingSection({ dayWorkouts, weightUnit, onEdit, onDelete }) {
       </div>
       <div className="space-y-3">
         {dayWorkouts.map((log) => {
+          const completedSets = (log.sets || []).filter((s) => s?.completed).length;
           const bestSet = getBestSet(log.sets);
           return (
             <div key={log.id} className="flex items-center justify-between p-3 bg-muted rounded-xl">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-card flex items-center justify-center text-training-text font-bold text-xs">
-                  {(log.exercise || log.exercise_name || '?').charAt(0)}
+                  {(log.exercise || log.exercise_name || '?').charAt(0).toUpperCase()}
                 </div>
                 <div>
                   <p className="font-bold text-foreground text-sm">{log.exercise || log.exercise_name}</p>
-                  <p className="text-xs text-muted-foreground">{(log.sets || []).filter((s) => s?.completed).length} Sets</p>
+                  <p className="text-xs text-muted-foreground">{completedSets} {completedSets === 1 ? 'Set' : 'Sets'}</p>
                 </div>
               </div>
               <div className="text-right">
@@ -165,7 +173,7 @@ function NutritionSection({ dayMeals, onEdit, onDelete, withDivider }) {
             Nutrition
           </h4>
           <p className="text-xs text-muted-foreground">
-            {dayMeals.length} Meals • {dayMeals.reduce((sum, item) => sum + (parseInt(item.calories) || 0), 0).toLocaleString()} kcal
+            {dayMeals.length} {dayMeals.length === 1 ? 'Meal' : 'Meals'} • {dayMeals.reduce((sum, item) => sum + (parseInt(item.calories) || 0), 0).toLocaleString()} kcal
           </p>
           <MacroBar split={macroSplit(dayMeals)} />
         </div>
