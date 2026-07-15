@@ -329,7 +329,7 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
           <div className="bg-card border-b border-border pt-safe shrink-0">
             <div className="px-6 py-4 flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold text-foreground">Edit Workout</h2>
+                <h2 className="font-display text-xl font-bold text-foreground">Edit Workout</h2>
                 <p className="text-sm text-muted-foreground">{editingDay.label}</p>
               </div>
               <button
@@ -337,7 +337,8 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
                   setEditingDay(null);
                   if (onLogDeleted) onLogDeleted(); // Refresh parent data
                 }}
-                className="p-2 bg-muted rounded-full text-muted-foreground hover:bg-muted/80 transition-colors"
+                aria-label="Close"
+                className="p-2 min-h-11 min-w-11 flex items-center justify-center bg-muted rounded-full text-muted-foreground hover:bg-muted/80 transition-colors"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -378,7 +379,8 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
                      <div className="flex items-center gap-2">
                         <button
                           onClick={() => onEditLog(log)}
-                          className="p-2 text-faint hover:text-training-text hover:bg-training-soft rounded-lg transition-colors"
+                          aria-label="Edit meal"
+                          className="p-2 min-h-11 min-w-11 flex items-center justify-center text-faint hover:text-training-text hover:bg-training-soft rounded-lg transition-colors"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
@@ -390,7 +392,8 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
                                logs: prev.logs.filter(l => l.id !== log.id)
                              }));
                            }}
-                           className="p-2 text-faint hover:text-destructive-text hover:bg-destructive/10 rounded-lg transition-colors"
+                           aria-label="Delete meal"
+                           className="p-2 min-h-11 min-w-11 flex items-center justify-center text-faint hover:text-destructive-text hover:bg-destructive/10 rounded-lg transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -439,22 +442,27 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
                 <div className="bg-card rounded-2xl border border-border overflow-hidden p-5">
                   <div className="flex justify-between items-center mb-4 border-b border-border pb-4">
                     <div>
-                      <h4 className="font-bold text-foreground text-lg">Workout Session</h4>
+                      <h4 className="font-display text-lg font-bold text-foreground flex items-center gap-2">
+                        <Dumbbell className="w-5 h-5 text-faint" />
+                        Workout Session
+                      </h4>
                       <p className="text-xs text-muted-foreground">
                         {dayLogs.length} Exercises • {formatDuration(dayLogs[0]?.duration)}
                       </p>
                     </div>
-                    <div className="flex gap-1">
+                    <div className="flex gap-2">
                       <button
                         onClick={() => setEditingDay({ label, logs: dayLogs })}
-                        className="p-2 text-faint hover:text-training-text hover:bg-training-soft rounded-lg transition-colors"
+                        aria-label="Edit workout session"
+                        className="p-2 min-h-11 min-w-11 flex items-center justify-center text-faint hover:text-training-text hover:bg-training-soft rounded-lg transition-colors"
                         title="Edit Session"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDeleteDayWorkout(dayLogs)}
-                        className="p-2 text-faint hover:text-destructive-text hover:bg-destructive/10 rounded-lg transition-colors"
+                        aria-label="Delete workout session"
+                        className="p-2 min-h-11 min-w-11 flex items-center justify-center text-faint hover:text-destructive-text hover:bg-destructive/10 rounded-lg transition-colors"
                         title="Delete Session"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -492,22 +500,27 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
                 <div className="bg-card rounded-2xl border border-border overflow-hidden p-5">
                   <div className="flex justify-between items-center mb-4 border-b border-border pb-4">
                     <div>
-                      <h4 className="font-bold text-foreground text-lg">Daily Nutrition</h4>
+                      <h4 className="font-display text-lg font-bold text-foreground flex items-center gap-2">
+                        <Utensils className="w-5 h-5 text-faint" />
+                        Daily Nutrition
+                      </h4>
                       <p className="text-xs text-muted-foreground">
                         {dayLogs.length} Meals • {dayLogs.reduce((sum, item) => sum + (parseInt(item.calories)||0), 0)} kcal
                       </p>
                     </div>
-                    <div className="flex gap-1">
+                    <div className="flex gap-2">
                       <button
                         onClick={() => setEditingDay({ label, logs: dayLogs })}
-                        className="p-2 text-faint hover:text-training-text hover:bg-training-soft rounded-lg transition-colors"
+                        aria-label="Edit meals"
+                        className="p-2 min-h-11 min-w-11 flex items-center justify-center text-faint hover:text-training-text hover:bg-training-soft rounded-lg transition-colors"
                         title="Edit Meals"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDeleteDayMeals(dayLogs)}
-                        className="p-2 text-faint hover:text-destructive-text hover:bg-destructive/10 rounded-lg transition-colors"
+                        aria-label="Delete all meals"
+                        className="p-2 min-h-11 min-w-11 flex items-center justify-center text-faint hover:text-destructive-text hover:bg-destructive/10 rounded-lg transition-colors"
                         title="Delete All Meals"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -528,7 +541,7 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
                                <span>{new Date(log.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                                {(log.protein || log.carbs || log.fats) && (
                                  <>
-                                   <span className="text-faint">•</span>
+                                   <span className="text-muted-foreground">•</span>
                                    <span className="flex gap-1">
                                      {log.protein > 0 && <span className="text-protein-text font-medium">P:{log.protein}</span>}
                                      {log.carbs > 0 && <span className="text-carb font-medium">C:{log.carbs}</span>}
