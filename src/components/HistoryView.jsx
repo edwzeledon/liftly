@@ -4,13 +4,14 @@ import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Utensils, Image as ImageIcon, Trash2, Edit2, Dumbbell, X } from 'lucide-react';
 import { deleteLog, deleteWorkoutLog } from '@/lib/api';
-import { formatWeight } from '@/lib/units';
+import { formatWeight, toDisplayVolume } from '@/lib/units';
+import { dayVolumeLb, macroSplit } from '@/lib/daySummary';
 import SegmentedControl from '@/components/ui/SegmentedControl';
 import ConfirmModal from './ConfirmModal';
 import WorkoutCard from './workout/WorkoutCard';
 import { useToast } from '@/hooks/useToast';
 
-const VIEW_MODES = [{ label: 'Meals', value: 'meals' }, { label: 'Workouts', value: 'workouts' }];
+const FILTERS = [{ label: 'All', value: 'all' }, { label: 'Meals', value: 'meals' }, { label: 'Workouts', value: 'workouts' }];
 const RANGES = [{ label: '7D', value: 7 }, { label: '30D', value: 30 }, { label: 'All', value: 0 }];
 
 function HistorySkeleton() {
@@ -40,24 +41,6 @@ function HistoryError({ onRetry }) {
   );
 }
 
-function HistoryEmpty({ viewMode, onCta }) {
-  const Icon = viewMode === 'meals' ? Utensils : Dumbbell;
-  return (
-    <div className="bg-card rounded-2xl p-6 border border-border">
-      <div className="h-40 flex flex-col items-center justify-center gap-2 border-2 border-dashed border-border rounded-2xl text-center">
-        <Icon className="w-6 h-6 text-faint" />
-        <p className="text-sm text-muted-foreground">No {viewMode} logged yet</p>
-        <button
-          onClick={onCta}
-          className={`min-h-11 px-3 text-xs font-bold ${viewMode === 'meals' ? 'text-protein-text' : 'text-training-text'}`}
-        >
-          {viewMode === 'meals' ? 'Log a meal →' : 'Log a workout →'}
-        </button>
-      </div>
-    </div>
-  );
-}
-
 function HistoryRangeEmpty({ rangeDays, onShowAll }) {
   return (
     <div className="bg-card rounded-2xl p-6 border border-border text-center">
@@ -69,10 +52,203 @@ function HistoryRangeEmpty({ rangeDays, onShowAll }) {
   );
 }
 
+const getBestSet = (sets) => {
+  if (!sets || sets.length === 0) return null;
+  // Find set with max weight
+  const best = sets.reduce((max, current) => {
+    const currentWeight = parseFloat(current.weight) || 0;
+    const maxWeight = parseFloat(max.weight) || 0;
+    return currentWeight > maxWeight ? current : max;
+  }, sets[0]);
+
+  return best;
+};
+
+const formatDuration = (seconds) => {
+  if (!seconds) return 'Completed';
+  const hrs = Math.floor(seconds / 3600);
+  const mins = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+
+  if (hrs > 0) {
+    return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+};
+
+function MacroBar({ split }) {
+  if (!split) return null;
+  return (
+    <div
+      role="img"
+      aria-label={`Macros: ${split.p}% protein, ${split.c}% carbs, ${split.f}% fat`}
+      className="mt-2 h-1.5 rounded-full overflow-hidden bg-muted flex"
+    >
+      <div className="bg-protein h-full" style={{ width: `${split.p}%` }} />
+      <div className="bg-carb h-full" style={{ width: `${split.c}%` }} />
+      <div className="bg-fat h-full" style={{ width: `${split.f}%` }} />
+    </div>
+  );
+}
+
+function TrainingSection({ dayWorkouts, weightUnit, onEdit, onDelete }) {
+  const volumeLb = dayVolumeLb(dayWorkouts);
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-4">
+        <div>
+          <h4 className="font-display text-lg font-bold text-foreground flex items-center gap-2">
+            <Dumbbell className="w-5 h-5 text-faint" />
+            Training
+          </h4>
+          <p className="text-xs text-muted-foreground">
+            {dayWorkouts.length} Exercises • {formatDuration(dayWorkouts[0]?.duration)}
+            {volumeLb > 0 && <> • {toDisplayVolume(volumeLb, weightUnit).toLocaleString()} {weightUnit}</>}
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={onEdit}
+            aria-label="Edit workout session"
+            className="p-2 min-h-11 min-w-11 flex items-center justify-center text-faint hover:text-training-text hover:bg-training-soft rounded-lg transition-colors"
+            title="Edit Session"
+          >
+            <Edit2 className="w-4 h-4" />
+          </button>
+          <button
+            onClick={onDelete}
+            aria-label="Delete workout session"
+            className="p-2 min-h-11 min-w-11 flex items-center justify-center text-faint hover:text-destructive-text hover:bg-destructive/10 rounded-lg transition-colors"
+            title="Delete Session"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+      <div className="space-y-3">
+        {dayWorkouts.map((log) => {
+          const bestSet = getBestSet(log.sets);
+          return (
+            <div key={log.id} className="flex items-center justify-between p-3 bg-muted rounded-xl">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-card flex items-center justify-center text-training-text font-bold text-xs">
+                  {(log.exercise || log.exercise_name || '?').charAt(0)}
+                </div>
+                <div>
+                  <p className="font-bold text-foreground text-sm">{log.exercise || log.exercise_name}</p>
+                  <p className="text-xs text-muted-foreground">{log.sets?.length || 0} Sets</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider mb-0.5">Best Set</p>
+                <p className="font-display text-sm font-semibold tabular-nums text-foreground">
+                  {bestSet ? `${formatWeight(bestSet.weight, weightUnit)} × ${bestSet.reps}` : '-'}
+                </p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function NutritionSection({ dayMeals, onEdit, onDelete, withDivider }) {
+  return (
+    <div className={withDivider ? 'border-t border-border pt-4 mt-4' : ''}>
+      <div className="flex justify-between items-center mb-4">
+        <div className="min-w-0 flex-1 mr-4">
+          <h4 className="font-display text-lg font-bold text-foreground flex items-center gap-2">
+            <Utensils className="w-5 h-5 text-faint" />
+            Nutrition
+          </h4>
+          <p className="text-xs text-muted-foreground">
+            {dayMeals.length} Meals • {dayMeals.reduce((sum, item) => sum + (parseInt(item.calories) || 0), 0)} kcal
+          </p>
+          <MacroBar split={macroSplit(dayMeals)} />
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={onEdit}
+            aria-label="Edit meals"
+            className="p-2 min-h-11 min-w-11 flex items-center justify-center text-faint hover:text-training-text hover:bg-training-soft rounded-lg transition-colors"
+            title="Edit Meals"
+          >
+            <Edit2 className="w-4 h-4" />
+          </button>
+          <button
+            onClick={onDelete}
+            aria-label="Delete all meals"
+            className="p-2 min-h-11 min-w-11 flex items-center justify-center text-faint hover:text-destructive-text hover:bg-destructive/10 rounded-lg transition-colors"
+            title="Delete All Meals"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+      <div className="space-y-3">
+        {dayMeals.map((log) => (
+          <div key={log.id} className="flex items-center justify-between p-3 bg-muted rounded-xl group">
+            <div className="flex items-center gap-3">
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs ${log.method === 'ai-scan' ? 'bg-ai-soft-border text-ai' : 'bg-card text-muted-foreground'}`}>
+                {log.method === 'ai-scan' ? <ImageIcon className="w-4 h-4" /> : <Utensils className="w-4 h-4" />}
+              </div>
+              <div>
+                <p className="font-bold text-foreground text-sm">{log.food_item}</p>
+                <p className="text-xs text-muted-foreground flex flex-wrap gap-2">
+                  <span>{new Date(log.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                  {(log.protein || log.carbs || log.fats) && (
+                    <>
+                      <span className="text-muted-foreground">•</span>
+                      <span className="flex gap-1">
+                        {log.protein > 0 && <span className="text-protein-text font-medium">P:{log.protein}</span>}
+                        {log.carbs > 0 && <span className="text-carb font-medium">C:{log.carbs}</span>}
+                        {log.fats > 0 && <span className="text-fat font-medium">F:{log.fats}</span>}
+                      </span>
+                    </>
+                  )}
+                </p>
+              </div>
+            </div>
+            <div className="text-right">
+              <span className="font-display text-sm font-semibold tabular-nums text-foreground">{log.calories} kcal</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function HistoryEmpty({ filter, onCta }) {
+  const Icon = filter === 'meals' ? Utensils : Dumbbell;
+  const copy = filter === 'all' ? 'Nothing logged yet' : `No ${filter} logged yet`;
+  return (
+    <div className="bg-card rounded-2xl p-6 border border-border">
+      <div className="h-40 flex flex-col items-center justify-center gap-2 border-2 border-dashed border-border rounded-2xl text-center">
+        <Icon className="w-6 h-6 text-faint" />
+        <p className="text-sm text-muted-foreground">{copy}</p>
+        <div className="flex items-center gap-4">
+          {filter !== 'workouts' && (
+            <button onClick={() => onCta('meals')} className="min-h-11 px-3 text-xs font-bold text-protein-text">
+              Log a meal →
+            </button>
+          )}
+          {filter !== 'meals' && (
+            <button onClick={() => onCta('workouts')} className="min-h-11 px-3 text-xs font-bold text-training-text">
+              Log a workout →
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDeleted, onEditLog, weightUnit = 'lb', loading = false, staleData = false, onRetry, onLogCta }) {
-  const [viewMode, setViewMode] = useState('workouts'); // 'meals' | 'workouts'
+  const [filter, setFilter] = useState('all'); // 'all' | 'meals' | 'workouts'
   const [rangeDays, setRangeDays] = useState(7); // 7 | 30 | 0 (all)
-  const [editingDay, setEditingDay] = useState(null); // { label, logs }
+  const [editingDay, setEditingDay] = useState(null); // { label, logs, type: 'workouts' | 'meals' }
   const [optimisticallyDeletedIds, setOptimisticallyDeletedIds] = useState(new Set());
   const { toastEl, showToast } = useToast();
 
@@ -92,12 +268,12 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
     isDestructive: true
   });
 
-  const handleDeleteLog = async (logId, exerciseName = null) => {
-    if(!user) return;
+  const handleDeleteLog = async (logId, exerciseName = null, type = 'workout') => {
+    if (!user) return;
 
     // Meal rows: optimistic hide + undoable toast. The real deleteLog runs on the
     // toast's onCommit; Undo cancels it. No confirm dialog for single meals.
-    if (viewMode === 'meals') {
+    if (type === 'meal') {
       setOptimisticallyDeletedIds(prev => new Set(prev).add(logId));
       showToast({
         message: 'Meal deleted',
@@ -250,34 +426,13 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
     // but WorkoutCard handles the API call internally.
   };
 
-  const getBestSet = (sets) => {
-    if (!sets || sets.length === 0) return null;
-    // Find set with max weight
-    const best = sets.reduce((max, current) => {
-      const currentWeight = parseFloat(current.weight) || 0;
-      const maxWeight = parseFloat(max.weight) || 0;
-      return currentWeight > maxWeight ? current : max;
-    }, sets[0]);
-    
-    return best;
-  };
-
-  const formatDuration = (seconds) => {
-    if (!seconds) return 'Completed';
-    const hrs = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    
-    if (hrs > 0) {
-      return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    }
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  // Group by date and sort descending; range-filter first (rolling N days, local)
-  const { groupedLogs, hasAnyAllTime } = useMemo(() => {
-    const visible = (viewMode === 'meals' ? logs : workoutLogs)
-      .filter(log => !optimisticallyDeletedIds.has(log.id));
+  // Merge meals + workouts into one group per date; range-filter first
+  // (rolling N days, local). Filter empties a source entirely, so
+  // hasAnyAllTime naturally spans the union under 'all' and the single
+  // source under a filter.
+  const { dayGroups, hasAnyAllTime } = useMemo(() => {
+    const meals = filter === 'workouts' ? [] : logs.filter(l => !optimisticallyDeletedIds.has(l.id));
+    const workouts = filter === 'meals' ? [] : workoutLogs.filter(l => !optimisticallyDeletedIds.has(l.id));
 
     let cutoff = null;
     if (rangeDays > 0) {
@@ -285,17 +440,17 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
       cutoff.setHours(0, 0, 0, 0);
       cutoff.setDate(cutoff.getDate() - (rangeDays - 1));
     }
-    const currentLogs = cutoff ? visible.filter(log => new Date(log.date) >= cutoff) : visible;
+    const inRange = (log) => !cutoff || new Date(log.date) >= cutoff;
 
     const groups = {};
-    currentLogs.forEach(log => {
+    const bucket = (log) => {
       const dateObj = new Date(log.date);
       const dateKey = dateObj.toLocaleDateString();
-      if (!groups[dateKey]) {
-        groups[dateKey] = { date: dateObj, logs: [] };
-      }
-      groups[dateKey].logs.push(log);
-    });
+      if (!groups[dateKey]) groups[dateKey] = { date: dateObj, meals: [], workouts: [] };
+      return groups[dateKey];
+    };
+    meals.filter(inRange).forEach(l => bucket(l).meals.push(l));
+    workouts.filter(inRange).forEach(l => bucket(l).workouts.push(l));
 
     const sorted = Object.values(groups)
       .sort((a, b) => b.date - a.date)
@@ -307,18 +462,20 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
           month: 'long',
           day: 'numeric'
         });
-        return { label, logs: group.logs };
+        return { label, meals: group.meals, workouts: group.workouts };
       });
 
-    return { groupedLogs: sorted, hasAnyAllTime: visible.length > 0 };
-  }, [logs, workoutLogs, viewMode, optimisticallyDeletedIds, rangeDays]);
+    return { dayGroups: sorted, hasAnyAllTime: meals.length > 0 || workouts.length > 0 };
+  }, [logs, workoutLogs, filter, optimisticallyDeletedIds, rangeDays]);
+
+  const renderedGroups = dayGroups; // Task 3 replaces this with the All-range slice
 
   return (
     <div className="p-6 md:p-0 space-y-6 max-w-3xl mx-auto min-h-full pb-20 md:pb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-display text-2xl font-bold text-foreground">History</h2>
         <div className="flex flex-wrap items-center gap-2">
-          <SegmentedControl options={VIEW_MODES} value={viewMode} onChange={setViewMode} />
+          <SegmentedControl options={FILTERS} value={filter} onChange={setFilter} />
           <SegmentedControl options={RANGES} value={rangeDays} onChange={setRangeDays} />
         </div>
       </div>
@@ -329,7 +486,7 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
           <div className="bg-card border-b border-border pt-safe shrink-0">
             <div className="px-6 py-4 flex items-center justify-between">
               <div>
-                <h2 className="font-display text-xl font-bold text-foreground">Edit Workout</h2>
+                <h2 className="font-display text-xl font-bold text-foreground">{editingDay.type === 'workouts' ? 'Edit Workout' : 'Edit Meals'}</h2>
                 <p className="text-sm text-muted-foreground">{editingDay.label}</p>
               </div>
               <button
@@ -347,14 +504,14 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
           
           <div className="flex-1 overflow-y-auto p-6">
             <div className="max-w-xl mx-auto space-y-4">
-              {viewMode === 'workouts' ? (
+              {editingDay.type === 'workouts' ? (
                 editingDay.logs.map(log => (
                   <WorkoutCard
                     key={log.id}
                     log={log}
                     onDelete={(id) => {
                       // Handle delete within modal
-                      handleDeleteLog(id, log.exercise || log.exercise_name);
+                      handleDeleteLog(id, log.exercise || log.exercise_name, 'workout');
                       setEditingDay(prev => ({
                         ...prev,
                         logs: prev.logs.filter(l => l.id !== id)
@@ -386,7 +543,7 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
                         </button>
                         <button
                            onClick={() => {
-                             handleDeleteLog(log.id);
+                             handleDeleteLog(log.id, null, 'meal');
                              setEditingDay(prev => ({
                                ...prev,
                                logs: prev.logs.filter(l => l.id !== log.id)
@@ -415,17 +572,17 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
         <HistorySkeleton />
       ) : staleData && !hasAnyAllTime ? (
         <HistoryError onRetry={onRetry} />
-      ) : groupedLogs.length === 0 ? (
+      ) : dayGroups.length === 0 ? (
         hasAnyAllTime ? (
           <HistoryRangeEmpty rangeDays={rangeDays} onShowAll={() => setRangeDays(0)} />
         ) : (
-          <HistoryEmpty viewMode={viewMode} onCta={() => onLogCta && onLogCta(viewMode)} />
+          <HistoryEmpty filter={filter} onCta={(mode) => onLogCta && onLogCta(mode)} />
         )
       ) : (
-        <div className="space-y-6" key={viewMode}>
+        <div className="space-y-6" key={filter}>
           <AnimatePresence mode="popLayout">
-          {groupedLogs.map(({ label, logs: dayLogs }) => (
-            <motion.div 
+          {renderedGroups.map(({ label, meals: dayMeals, workouts: dayWorkouts }) => (
+            <motion.div
               key={label}
               layout
               initial={{ opacity: 0, y: 20 }}
@@ -436,130 +593,24 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
               <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3 sticky top-0 bg-background/90 backdrop-blur py-2 z-10">
                 {label}
               </h3>
-
-              {viewMode === 'workouts' ? (
-                // Grouped Workout Card
-                <div className="bg-card rounded-2xl border border-border overflow-hidden p-5">
-                  <div className="flex justify-between items-center mb-4 border-b border-border pb-4">
-                    <div>
-                      <h4 className="font-display text-lg font-bold text-foreground flex items-center gap-2">
-                        <Dumbbell className="w-5 h-5 text-faint" />
-                        Workout Session
-                      </h4>
-                      <p className="text-xs text-muted-foreground">
-                        {dayLogs.length} Exercises • {formatDuration(dayLogs[0]?.duration)}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setEditingDay({ label, logs: dayLogs })}
-                        aria-label="Edit workout session"
-                        className="p-2 min-h-11 min-w-11 flex items-center justify-center text-faint hover:text-training-text hover:bg-training-soft rounded-lg transition-colors"
-                        title="Edit Session"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteDayWorkout(dayLogs)}
-                        aria-label="Delete workout session"
-                        className="p-2 min-h-11 min-w-11 flex items-center justify-center text-faint hover:text-destructive-text hover:bg-destructive/10 rounded-lg transition-colors"
-                        title="Delete Session"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    {dayLogs.map((log) => {
-                      const bestSet = getBestSet(log.sets);
-                      return (
-                        <div key={log.id} className="flex items-center justify-between p-3 bg-muted rounded-xl">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-card flex items-center justify-center text-training-text font-bold text-xs">
-                              {(log.exercise || log.exercise_name || '?').charAt(0)}
-                            </div>
-                            <div>
-                              <p className="font-bold text-foreground text-sm">{log.exercise || log.exercise_name}</p>
-                              <p className="text-xs text-muted-foreground">{log.sets?.length || 0} Sets</p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider mb-0.5">Best Set</p>
-                            <p className="font-display text-sm font-semibold tabular-nums text-foreground">
-                              {bestSet ? `${formatWeight(bestSet.weight, weightUnit)} × ${bestSet.reps}` : '-'}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ) : (
-                // Grouped Meal Card
-                <div className="bg-card rounded-2xl border border-border overflow-hidden p-5">
-                  <div className="flex justify-between items-center mb-4 border-b border-border pb-4">
-                    <div>
-                      <h4 className="font-display text-lg font-bold text-foreground flex items-center gap-2">
-                        <Utensils className="w-5 h-5 text-faint" />
-                        Daily Nutrition
-                      </h4>
-                      <p className="text-xs text-muted-foreground">
-                        {dayLogs.length} Meals • {dayLogs.reduce((sum, item) => sum + (parseInt(item.calories)||0), 0)} kcal
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setEditingDay({ label, logs: dayLogs })}
-                        aria-label="Edit meals"
-                        className="p-2 min-h-11 min-w-11 flex items-center justify-center text-faint hover:text-training-text hover:bg-training-soft rounded-lg transition-colors"
-                        title="Edit Meals"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteDayMeals(dayLogs)}
-                        aria-label="Delete all meals"
-                        className="p-2 min-h-11 min-w-11 flex items-center justify-center text-faint hover:text-destructive-text hover:bg-destructive/10 rounded-lg transition-colors"
-                        title="Delete All Meals"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    {dayLogs.map((log) => (
-                      <div key={log.id} className="flex items-center justify-between p-3 bg-muted rounded-xl group">
-                        <div className="flex items-center gap-3">
-                           <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs ${log.method === 'ai-scan' ? 'bg-ai-soft-border text-ai' : 'bg-card text-muted-foreground'}`}>
-                             {log.method === 'ai-scan' ? <ImageIcon className="w-4 h-4" /> : <Utensils className="w-4 h-4" />}
-                           </div>
-                           <div>
-                             <p className="font-bold text-foreground text-sm">{log.food_item}</p>
-                             <p className="text-xs text-muted-foreground flex flex-wrap gap-2">
-                               <span>{new Date(log.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                               {(log.protein || log.carbs || log.fats) && (
-                                 <>
-                                   <span className="text-muted-foreground">•</span>
-                                   <span className="flex gap-1">
-                                     {log.protein > 0 && <span className="text-protein-text font-medium">P:{log.protein}</span>}
-                                     {log.carbs > 0 && <span className="text-carb font-medium">C:{log.carbs}</span>}
-                                     {log.fats > 0 && <span className="text-fat font-medium">F:{log.fats}</span>}
-                                   </span>
-                                 </>
-                               )}
-                             </p>
-                           </div>
-                        </div>
-                        <div className="text-right">
-                          <span className="font-display text-sm font-semibold tabular-nums text-foreground">{log.calories} kcal</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <div className="bg-card rounded-2xl border border-border overflow-hidden p-5">
+                {dayWorkouts.length > 0 && (
+                  <TrainingSection
+                    dayWorkouts={dayWorkouts}
+                    weightUnit={weightUnit}
+                    onEdit={() => setEditingDay({ label, logs: dayWorkouts, type: 'workouts' })}
+                    onDelete={() => handleDeleteDayWorkout(dayWorkouts)}
+                  />
+                )}
+                {dayMeals.length > 0 && (
+                  <NutritionSection
+                    dayMeals={dayMeals}
+                    onEdit={() => setEditingDay({ label, logs: dayMeals, type: 'meals' })}
+                    onDelete={() => handleDeleteDayMeals(dayMeals)}
+                    withDivider={dayWorkouts.length > 0}
+                  />
+                )}
+              </div>
             </motion.div>
           ))}
           </AnimatePresence>
