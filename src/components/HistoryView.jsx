@@ -251,8 +251,10 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
   const [visibleDays, setVisibleDays] = useState(60); // All-range slice (day groups)
   const [editingDay, setEditingDay] = useState(null); // { label, logs, type: 'workouts' | 'meals' }
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
+    // Intentional dependency-driven reset: the All-range slice must snap back
+    // to 60 groups whenever the filter or range changes.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setVisibleDays(60);
   }, [filter, rangeDays]);
   const [optimisticallyDeletedIds, setOptimisticallyDeletedIds] = useState(new Set());
