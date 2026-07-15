@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Utensils, Image as ImageIcon, Trash2, Edit2, Dumbbell, X } from 'lucide-react';
 import { deleteLog, deleteWorkoutLog } from '@/lib/api';
@@ -248,7 +248,13 @@ function HistoryEmpty({ filter, onCta }) {
 export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDeleted, onEditLog, weightUnit = 'lb', loading = false, staleData = false, onRetry, onLogCta }) {
   const [filter, setFilter] = useState('all'); // 'all' | 'meals' | 'workouts'
   const [rangeDays, setRangeDays] = useState(7); // 7 | 30 | 0 (all)
+  const [visibleDays, setVisibleDays] = useState(60); // All-range slice (day groups)
   const [editingDay, setEditingDay] = useState(null); // { label, logs, type: 'workouts' | 'meals' }
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => {
+    setVisibleDays(60);
+  }, [filter, rangeDays]);
   const [optimisticallyDeletedIds, setOptimisticallyDeletedIds] = useState(new Set());
   const { toastEl, showToast } = useToast();
 
@@ -468,7 +474,7 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
     return { dayGroups: sorted, hasAnyAllTime: meals.length > 0 || workouts.length > 0 };
   }, [logs, workoutLogs, filter, optimisticallyDeletedIds, rangeDays]);
 
-  const renderedGroups = dayGroups; // Task 3 replaces this with the All-range slice
+  const renderedGroups = rangeDays === 0 ? dayGroups.slice(0, visibleDays) : dayGroups;
 
   return (
     <div className="p-6 md:p-0 space-y-6 max-w-3xl mx-auto min-h-full pb-20 md:pb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -614,6 +620,17 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
             </motion.div>
           ))}
           </AnimatePresence>
+          {rangeDays === 0 && dayGroups.length > visibleDays && (
+            <button
+              onClick={() => setVisibleDays(v => v + 60)}
+              className="w-full min-h-11 bg-card border border-border rounded-xl text-sm font-bold text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Load older
+            </button>
+          )}
+          {rangeDays === 0 && dayGroups.length > 0 && dayGroups.length <= visibleDays && (
+            <p className="text-center text-xs text-faint py-2">You&apos;ve reached the beginning</p>
+          )}
         </div>
       )}
       <ConfirmModal
