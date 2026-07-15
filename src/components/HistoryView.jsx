@@ -216,15 +216,12 @@ function NutritionSection({ dayMeals, onEdit, onDelete, withDivider }) {
 }
 
 function DayCard({ label, dayMeals, dayWorkouts, weightUnit, onEditWorkouts, onDeleteWorkouts, onEditMeals, onDeleteMeals }) {
-  const [open, setOpen] = useState(false);
+  const [openWorkouts, setOpenWorkouts] = useState(false);
+  const [openMeals, setOpenMeals] = useState(false);
   const volumeLb = dayVolumeLb(dayWorkouts);
   const durationSec = dayDurationSec(dayWorkouts);
   const kcal = dayMeals.reduce((sum, item) => sum + (parseInt(item.calories) || 0), 0);
   const split = macroSplit(dayMeals);
-
-  const summaryParts = [];
-  if (dayWorkouts.length > 0) summaryParts.push(`${dayWorkouts.length} ${dayWorkouts.length === 1 ? 'exercise' : 'exercises'}`);
-  if (dayMeals.length > 0) summaryParts.push(`${dayMeals.length} ${dayMeals.length === 1 ? 'meal' : 'meals'}`);
 
   return (
     <div className="bg-card rounded-2xl border border-border overflow-hidden p-6">
@@ -267,35 +264,52 @@ function DayCard({ label, dayMeals, dayWorkouts, weightUnit, onEditWorkouts, onD
 
       <MacroBar split={split} />
 
-      <button
-        onClick={() => setOpen(o => !o)}
-        aria-expanded={open}
-        className="mt-4 w-full min-h-11 flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-foreground transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-      >
-        <ChevronRight className={`w-4 h-4 transition-transform ${open ? 'rotate-90' : ''}`} />
-        {summaryParts.join(' · ')}
-      </button>
-
-      {open && (
-        <div className="mt-2">
-          {dayWorkouts.length > 0 && (
-            <TrainingSection
-              dayWorkouts={dayWorkouts}
-              weightUnit={weightUnit}
-              onEdit={onEditWorkouts}
-              onDelete={onDeleteWorkouts}
-            />
-          )}
-          {dayMeals.length > 0 && (
-            <NutritionSection
-              dayMeals={dayMeals}
-              onEdit={onEditMeals}
-              onDelete={onDeleteMeals}
-              withDivider={dayWorkouts.length > 0}
-            />
-          )}
-        </div>
-      )}
+      <div className="mt-4 space-y-1">
+        {dayWorkouts.length > 0 && (
+          <>
+            <button
+              onClick={() => setOpenWorkouts(o => !o)}
+              aria-expanded={openWorkouts}
+              className="w-full min-h-11 flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-foreground transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <ChevronRight className={`w-4 h-4 transition-transform ${openWorkouts ? 'rotate-90' : ''}`} />
+              {dayWorkouts.length} {dayWorkouts.length === 1 ? 'exercise' : 'exercises'}
+            </button>
+            {openWorkouts && (
+              <div className="mt-2 mb-2">
+                <TrainingSection
+                  dayWorkouts={dayWorkouts}
+                  weightUnit={weightUnit}
+                  onEdit={onEditWorkouts}
+                  onDelete={onDeleteWorkouts}
+                />
+              </div>
+            )}
+          </>
+        )}
+        {dayMeals.length > 0 && (
+          <>
+            <button
+              onClick={() => setOpenMeals(o => !o)}
+              aria-expanded={openMeals}
+              className="w-full min-h-11 flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-foreground transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <ChevronRight className={`w-4 h-4 transition-transform ${openMeals ? 'rotate-90' : ''}`} />
+              {dayMeals.length} {dayMeals.length === 1 ? 'meal' : 'meals'}
+            </button>
+            {openMeals && (
+              <div className="mt-2 mb-2">
+                <NutritionSection
+                  dayMeals={dayMeals}
+                  onEdit={onEditMeals}
+                  onDelete={onDeleteMeals}
+                  withDivider={false}
+                />
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
