@@ -11,9 +11,67 @@ import WorkoutCard from './workout/WorkoutCard';
 import { useToast } from '@/hooks/useToast';
 
 const VIEW_MODES = [{ label: 'Meals', value: 'meals' }, { label: 'Workouts', value: 'workouts' }];
+const RANGES = [{ label: '7D', value: 7 }, { label: '30D', value: 30 }, { label: 'All', value: 0 }];
 
-export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted, onEditLog, weightUnit = 'lb' }) {
+function HistorySkeleton() {
+  return (
+    <div className="space-y-6">
+      {[0, 1].map((i) => (
+        <div key={i} className="bg-card rounded-2xl p-5 border border-border">
+          <div className="animate-pulse space-y-3">
+            <div className="h-5 bg-muted rounded w-1/3" />
+            <div className="h-16 bg-muted rounded-xl" />
+            <div className="h-16 bg-muted rounded-xl" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function HistoryError({ onRetry }) {
+  return (
+    <div className="bg-card rounded-2xl p-6 border border-border text-center">
+      <p className="text-sm text-muted-foreground mb-3">Couldn&apos;t load your history.</p>
+      <button onClick={onRetry} className="px-4 py-2 min-h-11 bg-training text-white text-sm font-bold rounded-xl">
+        Retry
+      </button>
+    </div>
+  );
+}
+
+function HistoryEmpty({ viewMode, onCta }) {
+  const Icon = viewMode === 'meals' ? Utensils : Dumbbell;
+  return (
+    <div className="bg-card rounded-2xl p-6 border border-border">
+      <div className="h-40 flex flex-col items-center justify-center gap-2 border-2 border-dashed border-border rounded-2xl text-center">
+        <Icon className="w-6 h-6 text-faint" />
+        <p className="text-sm text-muted-foreground">No {viewMode} logged yet</p>
+        <button
+          onClick={onCta}
+          className={`min-h-11 px-3 text-xs font-bold ${viewMode === 'meals' ? 'text-protein-text' : 'text-training-text'}`}
+        >
+          {viewMode === 'meals' ? 'Log a meal →' : 'Log a workout →'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function HistoryRangeEmpty({ rangeDays, onShowAll }) {
+  return (
+    <div className="bg-card rounded-2xl p-6 border border-border text-center">
+      <p className="text-sm text-muted-foreground mb-3">Nothing in the last {rangeDays} days.</p>
+      <button onClick={onShowAll} className="min-h-11 px-3 text-xs font-bold text-training-text">
+        Show all →
+      </button>
+    </div>
+  );
+}
+
+export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDeleted, onEditLog, weightUnit = 'lb', loading = false, staleData = false, onRetry, onLogCta }) {
   const [viewMode, setViewMode] = useState('workouts'); // 'meals' | 'workouts'
+  const [rangeDays, setRangeDays] = useState(7); // 7 | 30 | 0 (all)
   const [editingDay, setEditingDay] = useState(null); // { label, logs }
   const [optimisticallyDeletedIds, setOptimisticallyDeletedIds] = useState(new Set());
   const { toastEl, showToast } = useToast();
@@ -216,46 +274,53 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Group by date and sort descending
-  const groupedLogs = useMemo(() => {
-    const currentLogs = (viewMode === 'meals' ? logs : workoutLogs)
+  // Group by date and sort descending; range-filter first (rolling N days, local)
+  const { groupedLogs, hasAnyAllTime } = useMemo(() => {
+    const visible = (viewMode === 'meals' ? logs : workoutLogs)
       .filter(log => !optimisticallyDeletedIds.has(log.id));
-      
+
+    let cutoff = null;
+    if (rangeDays > 0) {
+      cutoff = new Date();
+      cutoff.setHours(0, 0, 0, 0);
+      cutoff.setDate(cutoff.getDate() - (rangeDays - 1));
+    }
+    const currentLogs = cutoff ? visible.filter(log => new Date(log.date) >= cutoff) : visible;
+
     const groups = {};
-    
     currentLogs.forEach(log => {
       const dateObj = new Date(log.date);
       const dateKey = dateObj.toLocaleDateString();
-      
       if (!groups[dateKey]) {
-        groups[dateKey] = {
-          date: dateObj,
-          logs: []
-        };
+        groups[dateKey] = { date: dateObj, logs: [] };
       }
       groups[dateKey].logs.push(log);
     });
 
-    return Object.values(groups)
+    const sorted = Object.values(groups)
       .sort((a, b) => b.date - a.date)
       .map(group => {
         const isToday = new Date().toLocaleDateString() === group.date.toLocaleDateString();
-        const label = isToday ? 'Today' : group.date.toLocaleDateString(undefined, { 
-          weekday: 'long', 
-          year: 'numeric', 
-          month: 'long', 
-          day: 'numeric' 
+        const label = isToday ? 'Today' : group.date.toLocaleDateString(undefined, {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
         });
         return { label, logs: group.logs };
       });
-  }, [logs, workoutLogs, viewMode, optimisticallyDeletedIds]);
+
+    return { groupedLogs: sorted, hasAnyAllTime: visible.length > 0 };
+  }, [logs, workoutLogs, viewMode, optimisticallyDeletedIds, rangeDays]);
 
   return (
-    <div className="p-6 md:p-0 min-h-full pb-20 md:pb-0">
-      <div className="flex items-center justify-between mb-6 md:mb-8">
-        <h2 className="text-2xl font-bold text-foreground">History</h2>
-
-        <SegmentedControl options={VIEW_MODES} value={viewMode} onChange={setViewMode} />
+    <div className="p-6 md:p-0 space-y-6 max-w-3xl mx-auto min-h-full pb-20 md:pb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-display text-2xl font-bold text-foreground">History</h2>
+        <div className="flex flex-wrap items-center gap-2">
+          <SegmentedControl options={VIEW_MODES} value={viewMode} onChange={setViewMode} />
+          <SegmentedControl options={RANGES} value={rangeDays} onChange={setRangeDays} />
+        </div>
       </div>
 
       {/* Edit Workout Modal */}
@@ -343,15 +408,16 @@ export default function HistoryView({ logs, workoutLogs = [], user, onLogDeleted
         </div>
       )}
 
-      {groupedLogs.length === 0 ? (
-         <div className="flex flex-col items-center justify-center h-64 text-muted-foreground bg-card rounded-2xl border border-border">
-           {viewMode === 'meals' ? (
-             <Utensils className="w-12 h-12 mb-2 opacity-20" />
-           ) : (
-             <Dumbbell className="w-12 h-12 mb-2 opacity-20" />
-           )}
-           <p>No {viewMode} logged yet</p>
-         </div>
+      {loading && !hasAnyAllTime ? (
+        <HistorySkeleton />
+      ) : staleData && !hasAnyAllTime ? (
+        <HistoryError onRetry={onRetry} />
+      ) : groupedLogs.length === 0 ? (
+        hasAnyAllTime ? (
+          <HistoryRangeEmpty rangeDays={rangeDays} onShowAll={() => setRangeDays(0)} />
+        ) : (
+          <HistoryEmpty viewMode={viewMode} onCta={() => onLogCta && onLogCta(viewMode)} />
+        )
       ) : (
         <div className="space-y-6" key={viewMode}>
           <AnimatePresence mode="popLayout">
