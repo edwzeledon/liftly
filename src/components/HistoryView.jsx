@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Utensils, Image as ImageIcon, Trash2, Edit2, Dumbbell, X } from 'lucide-react';
 import { deleteLog, deleteWorkoutLog } from '@/lib/api';
 import { formatWeight, toDisplayVolume } from '@/lib/units';
-import { dayVolumeLb, macroSplit } from '@/lib/daySummary';
+import { dayVolumeLb, macroSplit, dayDurationSec } from '@/lib/daySummary';
 import SegmentedControl from '@/components/ui/SegmentedControl';
 import ConfirmModal from './ConfirmModal';
 import WorkoutCard from './workout/WorkoutCard';
@@ -18,7 +18,7 @@ function HistorySkeleton() {
   return (
     <div className="space-y-6">
       {[0, 1].map((i) => (
-        <div key={i} className="bg-card rounded-2xl p-5 border border-border">
+        <div key={i} className="bg-card rounded-2xl p-6 border border-border">
           <div className="animate-pulse space-y-3">
             <div className="h-5 bg-muted rounded w-1/3" />
             <div className="h-16 bg-muted rounded-xl" />
@@ -53,15 +53,14 @@ function HistoryRangeEmpty({ rangeDays, onShowAll }) {
 }
 
 const getBestSet = (sets) => {
-  if (!sets || sets.length === 0) return null;
+  const completed = (sets || []).filter((s) => s?.completed);
+  if (completed.length === 0) return null;
   // Find set with max weight
-  const best = sets.reduce((max, current) => {
+  return completed.reduce((max, current) => {
     const currentWeight = parseFloat(current.weight) || 0;
     const maxWeight = parseFloat(max.weight) || 0;
     return currentWeight > maxWeight ? current : max;
-  }, sets[0]);
-
-  return best;
+  });
 };
 
 const formatDuration = (seconds) => {
@@ -102,7 +101,7 @@ function TrainingSection({ dayWorkouts, weightUnit, onEdit, onDelete }) {
             Training
           </h4>
           <p className="text-xs text-muted-foreground">
-            {dayWorkouts.length} Exercises • {formatDuration(dayWorkouts[0]?.duration)}
+            {dayWorkouts.length} Exercises • {formatDuration(dayDurationSec(dayWorkouts))}
             {volumeLb > 0 && <> • {toDisplayVolume(volumeLb, weightUnit).toLocaleString()} {weightUnit}</>}
           </p>
         </div>
@@ -110,7 +109,7 @@ function TrainingSection({ dayWorkouts, weightUnit, onEdit, onDelete }) {
           <button
             onClick={onEdit}
             aria-label="Edit workout session"
-            className="p-2 min-h-11 min-w-11 flex items-center justify-center text-faint hover:text-training-text hover:bg-training-soft rounded-lg transition-colors"
+            className="p-2 min-h-11 min-w-11 flex items-center justify-center text-faint hover:text-training-text hover:bg-training-soft rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             title="Edit Session"
           >
             <Edit2 className="w-4 h-4" />
@@ -118,7 +117,7 @@ function TrainingSection({ dayWorkouts, weightUnit, onEdit, onDelete }) {
           <button
             onClick={onDelete}
             aria-label="Delete workout session"
-            className="p-2 min-h-11 min-w-11 flex items-center justify-center text-faint hover:text-destructive-text hover:bg-destructive/10 rounded-lg transition-colors"
+            className="p-2 min-h-11 min-w-11 flex items-center justify-center text-faint hover:text-destructive-text hover:bg-destructive/10 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             title="Delete Session"
           >
             <Trash2 className="w-4 h-4" />
@@ -136,7 +135,7 @@ function TrainingSection({ dayWorkouts, weightUnit, onEdit, onDelete }) {
                 </div>
                 <div>
                   <p className="font-bold text-foreground text-sm">{log.exercise || log.exercise_name}</p>
-                  <p className="text-xs text-muted-foreground">{log.sets?.length || 0} Sets</p>
+                  <p className="text-xs text-muted-foreground">{(log.sets || []).filter((s) => s?.completed).length} Sets</p>
                 </div>
               </div>
               <div className="text-right">
@@ -171,7 +170,7 @@ function NutritionSection({ dayMeals, onEdit, onDelete, withDivider }) {
           <button
             onClick={onEdit}
             aria-label="Edit meals"
-            className="p-2 min-h-11 min-w-11 flex items-center justify-center text-faint hover:text-training-text hover:bg-training-soft rounded-lg transition-colors"
+            className="p-2 min-h-11 min-w-11 flex items-center justify-center text-faint hover:text-training-text hover:bg-training-soft rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             title="Edit Meals"
           >
             <Edit2 className="w-4 h-4" />
@@ -179,7 +178,7 @@ function NutritionSection({ dayMeals, onEdit, onDelete, withDivider }) {
           <button
             onClick={onDelete}
             aria-label="Delete all meals"
-            className="p-2 min-h-11 min-w-11 flex items-center justify-center text-faint hover:text-destructive-text hover:bg-destructive/10 rounded-lg transition-colors"
+            className="p-2 min-h-11 min-w-11 flex items-center justify-center text-faint hover:text-destructive-text hover:bg-destructive/10 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             title="Delete All Meals"
           >
             <Trash2 className="w-4 h-4" />
@@ -503,7 +502,7 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
                   if (onLogDeleted) onLogDeleted(); // Refresh parent data
                 }}
                 aria-label="Close"
-                className="p-2 min-h-11 min-w-11 flex items-center justify-center bg-muted rounded-full text-muted-foreground hover:bg-muted/80 transition-colors"
+                className="p-2 min-h-11 min-w-11 flex items-center justify-center bg-muted rounded-full text-muted-foreground hover:bg-muted/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -545,7 +544,7 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
                         <button
                           onClick={() => onEditLog(log)}
                           aria-label="Edit meal"
-                          className="p-2 min-h-11 min-w-11 flex items-center justify-center text-faint hover:text-training-text hover:bg-training-soft rounded-lg transition-colors"
+                          className="p-2 min-h-11 min-w-11 flex items-center justify-center text-faint hover:text-training-text hover:bg-training-soft rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
@@ -558,7 +557,7 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
                              }));
                            }}
                            aria-label="Delete meal"
-                           className="p-2 min-h-11 min-w-11 flex items-center justify-center text-faint hover:text-destructive-text hover:bg-destructive/10 rounded-lg transition-colors"
+                           className="p-2 min-h-11 min-w-11 flex items-center justify-center text-faint hover:text-destructive-text hover:bg-destructive/10 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -601,7 +600,7 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
               <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3 sticky top-0 bg-background/90 backdrop-blur py-2 z-10">
                 {label}
               </h3>
-              <div className="bg-card rounded-2xl border border-border overflow-hidden p-5">
+              <div className="bg-card rounded-2xl border border-border overflow-hidden p-6">
                 {dayWorkouts.length > 0 && (
                   <TrainingSection
                     dayWorkouts={dayWorkouts}
@@ -625,7 +624,7 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
           {rangeDays === 0 && dayGroups.length > visibleDays && (
             <button
               onClick={() => setVisibleDays(v => v + 60)}
-              className="w-full min-h-11 bg-card border border-border rounded-xl text-sm font-bold text-muted-foreground hover:text-foreground transition-colors"
+              className="w-full min-h-11 bg-card border border-border rounded-xl text-sm font-bold text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               Load older
             </button>

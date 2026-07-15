@@ -1,4 +1,4 @@
-import { dayVolumeLb, macroSplit } from '../daySummary';
+import { dayVolumeLb, macroSplit, dayDurationSec } from '../daySummary';
 
 describe('dayVolumeLb', () => {
   test('sums completed sets only', () => {
@@ -50,5 +50,33 @@ describe('macroSplit', () => {
       { protein: 0, carbs: 30, fats: 0 },
     ]);
     expect(s).toEqual({ p: 50, c: 50, f: 0 });
+  });
+});
+
+describe('dayDurationSec', () => {
+  test('counts a shared session duration once', () => {
+    const logs = [
+      { id: 1, session_id: 'a', duration: 3600 },
+      { id: 2, session_id: 'a', duration: 3600 },
+    ];
+    expect(dayDurationSec(logs)).toBe(3600);
+  });
+
+  test('sums distinct sessions', () => {
+    const logs = [
+      { id: 1, session_id: 'a', duration: 1800 },
+      { id: 2, session_id: 'b', duration: 600 },
+    ];
+    expect(dayDurationSec(logs)).toBe(2400);
+  });
+
+  test('falls back to log id when session_id is absent', () => {
+    expect(dayDurationSec([{ id: 1, duration: 100 }, { id: 2, duration: 50 }])).toBe(150);
+  });
+
+  test('zero for missing durations and empty input', () => {
+    expect(dayDurationSec([{ id: 1 }, { id: 2, duration: 'x' }])).toBe(0);
+    expect(dayDurationSec([])).toBe(0);
+    expect(dayDurationSec(undefined)).toBe(0);
   });
 });

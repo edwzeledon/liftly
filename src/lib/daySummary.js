@@ -14,6 +14,20 @@ export function dayVolumeLb(workoutDayLogs) {
   return total;
 }
 
+export function dayDurationSec(workoutDayLogs) {
+  const seen = new Set();
+  let total = 0;
+  (workoutDayLogs || []).forEach((log) => {
+    if (!log) return;
+    const key = log.session_id ?? log.id;
+    if (seen.has(key)) return;
+    seen.add(key);
+    const d = parseInt(log.duration, 10);
+    if (Number.isFinite(d) && d > 0) total += d;
+  });
+  return total;
+}
+
 export function macroSplit(mealDayLogs) {
   let p = 0, c = 0, f = 0;
   (mealDayLogs || []).forEach((log) => {
