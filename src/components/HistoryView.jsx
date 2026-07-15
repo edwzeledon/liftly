@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Utensils, Image as ImageIcon, Trash2, Edit2, Dumbbell, X } from 'lucide-react';
 import { deleteLog, deleteWorkoutLog } from '@/lib/api';
@@ -10,6 +10,7 @@ import SegmentedControl from '@/components/ui/SegmentedControl';
 import ConfirmModal from './ConfirmModal';
 import WorkoutCard from './workout/WorkoutCard';
 import { useToast } from '@/hooks/useToast';
+import { useModalBehavior } from '@/hooks/useModalBehavior';
 
 const FILTERS = [{ label: 'All', value: 'all' }, { label: 'Meals', value: 'meals' }, { label: 'Workouts', value: 'workouts' }];
 const RANGES = [{ label: '7D', value: 7 }, { label: '30D', value: 30 }, { label: 'All', value: 0 }];
@@ -92,6 +93,7 @@ function MacroBar({ split }) {
 
 function TrainingSection({ dayWorkouts, weightUnit, onEdit, onDelete }) {
   const volumeLb = dayVolumeLb(dayWorkouts);
+  const durationSec = dayDurationSec(dayWorkouts);
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
@@ -101,7 +103,8 @@ function TrainingSection({ dayWorkouts, weightUnit, onEdit, onDelete }) {
             Training
           </h4>
           <p className="text-xs text-muted-foreground">
-            {dayWorkouts.length} Exercises • {formatDuration(dayDurationSec(dayWorkouts))}
+            {dayWorkouts.length} Exercises
+            {durationSec > 0 && <> • {formatDuration(durationSec)}</>}
             {volumeLb > 0 && <> • {toDisplayVolume(volumeLb, weightUnit).toLocaleString()} {weightUnit}</>}
           </p>
         </div>
@@ -162,7 +165,7 @@ function NutritionSection({ dayMeals, onEdit, onDelete, withDivider }) {
             Nutrition
           </h4>
           <p className="text-xs text-muted-foreground">
-            {dayMeals.length} Meals • {dayMeals.reduce((sum, item) => sum + (parseInt(item.calories) || 0), 0)} kcal
+            {dayMeals.length} Meals • {dayMeals.reduce((sum, item) => sum + (parseInt(item.calories) || 0), 0).toLocaleString()} kcal
           </p>
           <MacroBar split={macroSplit(dayMeals)} />
         </div>
@@ -201,8 +204,8 @@ function NutritionSection({ dayMeals, onEdit, onDelete, withDivider }) {
                       <span className="text-muted-foreground">•</span>
                       <span className="flex gap-1">
                         {log.protein > 0 && <span className="text-protein-text font-medium">P:{log.protein}</span>}
-                        {log.carbs > 0 && <span className="text-carb font-medium">C:{log.carbs}</span>}
-                        {log.fats > 0 && <span className="text-fat font-medium">F:{log.fats}</span>}
+                        {log.carbs > 0 && <span className="text-carb-text font-medium">C:{log.carbs}</span>}
+                        {log.fats > 0 && <span className="text-fat-text font-medium">F:{log.fats}</span>}
                       </span>
                     </>
                   )}
@@ -220,7 +223,7 @@ function NutritionSection({ dayMeals, onEdit, onDelete, withDivider }) {
 }
 
 function HistoryEmpty({ filter, onCta }) {
-  const Icon = filter === 'meals' ? Utensils : Dumbbell;
+  const Icon = filter === 'meals' ? Utensils : filter === 'workouts' ? Dumbbell : Calendar;
   const copy = filter === 'all' ? 'Nothing logged yet' : `No ${filter} logged yet`;
   return (
     <div className="bg-card rounded-2xl p-6 border border-border">
@@ -249,6 +252,35 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
   const [rangeDays, setRangeDays] = useState(7); // 7 | 30 | 0 (all)
   const [visibleDays, setVisibleDays] = useState(60); // All-range slice (day groups)
   const [editingDay, setEditingDay] = useState(null); // { label, logs, type: 'workouts' | 'meals' }
+
+  // Day-editor modal: same close path for the X button and Escape, so both
+  // routes stay in sync (including the parent data refresh on close).
+  const dialogRef = useRef(null);
+  const closeEditingDay = () => {
+    setEditingDay(null);
+    if (onLogDeleted) onLogDeleted(); // Refresh parent data
+  };
+  // Mirrors ConfirmModal's Escape/focus pattern: Escape closes the topmost
+  // overlay and focus moves to (then restores from) the close button.
+  const { closeRef } = useModalBehavior(!!editingDay, closeEditingDay);
+  // Basic focus containment: wrap Tab/Shift+Tab among the dialog's own
+  // focusable elements so focus can't escape to the page behind it.
+  const handleDialogTabKey = (e) => {
+    if (e.key !== 'Tab' || !dialogRef.current) return;
+    const focusable = dialogRef.current.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  };
 
   useEffect(() => {
     // Intentional dependency-driven reset: the All-range slice must snap back
@@ -489,7 +521,14 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
 
       {/* Edit Workout Modal */}
       {editingDay && (
-        <div className="fixed inset-0 z-50 flex flex-col bg-background animate-in slide-in-from-bottom-10">
+        <div
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label={editingDay.type === 'workouts' ? 'Edit Workout' : 'Edit Meals'}
+          onKeyDown={handleDialogTabKey}
+          className="fixed inset-0 z-50 flex flex-col bg-background animate-in slide-in-from-bottom-10"
+        >
           <div className="bg-card border-b border-border pt-safe shrink-0">
             <div className="px-6 py-4 flex items-center justify-between">
               <div>
@@ -497,10 +536,8 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
                 <p className="text-sm text-muted-foreground">{editingDay.label}</p>
               </div>
               <button
-                onClick={() => {
-                  setEditingDay(null);
-                  if (onLogDeleted) onLogDeleted(); // Refresh parent data
-                }}
+                ref={closeRef}
+                onClick={closeEditingDay}
                 aria-label="Close"
                 className="p-2 min-h-11 min-w-11 flex items-center justify-center bg-muted rounded-full text-muted-foreground hover:bg-muted/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >

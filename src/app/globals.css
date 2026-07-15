@@ -16,7 +16,9 @@
   --color-streak-soft: #332411;
   --color-streak-soft-border: #4A3418;
   --color-carb: #F59E0B;
+  --color-carb-text: #F59E0B;
   --color-fat: #FB7185;
+  --color-fat-text: #FB7185;
   --color-deficit: #60A5FA;
   --color-surplus: #FB923C;
   --color-destructive-text: #FB7185;
@@ -101,7 +103,9 @@
   --color-streak-soft: #fff7ed;
   --color-streak-soft-border: #ffedd5;
   --color-carb: #f59e0b;
+  --color-carb-text: #b45309;
   --color-fat: #f43f5e;
+  --color-fat-text: #be123c;
   --color-deficit: #60a5fa;
   --color-surplus: #fb923c;
   --color-destructive-text: #e11d48;
