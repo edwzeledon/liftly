@@ -3,7 +3,7 @@ import { Dumbbell, Plus, Save, Ban, Check, Trophy, Loader2 } from 'lucide-react'
 import confetti from 'canvas-confetti';
 import WorkoutCard from './WorkoutCard';
 import PickerView from './PickerView';
-import StartLaunchpad from './StartLaunchpad';
+import StartLaunchpad, { recordRoutineUse } from './StartLaunchpad';
 import SessionTimer from './SessionTimer';
 import ConfirmModal from '../ConfirmModal';
 
@@ -453,6 +453,11 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
 
   const handleRepeatLast = () => {
     if (lastSession) handleLoadTemplate({ exercises: lastSession.exercises });
+  };
+
+  const handleStartTemplate = (template) => {
+    recordRoutineUse(template.id);
+    handleLoadTemplate(template);
   };
 
   const deleteWorkout = async (id) => {
@@ -962,7 +967,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
                  weightUnit={weightUnit}
                  isLoading={isLoadingTemplate}
                  onRepeatLast={handleRepeatLast}
-                 onStartTemplate={handleLoadTemplate}
+                 onStartTemplate={handleStartTemplate}
                  onDeleteTemplate={deleteTemplate}
                  onAddExercise={() => setShowPicker(true)}
                />

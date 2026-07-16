@@ -1,12 +1,34 @@
 'use client';
 
-import React from 'react';
-import { Play, Plus, RotateCcw, Trash2, Loader2, Folder } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Play, Plus, RotateCcw, Trash2, Loader2, Folder, ChevronDown, ChevronUp } from 'lucide-react';
 import { toDisplayVolume } from '@/lib/units';
 
-// Pre-session launchpad: repeat-last card + routine cards + start-from-scratch.
-// Pure presentation — template CRUD and session creation live in WorkoutView
-// (onRepeatLast / onStartTemplate both funnel into handleLoadTemplate).
+const RECENCY_KEY = 'snapcal_routine_last_used';
+const VISIBLE_CAP = 4;
+
+export function readRoutineRecency() {
+  try {
+    return JSON.parse(localStorage.getItem(RECENCY_KEY)) || {};
+  } catch {
+    return {};
+  }
+}
+
+export function recordRoutineUse(id) {
+  try {
+    const map = readRoutineRecency();
+    map[id] = Date.now();
+    localStorage.setItem(RECENCY_KEY, JSON.stringify(map));
+  } catch {
+    // localStorage unavailable — recency is a nicety, not a requirement
+  }
+}
+
+// Pre-session launchpad: repeat-last card + tappable routine cards (capped
+// at 4, recency-ordered) + start-from-scratch. Cards are whole-tap targets:
+// an absolute overlay button starts the routine (no nested buttons), the
+// corner delete sits above it on z-10.
 export default function StartLaunchpad({
   templates = [],
   lastSession = null,
@@ -18,6 +40,14 @@ export default function StartLaunchpad({
   onAddExercise,
 }) {
   const unit = weightUnit === 'kg' ? 'kg' : 'lb';
+  const [showAll, setShowAll] = useState(false);
+  const [recency, setRecency] = useState({});
+
+  // Read after mount: SSR has no localStorage.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setRecency(readRoutineRecency());
+  }, []);
 
   if (isLoading) {
     return (
@@ -29,6 +59,9 @@ export default function StartLaunchpad({
   }
 
   const hasAnything = Boolean(lastSession) || templates.length > 0;
+  // Stable sort: recency desc, ties keep API order.
+  const sorted = [...templates].sort((a, b) => (recency[b.id] || 0) - (recency[a.id] || 0));
+  const visible = showAll ? sorted : sorted.slice(0, VISIBLE_CAP);
 
   return (
     <div className="space-y-6">
@@ -74,35 +107,57 @@ export default function StartLaunchpad({
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
-            {templates.map((temp) => (
-              <div key={temp.id} className="bg-card rounded-2xl p-4 border border-border flex flex-col gap-3">
-                <div className="min-w-0">
-                  <h4 className="font-bold text-foreground truncate">{temp.name}</h4>
-                  <p className="text-xs text-faint">
-                    {temp.exercises.length} {temp.exercises.length === 1 ? 'exercise' : 'exercises'}
-                  </p>
-                </div>
-                <div className="flex items-center justify-between mt-auto">
+          <>
+            <div className="grid grid-cols-2 gap-3">
+              {visible.map((temp) => (
+                <div
+                  key={temp.id}
+                  className="relative bg-card rounded-2xl p-4 border border-border hover:border-training-soft-border transition-colors"
+                >
                   <button
                     onClick={() => onStartTemplate(temp)}
                     aria-label={`Start ${temp.name}`}
-                    className="flex-1 mr-2 py-2 min-h-11 bg-training text-white rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 hover:bg-training/90 active:scale-95 transition-all"
-                  >
-                    <Play className="w-3.5 h-3.5 fill-current" aria-hidden="true" />
-                    Start
-                  </button>
+                    className="absolute inset-0 rounded-2xl focus-visible:ring-2 focus-visible:ring-training"
+                  />
+                  <div className="pointer-events-none pr-8">
+                    <h4 className="font-bold text-foreground truncate">{temp.name}</h4>
+                    <p className="text-xs text-faint">
+                      {temp.exercises.length} {temp.exercises.length === 1 ? 'exercise' : 'exercises'}
+                    </p>
+                    <span
+                      className="mt-3 ml-auto w-7 h-7 rounded-full bg-training-soft text-training-text flex items-center justify-center"
+                      aria-hidden="true"
+                    >
+                      <Play className="w-3.5 h-3.5 fill-current" />
+                    </span>
+                  </div>
                   <button
                     onClick={() => onDeleteTemplate(temp.id)}
                     aria-label={`Delete ${temp.name}`}
-                    className="min-h-11 min-w-11 flex items-center justify-center text-faint hover:text-destructive-text rounded-lg"
+                    className="absolute top-1 right-1 z-10 min-h-11 min-w-11 flex items-center justify-center text-faint hover:text-destructive-text"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+            {templates.length > VISIBLE_CAP && (
+              <button
+                onClick={() => setShowAll((v) => !v)}
+                className="mt-3 w-full min-h-11 text-xs font-bold text-muted-foreground hover:text-foreground flex items-center justify-center gap-1 transition-colors"
+              >
+                {showAll ? (
+                  <>
+                    <ChevronUp className="w-3.5 h-3.5" aria-hidden="true" /> Show less
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="w-3.5 h-3.5" aria-hidden="true" /> Show all ({templates.length})
+                  </>
+                )}
+              </button>
+            )}
+          </>
         )}
       </div>
 
