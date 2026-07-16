@@ -1,4 +1,4 @@
-import { setVolume, logsVolume, bestSet, beatsBest, startOfWeek, lastWorkoutSession } from '../workoutStats';
+import { setVolume, logsVolume, bestSet, beatsBest, startOfWeek, lastWorkoutSession, recentExercises } from '../workoutStats';
 
 describe('setVolume', () => {
   it('multiplies weight by reps', () => {
@@ -102,5 +102,34 @@ describe('lastWorkoutSession', () => {
     expect(s.exercises[1].sets).toHaveLength(1);
     expect(s.durationSec).toBe(2400);
     expect(s.volumeLb).toBe(1790);
+  });
+});
+
+describe('recentExercises', () => {
+  it('handles empty and undefined input', () => {
+    expect(recentExercises([])).toEqual([]);
+    expect(recentExercises(undefined)).toEqual([]);
+  });
+
+  it('dedups by name, most recent first, resolves exercise_name', () => {
+    const logs = [
+      { date: '2026-07-10T08:00:00', exercise: 'Squat', category: 'Legs' },
+      { date: '2026-07-14T08:00:00', exercise: 'Bench Press', category: 'Chest' },
+      { date: '2026-07-12T08:00:00', exercise_name: 'Squat', category: 'Legs' },
+    ];
+    expect(recentExercises(logs)).toEqual([
+      { name: 'Bench Press', category: 'Chest' },
+      { name: 'Squat', category: 'Legs' },
+    ]);
+  });
+
+  it('respects the limit', () => {
+    const logs = Array.from({ length: 12 }, (_, i) => ({
+      date: `2026-07-${String(i + 1).padStart(2, '0')}T08:00:00`,
+      exercise: `Ex${i}`,
+      category: 'Misc',
+    }));
+    expect(recentExercises(logs, 5)).toHaveLength(5);
+    expect(recentExercises(logs, 5)[0].name).toBe('Ex11');
   });
 });

@@ -101,3 +101,22 @@ export function lastWorkoutSession(workoutLogs, now = new Date()) {
     exerciseCount: exercises.length,
   };
 }
+
+// Unique exercises from history, most recently used first — feeds the
+// picker's Recent chips. Name resolution matches the rest of the app:
+// exercise || exercise_name.
+export function recentExercises(workoutLogs, limit = 8) {
+  const sorted = [...(workoutLogs || [])]
+    .filter((l) => l && (l.exercise || l.exercise_name) && l.date)
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+  const seen = new Set();
+  const out = [];
+  for (const log of sorted) {
+    const name = log.exercise || log.exercise_name;
+    if (seen.has(name)) continue;
+    seen.add(name);
+    out.push({ name, category: log.category });
+    if (out.length >= limit) break;
+  }
+  return out;
+}
