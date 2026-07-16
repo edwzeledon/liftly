@@ -1,4 +1,4 @@
-import { dayVolumeLb, macroSplit, dayDurationSec } from '../daySummary';
+import { dayVolumeLb, macroSplit, dayDurationSec, todayWorkoutSummary } from '../daySummary';
 
 describe('dayVolumeLb', () => {
   test('sums completed sets only', () => {
@@ -78,5 +78,31 @@ describe('dayDurationSec', () => {
     expect(dayDurationSec([{ id: 1 }, { id: 2, duration: 'x' }])).toBe(0);
     expect(dayDurationSec([])).toBe(0);
     expect(dayDurationSec(undefined)).toBe(0);
+  });
+});
+
+describe('todayWorkoutSummary', () => {
+  const now = new Date('2026-07-15T12:00:00');
+
+  test('empty and undefined input', () => {
+    const empty = { trained: false, volumeLb: 0, durationSec: 0, exerciseCount: 0 };
+    expect(todayWorkoutSummary(undefined, now)).toEqual(empty);
+    expect(todayWorkoutSummary([], now)).toEqual(empty);
+  });
+
+  test('filters to today only', () => {
+    const logs = [
+      { id: 1, date: '2026-07-15T09:00:00', session_id: 'a', duration: 1800, sets: [{ weight: '100', reps: '5', completed: true }] },
+      { id: 2, date: '2026-07-14T09:00:00', session_id: 'b', duration: 3600, sets: [{ weight: '200', reps: '5', completed: true }] },
+    ];
+    expect(todayWorkoutSummary(logs, now)).toEqual({ trained: true, volumeLb: 500, durationSec: 1800, exerciseCount: 1 });
+  });
+
+  test('dedups shared session duration, counts completed-set volume only', () => {
+    const logs = [
+      { id: 1, date: '2026-07-15T09:00:00', session_id: 's', duration: 2700, sets: [{ weight: '135', reps: '5', completed: true }] },
+      { id: 2, date: '2026-07-15T09:30:00', session_id: 's', duration: 2700, sets: [{ weight: '95', reps: '10', completed: false }] },
+    ];
+    expect(todayWorkoutSummary(logs, now)).toEqual({ trained: true, volumeLb: 675, durationSec: 2700, exerciseCount: 2 });
   });
 });

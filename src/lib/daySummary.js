@@ -50,3 +50,19 @@ export function macroSplit(mealDayLogs) {
 
   return { p: floors[0], c: floors[1], f: floors[2] };
 }
+
+// Today's training rollup for the dashboard TrainingCard. Same toDateString
+// day-bucketing AppProvider uses for trainedToday; volume/duration reuse the
+// canonical-lb + session-dedup helpers above.
+export function todayWorkoutSummary(workoutLogs, now = new Date()) {
+  const todayKey = now.toDateString();
+  const todays = (workoutLogs || []).filter(
+    (l) => l && new Date(l.date).toDateString() === todayKey
+  );
+  return {
+    trained: todays.length > 0,
+    volumeLb: dayVolumeLb(todays),
+    durationSec: dayDurationSec(todays),
+    exerciseCount: todays.length,
+  };
+}
