@@ -100,7 +100,7 @@ function AppShell({ children }) {
 
         {/* Scrollable Content Area */}
         <main className="flex-1 overflow-y-auto pb-24 md:pb-0 scroll-smooth bg-background">
-          <div className="w-full max-w-5xl mx-auto md:p-8">
+          <div className={`w-full ${pathname === '/today' ? 'max-w-7xl' : 'max-w-5xl'} mx-auto md:p-8`}>
             {children}
           </div>
         </main>
