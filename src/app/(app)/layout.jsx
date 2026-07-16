@@ -7,7 +7,7 @@
 import React, { Suspense, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Loader2, Utensils, LogOut, Home, Plus, Calendar, Settings, Dumbbell, BarChart3 } from 'lucide-react';
+import { Loader2, Utensils, Home, Plus, Calendar, Settings, Dumbbell, BarChart3 } from 'lucide-react';
 import AppProvider, { useApp } from '@/components/app/AppProvider';
 import Sidebar from '@/components/Sidebar';
 import EditFoodModal from '@/components/EditFoodModal';
@@ -85,14 +85,6 @@ function AppShell({ children }) {
             >
               <Settings className="w-5 h-5" />
             </Link>
-            <button
-              onClick={app.handleLogout}
-              aria-label="Sign out"
-              className="text-muted-foreground hover:text-foreground p-2 rounded-full hover:bg-muted transition-colors min-h-11 min-w-11 flex items-center justify-center"
-              title="Sign Out"
-            >
-              <LogOut className="w-5 h-5" />
-            </button>
           </div>
         </header>
 
