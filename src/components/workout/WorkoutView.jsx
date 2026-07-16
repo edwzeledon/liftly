@@ -8,7 +8,7 @@ import SessionTimer from './SessionTimer';
 import ConfirmModal from '../ConfirmModal';
 
 import { getExercises } from '@/lib/api';
-import { logsVolume, lastWorkoutSession } from '@/lib/workoutStats';
+import { logsVolume, lastWorkoutSession, recentExercises } from '@/lib/workoutStats';
 import { toDisplayVolume } from '@/lib/units';
 import { useToast } from '@/hooks/useToast';
 import { useModalBehavior } from '@/hooks/useModalBehavior';
@@ -180,8 +180,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
   const handleAddExerciseToDay = async (exercise) => {
     if (!user) return;
     
-    // 1. Immediate UI Update: Close picker and add temp card
-    setShowPicker(false);
+    // 1. Immediate UI Update: add temp card (picker stays open for multi-add)
     const tempId = `temp-${Date.now()}`;
     const tempLog = {
       id: tempId,
@@ -459,6 +458,12 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
     recordRoutineUse(template.id);
     handleLoadTemplate(template);
   };
+
+  const recent = useMemo(() => recentExercises(historyLogs), [historyLogs]);
+  const addedNames = useMemo(
+    () => new Set(workoutLogs.map((l) => l.exercise || l.exercise_name).filter(Boolean)),
+    [workoutLogs]
+  );
 
   const deleteWorkout = async (id) => {
     if (!user) return;
@@ -950,11 +955,15 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       {showPicker ? (
         <PickerView
           onBack={() => setShowPicker(false)}
+          onDone={() => setShowPicker(false)}
           onAddExercise={handleAddExerciseToDay}
           exercises={allExercises}
           loading={exercisesLoading}
           error={exercisesError}
           onRetry={fetchExercises}
+          recent={recent}
+          addedNames={addedNames}
+          addedCount={workoutLogs.length}
         />
       ) : (
         <div className="flex flex-col h-full">

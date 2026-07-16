@@ -1,7 +1,22 @@
 import React, { useState } from 'react';
-import { ChevronLeft, Search, Plus, Loader2 } from 'lucide-react';
+import { ChevronLeft, Search, Plus, Check, Loader2 } from 'lucide-react';
 
-export default function PickerView({ onBack, onAddExercise, exercises = [], loading = false, error = null, onRetry }) {
+// Quick-add picker: stays open across adds so a whole day builds in one
+// trip. Rows/chips flip to a check once their exercise is in the session
+// (disabled — prevents accidental duplicates); Done shows a running count
+// and closes.
+export default function PickerView({
+  onBack,
+  onAddExercise,
+  exercises = [],
+  loading = false,
+  error = null,
+  onRetry,
+  recent = [],
+  addedNames = new Set(),
+  addedCount = 0,
+  onDone,
+}) {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -9,7 +24,7 @@ export default function PickerView({ onBack, onAddExercise, exercises = [], load
 
   const filteredExercises = () => {
     let filtered = exercises;
-    
+
     if (selectedCategory !== 'All') {
       filtered = filtered.filter(ex => ex.category === selectedCategory);
     }
@@ -24,10 +39,16 @@ export default function PickerView({ onBack, onAddExercise, exercises = [], load
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center gap-2 mb-6">
-        <button onClick={onBack} className="p-2 -ml-2 text-faint hover:text-muted-foreground rounded-full hover:bg-muted">
+        <button onClick={onBack} aria-label="Close" className="p-2 -ml-2 text-faint hover:text-muted-foreground rounded-full hover:bg-muted">
           <ChevronLeft className="w-6 h-6" />
         </button>
-        <h2 className="text-xl font-bold text-foreground">Add Exercise</h2>
+        <h2 className="text-xl font-bold text-foreground flex-1">Add Exercises</h2>
+        <button
+          onClick={onDone}
+          className="px-4 py-2 min-h-11 bg-training text-white rounded-xl font-bold text-sm hover:bg-training/90 active:scale-95 transition-all"
+        >
+          Done{addedCount > 0 ? ` · ${addedCount}` : ''}
+        </button>
       </div>
 
       {/* Search */}
@@ -58,6 +79,33 @@ export default function PickerView({ onBack, onAddExercise, exercises = [], load
         </div>
       ) : (
         <>
+          {/* Recent quick-add chips (hidden while searching) */}
+          {recent.length > 0 && !searchQuery && (
+            <div className="mb-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Recent</h3>
+              <div className="flex flex-wrap gap-2">
+                {recent.map((ex) => {
+                  const added = addedNames.has(ex.name);
+                  return (
+                    <button
+                      key={ex.name}
+                      onClick={() => onAddExercise(ex)}
+                      disabled={added}
+                      className={`px-3 py-2 min-h-11 rounded-full text-sm font-bold flex items-center gap-1.5 transition-colors ${
+                        added
+                          ? 'bg-training-soft text-training-text cursor-default'
+                          : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                      }`}
+                    >
+                      {ex.name}
+                      {added ? <Check className="w-3.5 h-3.5" aria-hidden="true" /> : <Plus className="w-3.5 h-3.5" aria-hidden="true" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Categories */}
           <div className="flex gap-2 overflow-x-auto pb-4 no-scrollbar mb-2">
             {categories.map(cat => (
@@ -82,21 +130,33 @@ export default function PickerView({ onBack, onAddExercise, exercises = [], load
               return filtered.length === 0 ? (
                 <p className="text-center text-faint py-8">No exercises match &lsquo;{searchQuery}&rsquo;</p>
               ) : (
-                filtered.map((ex) => (
-                <button
-                  key={ex.id || ex.name}
-                  onClick={() => onAddExercise(ex)}
-                  className="w-full p-4 bg-card border border-border rounded-xl flex items-center justify-between hover:border-training-soft-border transition-all group text-left"
-                >
-                  <div>
-                    <h4 className="font-bold text-foreground">{ex.name}</h4>
-                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{ex.category}</span>
-                  </div>
-                  <div className="w-8 h-8 rounded-full bg-training-soft text-training-text flex items-center justify-center md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                    <Plus className="w-5 h-5" />
-                  </div>
-                </button>
-              ))
+                filtered.map((ex) => {
+                  const added = addedNames.has(ex.name);
+                  return (
+                    <button
+                      key={ex.id || ex.name}
+                      onClick={() => onAddExercise(ex)}
+                      disabled={added}
+                      className={`w-full p-4 bg-card border rounded-xl flex items-center justify-between transition-all group text-left ${
+                        added ? 'border-training-soft-border' : 'border-border hover:border-training-soft-border'
+                      }`}
+                    >
+                      <div>
+                        <h4 className="font-bold text-foreground">{ex.name}</h4>
+                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{ex.category}</span>
+                      </div>
+                      {added ? (
+                        <div className="w-8 h-8 rounded-full bg-training text-white flex items-center justify-center">
+                          <Check className="w-5 h-5" aria-hidden="true" />
+                        </div>
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-training-soft text-training-text flex items-center justify-center md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                          <Plus className="w-5 h-5" aria-hidden="true" />
+                        </div>
+                      )}
+                    </button>
+                  );
+                })
               );
             })()}
           </div>
