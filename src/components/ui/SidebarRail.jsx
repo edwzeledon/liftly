@@ -44,17 +44,17 @@ export function SidebarRail({ children, className }) {
   );
 }
 
-// Label that fades with the rail. display toggles to none when closed so
-// hidden labels can't catch clicks or hold width (Aceternity idiom).
+// Label that fades with the rail. Layout must NEVER depend on the label:
+// it keeps its box (no display toggling — framer defers display flips to
+// the end of the exit animation, which caused a post-settle reflow) and
+// the rail's overflow-hidden clips it while closed.
 export function SidebarRailLabel({ children, className }) {
   const { open } = useSidebarRail();
   return (
     <motion.span
       initial={false}
-      animate={{
-        display: open ? 'inline-block' : 'none',
-        opacity: open ? 1 : 0,
-      }}
+      animate={{ opacity: open ? 1 : 0 }}
+      aria-hidden={!open}
       className={cn('whitespace-nowrap', className)}
     >
       {children}

@@ -65,7 +65,7 @@ export default function Sidebar({ onOpenLog }) {
       <button
         onClick={onOpenLog}
         aria-label="Quick log"
-        className="flex items-center justify-center gap-2 py-3 mb-2 bg-training text-white font-bold rounded-xl hover:bg-training/90 active:scale-95 transition-all min-h-11"
+        className="w-full flex items-center gap-3 p-3 mb-2 bg-training text-white font-bold rounded-xl hover:bg-training/90 active:scale-95 transition-all min-h-11"
       >
         <Plus className="w-5 h-5 shrink-0" />
         <SidebarRailLabel>Log</SidebarRailLabel>
