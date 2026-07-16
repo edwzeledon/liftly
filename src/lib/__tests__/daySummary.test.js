@@ -1,0 +1,108 @@
+import { dayVolumeLb, macroSplit, dayDurationSec, todayWorkoutSummary } from '../daySummary';
+
+describe('dayVolumeLb', () => {
+  test('sums completed sets only', () => {
+    const logs = [{ sets: [
+      { weight: '100', reps: '5', completed: true },
+      { weight: '200', reps: '5', completed: false },
+    ] }];
+    expect(dayVolumeLb(logs)).toBe(500);
+  });
+
+  test('ignores blank and garbage values', () => {
+    const logs = [{ sets: [
+      { weight: '', reps: '5', completed: true },
+      { weight: '100', reps: '', completed: true },
+      { weight: '135', reps: '3', completed: true },
+    ] }];
+    expect(dayVolumeLb(logs)).toBe(405);
+  });
+
+  test('handles missing sets and empty input', () => {
+    expect(dayVolumeLb([{}, { sets: null }])).toBe(0);
+    expect(dayVolumeLb([])).toBe(0);
+    expect(dayVolumeLb(undefined)).toBe(0);
+  });
+});
+
+describe('macroSplit', () => {
+  test('null when all macros are zero or absent', () => {
+    expect(macroSplit([{ protein: 0, carbs: 0, fats: 0 }])).toBeNull();
+    expect(macroSplit([{}])).toBeNull();
+    expect(macroSplit([])).toBeNull();
+  });
+
+  test('exact split', () => {
+    // 25g P = 100 kcal, 25g C = 100 kcal, 0 fat → 50/50/0
+    expect(macroSplit([{ protein: 25, carbs: 25, fats: 0 }])).toEqual({ p: 50, c: 50, f: 0 });
+  });
+
+  test('largest-remainder rounding sums to exactly 100', () => {
+    // 1g each → 4/4/9 kcal → 23.53/23.53/52.94 → floors 23/23/52 (=98), +1 to f (.94) then p (.53, stable-sort before c)
+    const s = macroSplit([{ protein: 1, carbs: 1, fats: 1 }]);
+    expect(s).toEqual({ p: 24, c: 23, f: 53 });
+    expect(s.p + s.c + s.f).toBe(100);
+  });
+
+  test('aggregates across multiple meals', () => {
+    const s = macroSplit([
+      { protein: 30, carbs: 0, fats: 0 },
+      { protein: 0, carbs: 30, fats: 0 },
+    ]);
+    expect(s).toEqual({ p: 50, c: 50, f: 0 });
+  });
+});
+
+describe('dayDurationSec', () => {
+  test('counts a shared session duration once', () => {
+    const logs = [
+      { id: 1, session_id: 'a', duration: 3600 },
+      { id: 2, session_id: 'a', duration: 3600 },
+    ];
+    expect(dayDurationSec(logs)).toBe(3600);
+  });
+
+  test('sums distinct sessions', () => {
+    const logs = [
+      { id: 1, session_id: 'a', duration: 1800 },
+      { id: 2, session_id: 'b', duration: 600 },
+    ];
+    expect(dayDurationSec(logs)).toBe(2400);
+  });
+
+  test('falls back to log id when session_id is absent', () => {
+    expect(dayDurationSec([{ id: 1, duration: 100 }, { id: 2, duration: 50 }])).toBe(150);
+  });
+
+  test('zero for missing durations and empty input', () => {
+    expect(dayDurationSec([{ id: 1 }, { id: 2, duration: 'x' }])).toBe(0);
+    expect(dayDurationSec([])).toBe(0);
+    expect(dayDurationSec(undefined)).toBe(0);
+  });
+});
+
+describe('todayWorkoutSummary', () => {
+  const now = new Date('2026-07-15T12:00:00');
+
+  test('empty and undefined input', () => {
+    const empty = { trained: false, volumeLb: 0, durationSec: 0, exerciseCount: 0 };
+    expect(todayWorkoutSummary(undefined, now)).toEqual(empty);
+    expect(todayWorkoutSummary([], now)).toEqual(empty);
+  });
+
+  test('filters to today only', () => {
+    const logs = [
+      { id: 1, date: '2026-07-15T09:00:00', session_id: 'a', duration: 1800, sets: [{ weight: '100', reps: '5', completed: true }] },
+      { id: 2, date: '2026-07-14T09:00:00', session_id: 'b', duration: 3600, sets: [{ weight: '200', reps: '5', completed: true }] },
+    ];
+    expect(todayWorkoutSummary(logs, now)).toEqual({ trained: true, volumeLb: 500, durationSec: 1800, exerciseCount: 1 });
+  });
+
+  test('dedups shared session duration, counts completed-set volume only', () => {
+    const logs = [
+      { id: 1, date: '2026-07-15T09:00:00', session_id: 's', duration: 2700, sets: [{ weight: '135', reps: '5', completed: true }] },
+      { id: 2, date: '2026-07-15T09:30:00', session_id: 's', duration: 2700, sets: [{ weight: '95', reps: '10', completed: false }] },
+    ];
+    expect(todayWorkoutSummary(logs, now)).toEqual({ trained: true, volumeLb: 675, durationSec: 2700, exerciseCount: 2 });
+  });
+});

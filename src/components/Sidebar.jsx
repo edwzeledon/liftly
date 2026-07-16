@@ -3,11 +3,11 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Plus, Calendar, LogOut, Settings, Dumbbell, BarChart3 } from 'lucide-react';
+import { Home, Plus, Calendar, Settings, Dumbbell, BarChart3 } from 'lucide-react';
+import { useApp } from '@/components/app/AppProvider';
+import { SidebarRail, SidebarRailLabel } from './ui/SidebarRail';
 import Logo from './ui/Logo';
 
-// R3: pathname-based nav. The sidebar no longer receives tab-key props; it
-// renders real <Link>s and derives the active item from usePathname().
 const NAV_ITEMS = [
   { href: '/today', icon: Home, label: 'Today' },
   { href: '/train', icon: Dumbbell, label: 'Train' },
@@ -15,17 +15,32 @@ const NAV_ITEMS = [
   { href: '/history', icon: Calendar, label: 'History' },
 ];
 
-export default function Sidebar({ onLogout, onOpenLog }) {
+// 21st.dev Aceternity hover-expand rail. Labels collapse to display:none, so
+// every control carries an aria-label for its icon-only resting state.
+export default function Sidebar({ onOpenLog }) {
   const pathname = usePathname();
+  const app = useApp();
+
+  const email = app.user?.email || '';
+  const initial = (email[0] || '?').toUpperCase();
   const settingsActive = pathname === '/settings';
 
+  const itemClass = (active) =>
+    `relative flex items-center gap-3 p-3 rounded-xl transition-colors min-h-11 ${
+      active
+        ? 'bg-training-soft text-training-text font-medium'
+        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+    }`;
+
+  const accentBar = (
+    <span aria-hidden="true" className="absolute left-0 inset-y-2 w-0.5 rounded-full bg-training" />
+  );
+
   return (
-    <div className="hidden md:flex flex-col w-64 bg-card border-r border-border p-6 h-full shrink-0">
-      <div className="flex items-center gap-2 mb-10">
-        <Logo size={40} className="rounded-xl" />
-        <h1 className="text-xl font-bold text-training-text">
-          Liftly
-        </h1>
+    <SidebarRail>
+      <div className="flex items-center gap-2 mb-10 p-1">
+        <Logo size={32} className="rounded-xl shrink-0" />
+        <SidebarRailLabel className="text-xl font-bold text-training-text">Liftly</SidebarRailLabel>
       </div>
 
       <nav className="flex-1 space-y-2">
@@ -35,13 +50,13 @@ export default function Sidebar({ onLogout, onOpenLog }) {
             <Link
               key={href}
               href={href}
+              aria-label={label}
               aria-current={active ? 'page' : undefined}
-              className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
-                active ? 'bg-training-soft text-training-text font-medium' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-              }`}
+              className={itemClass(active)}
             >
-              <Icon className="w-5 h-5" />
-              <span>{label}</span>
+              {active && accentBar}
+              <Icon className="w-5 h-5 shrink-0" />
+              <SidebarRailLabel>{label}</SidebarRailLabel>
             </Link>
           );
         })}
@@ -49,32 +64,42 @@ export default function Sidebar({ onLogout, onOpenLog }) {
 
       <button
         onClick={onOpenLog}
-        className="w-full flex items-center justify-center gap-2 py-3 mb-2 bg-training text-white font-bold rounded-xl hover:bg-training/90 active:scale-95 transition-all"
+        aria-label="Quick log"
+        className="w-full flex items-center gap-3 p-3 mb-2 bg-training text-white font-bold rounded-xl hover:bg-training/90 active:scale-95 transition-all min-h-11"
       >
-        <Plus className="w-5 h-5" />
-        <span>Log</span>
+        <Plus className="w-5 h-5 shrink-0" />
+        <SidebarRailLabel>Log</SidebarRailLabel>
       </button>
 
       <div className="border-t border-border pt-2 space-y-1">
         <Link
           href="/settings"
+          aria-label="Settings"
           aria-current={settingsActive ? 'page' : undefined}
-          className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
-            settingsActive ? 'bg-training-soft text-training-text font-medium' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-          }`}
+          className={itemClass(settingsActive)}
         >
-          <Settings className="w-5 h-5" />
-          <span>Settings</span>
+          {settingsActive && accentBar}
+          <Settings className="w-5 h-5 shrink-0" />
+          <SidebarRailLabel>Settings</SidebarRailLabel>
         </Link>
 
-        <button
-          onClick={onLogout}
-          className="flex items-center gap-3 text-muted-foreground hover:text-destructive-text p-3 rounded-xl hover:bg-destructive/10 transition-colors w-full"
+        <Link
+          href="/settings"
+          aria-label="Account settings"
+          className="flex items-center gap-3 p-2 rounded-xl transition-colors text-muted-foreground hover:bg-muted hover:text-foreground min-h-11"
         >
-          <LogOut className="w-5 h-5" />
-          <span className="font-medium">Sign Out</span>
-        </button>
+          <span
+            aria-hidden="true"
+            className="w-8 h-8 rounded-full bg-training-soft text-training-text font-bold text-sm flex items-center justify-center shrink-0"
+          >
+            {initial}
+          </span>
+          <SidebarRailLabel className="min-w-0 flex-1">
+            <span className="block text-sm font-medium text-foreground truncate">{email || 'Account'}</span>
+            <span className="block text-xs text-faint">View account</span>
+          </SidebarRailLabel>
+        </Link>
       </div>
-    </div>
+    </SidebarRail>
   );
 }

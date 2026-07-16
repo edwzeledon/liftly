@@ -7,7 +7,7 @@
 import React, { Suspense, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Loader2, Utensils, LogOut, Home, Plus, Calendar, Settings, Dumbbell, BarChart3 } from 'lucide-react';
+import { Loader2, Utensils, Home, Plus, Calendar, Settings, Dumbbell, BarChart3 } from 'lucide-react';
 import AppProvider, { useApp } from '@/components/app/AppProvider';
 import Sidebar from '@/components/Sidebar';
 import EditFoodModal from '@/components/EditFoodModal';
@@ -62,7 +62,7 @@ function AppShell({ children }) {
     <div className="flex h-screen bg-background font-sans text-foreground overflow-hidden">
 
       {/* Desktop Sidebar */}
-      <Sidebar onLogout={app.handleLogout} onOpenLog={() => app.setShowActionSheet(true)} />
+      <Sidebar onOpenLog={() => app.setShowActionSheet(true)} />
 
       {/* Main Content Container */}
       <div className="flex-1 flex flex-col h-full relative overflow-hidden">
@@ -85,14 +85,6 @@ function AppShell({ children }) {
             >
               <Settings className="w-5 h-5" />
             </Link>
-            <button
-              onClick={app.handleLogout}
-              aria-label="Sign out"
-              className="text-muted-foreground hover:text-foreground p-2 rounded-full hover:bg-muted transition-colors min-h-11 min-w-11 flex items-center justify-center"
-              title="Sign Out"
-            >
-              <LogOut className="w-5 h-5" />
-            </button>
           </div>
         </header>
 
@@ -108,7 +100,7 @@ function AppShell({ children }) {
 
         {/* Scrollable Content Area */}
         <main className="flex-1 overflow-y-auto pb-24 md:pb-0 scroll-smooth bg-background">
-          <div className="w-full max-w-5xl mx-auto md:p-8">
+          <div className={`w-full ${pathname === '/today' ? 'max-w-7xl' : 'max-w-5xl'} mx-auto md:p-8`}>
             {children}
           </div>
         </main>

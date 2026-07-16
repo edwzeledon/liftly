@@ -12,6 +12,7 @@ export default function TrainPage() {
       initialLogs={app.activeWorkoutLogs || []}
       onUpdateLogs={app.setActiveWorkoutLogs}
       weightUnit={app.weightUnit}
+      historyLogs={app.workoutLogs}
     />
   );
 }

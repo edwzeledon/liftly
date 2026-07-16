@@ -8,6 +8,7 @@ import WeeklyTrend from './dashboard/WeeklyTrend';
 import HydrationTracker from './dashboard/HydrationTracker';
 import MealFeed from './dashboard/MealFeed';
 import QuickProtein from './dashboard/QuickProtein';
+import TrainingCard from './dashboard/TrainingCard';
 import WeeklyReviewCard from './dashboard/WeeklyReviewCard';
 import Sheet from './ui/Sheet';
 import { useToast } from '@/hooks/useToast';
@@ -172,59 +173,70 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, percen
   };
 
   return (
-    <div className="pt-6 md:pt-0 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20 md:pb-0">
+    <div className="pt-6 md:pt-0 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20 md:pb-0">
 
-      {/* Row 1: full-bleed hero + quick protein (mobile stacked; desktop 2/3 + 1/3) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-            <DailyProgress 
-                caloriesToday={caloriesToday}
-                dailyGoal={dailyGoal}
-                macroGoals={macroGoals}
-                todaysLogs={todaysLogs}
-                onUpdateGoal={onUpdateGoal}
-                onSuggestMeal={handleSuggestMeal}
-                onAnalyzeDay={handleAnalyzeDay}
-                suggestionCount={dailyStats.suggestion_count || 0}
-                overviewCount={dailyStats.overview_count || 0}
-                streak={streak}
-                streakStatus={streakStatus}
-                trainingDay={trainingDay}
-                calorieOffset={calorieOffset}
-                trainingOffset={trainingOffset}
-                offsetSkipped={offsetSkipped}
-                onToggleBumpSkip={onToggleBumpSkip}
-            />
+      {/* Desktop-only header row (mobile keeps the app header) */}
+      <div className="hidden md:flex items-baseline justify-between mb-6">
+        <h2 className="font-display text-2xl font-bold text-foreground">Today</h2>
+        <p className="text-sm text-muted-foreground">
+          {new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
+        </p>
+      </div>
+
+      {/* Command-center bento: DOM order = desktop placement (6/3/3, 8/4, 8/4);
+          order-* utilities preserve the mobile stack with TrainingCard inserted
+          after the hero. */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="order-1 lg:order-none lg:col-span-6">
+          <DailyProgress
+            caloriesToday={caloriesToday}
+            dailyGoal={dailyGoal}
+            macroGoals={macroGoals}
+            todaysLogs={todaysLogs}
+            onUpdateGoal={onUpdateGoal}
+            onSuggestMeal={handleSuggestMeal}
+            onAnalyzeDay={handleAnalyzeDay}
+            suggestionCount={dailyStats.suggestion_count || 0}
+            overviewCount={dailyStats.overview_count || 0}
+            streak={streak}
+            streakStatus={streakStatus}
+            trainingDay={trainingDay}
+            calorieOffset={calorieOffset}
+            trainingOffset={trainingOffset}
+            offsetSkipped={offsetSkipped}
+            onToggleBumpSkip={onToggleBumpSkip}
+          />
         </div>
-        <div className="flex flex-col gap-6 px-6 md:px-0">
-            <QuickProtein user={user} onLogAdded={onLogAdded} showToast={showToast} />
+
+        <div className="order-2 lg:order-none lg:col-span-3 px-6 md:px-0">
+          <TrainingCard />
         </div>
-      </div>
 
-      {/* Row 2: Weekly Review Card */}
-      <div className="w-full px-6 md:px-0">
-        <WeeklyReviewCard />
-      </div>
+        <div className="order-3 lg:order-none lg:col-span-3 px-6 md:px-0">
+          <QuickProtein user={user} onLogAdded={onLogAdded} showToast={showToast} />
+        </div>
 
-      {/* Row 3: Weekly Trend */}
-      <div className="w-full px-6 md:px-0">
-        <WeeklyTrend weeklyData={weeklyData} dailyGoal={dailyGoal} />
-      </div>
+        <div className="order-5 lg:order-none lg:col-span-8 px-6 md:px-0">
+          <WeeklyTrend weeklyData={weeklyData} dailyGoal={dailyGoal} />
+        </div>
 
-      {/* Row 4: Meal Feed */}
-      <div className="w-full px-6 md:px-0">
-        <MealFeed
+        <div className="order-7 lg:order-none lg:col-span-4 px-6 md:px-0">
+          <HydrationTracker waterIntake={dailyStats.water_intake} goal={waterGoal} onUpdateWater={handleUpdateWater} />
+        </div>
+
+        <div className="order-6 lg:order-none lg:col-span-8 px-6 md:px-0">
+          <MealFeed
             logs={visibleTodaysLogs}
             onEditLog={onEditLog}
             onDeleteLog={handleDeleteLog}
             onAnalyzeDay={handleAnalyzeDay}
             onAddMeal={onAddMeal}
-        />
-      </div>
+          />
+        </div>
 
-      {/* Row 5: Hydration (demoted) */}
-      <div className="w-full px-6 md:px-0">
-        <HydrationTracker waterIntake={dailyStats.water_intake} goal={waterGoal} onUpdateWater={handleUpdateWater} />
+        <div className="order-4 lg:order-none lg:col-span-4 px-6 md:px-0">
+          <WeeklyReviewCard />
+        </div>
       </div>
 
       {/* AI Modal */}

@@ -81,6 +81,14 @@ jest.mock('next/link', () => {
 
 // Import AFTER the mocks above are registered.
 import AppLayout from '@/app/(app)/layout';
+import { useApp } from '@/components/app/AppProvider';
+
+// The nav no longer renders a sign-out (Settings owns it). Drive
+// app.handleLogout through the same useApp() contract SettingsView uses.
+function LogoutProbe() {
+  const app = useApp();
+  return <button onClick={app.handleLogout}>Sign out</button>;
+}
 
 describe('auth gate — logout race (RT3 fix, RT5 empirical confirmation)', () => {
   beforeEach(() => {
@@ -91,16 +99,13 @@ describe('auth gate — logout race (RT3 fix, RT5 empirical confirmation)', () =
   });
 
   it('intentional logout: gate does not redirect to /?auth=1, only handleLogout replaces "/"', async () => {
-    render(<AppLayout><div>app screen</div></AppLayout>);
+    render(<AppLayout><LogoutProbe /><div>app screen</div></AppLayout>);
 
     // Wait for the gate to resolve past loading and render authed content.
     await screen.findByText('app screen');
     expect(mockReplace).not.toHaveBeenCalled();
 
-    // Both the desktop Sidebar and the mobile header render a "Sign out"
-    // button in jsdom (no CSS breakpoints applied) — either drives the same
-    // app.handleLogout, so click the first.
-    const [signOutButton] = await screen.findAllByRole('button', { name: /sign out/i });
+    const signOutButton = await screen.findByRole('button', { name: /sign out/i });
     await act(async () => {
       signOutButton.click();
       // flush the handleLogout microtask chain (await signOut(); router.replace)
