@@ -16,10 +16,23 @@ function HistorySkeleton() {
     <div className="space-y-6">
       {[0, 1].map((i) => (
         <div key={i} className="bg-card rounded-2xl p-6 border border-border">
-          <div className="animate-pulse space-y-3">
+          <div className="animate-pulse">
             <div className="h-5 bg-muted rounded w-1/3" />
-            <div className="h-16 bg-muted rounded-xl" />
-            <div className="h-16 bg-muted rounded-xl" />
+            <div className="mt-3 flex gap-8">
+              <div className="space-y-1.5">
+                <div className="h-7 w-24 bg-muted rounded" />
+                <div className="h-3 w-16 bg-muted rounded" />
+              </div>
+              <div className="space-y-1.5">
+                <div className="h-7 w-24 bg-muted rounded" />
+                <div className="h-3 w-16 bg-muted rounded" />
+              </div>
+            </div>
+            <div className="mt-2 h-1.5 bg-muted rounded-full" />
+            <div className="mt-4 space-y-3">
+              <div className="h-5 w-28 bg-muted rounded" />
+              <div className="h-5 w-28 bg-muted rounded" />
+            </div>
           </div>
         </div>
       ))}
