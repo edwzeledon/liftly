@@ -1,18 +1,19 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Dumbbell, Plus, Download, Folder, Save, Ban, Check, Trophy, X, Play, Trash2, Loader2 } from 'lucide-react';
+import { Dumbbell, Plus, Save, Ban, Check, Trophy, Loader2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import WorkoutCard from './WorkoutCard';
 import PickerView from './PickerView';
+import StartLaunchpad from './StartLaunchpad';
 import SessionTimer from './SessionTimer';
 import ConfirmModal from '../ConfirmModal';
 
 import { getExercises } from '@/lib/api';
-import { logsVolume } from '@/lib/workoutStats';
+import { logsVolume, lastWorkoutSession } from '@/lib/workoutStats';
 import { toDisplayVolume } from '@/lib/units';
 import { useToast } from '@/hooks/useToast';
 import { useModalBehavior } from '@/hooks/useModalBehavior';
 
-export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [], onUpdateLogs, weightUnit = 'lb' }) {
+export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [], onUpdateLogs, weightUnit = 'lb', historyLogs = [] }) {
   // Use props for logs if available, otherwise fallback to local state (though props should always be there now)
   const [localLogs, setLocalLogs] = useState([]);
   const workoutLogs = onUpdateLogs ? initialLogs : localLogs;
@@ -68,7 +69,6 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
 
   // Template States
   const [showSaveTemplate, setShowSaveTemplate] = useState(false);
-  const [showLoadTemplate, setShowLoadTemplate] = useState(false);
   const [isLoadingTemplate, setIsLoadingTemplate] = useState(false);
   const [isSavingTemplate, setIsSavingTemplate] = useState(false);
   const [templateName, setTemplateName] = useState('');
@@ -80,7 +80,6 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
   // three is ever open at a time, so their Escape listeners never overlap.
   const { closeRef: summaryCloseRef } = useModalBehavior(showSummary, () => closeSummary());
   const { closeRef: saveTemplateCloseRef } = useModalBehavior(showSaveTemplate, () => setShowSaveTemplate(false));
-  const { closeRef: loadTemplateCloseRef } = useModalBehavior(showLoadTemplate, () => setShowLoadTemplate(false));
 
   // Fetch Logs
   const fetchLogs = async () => {
@@ -407,7 +406,6 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       }
 
       await fetchLogs();
-      setShowLoadTemplate(false);
     } catch (e) {
       console.error("Error loading template", e);
     } finally {
@@ -450,6 +448,12 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
       }
     });
   }
+
+  const lastSession = useMemo(() => lastWorkoutSession(historyLogs), [historyLogs]);
+
+  const handleRepeatLast = () => {
+    if (lastSession) handleLoadTemplate({ exercises: lastSession.exercises });
+  };
 
   const deleteWorkout = async (id) => {
     if (!user) return;
@@ -895,58 +899,6 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
         </div>
       )}
 
-      {/* Load Template Modal */}
-      {showLoadTemplate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in" onClick={() => setShowLoadTemplate(false)}>
-          <div className="bg-card rounded-2xl p-6 w-full max-w-sm animate-in zoom-in-95 max-h-[80vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-foreground">My Routines</h3>
-              <button ref={loadTemplateCloseRef} onClick={() => setShowLoadTemplate(false)} className="p-2 bg-muted rounded-full text-muted-foreground">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto space-y-2">
-              {isLoadingTemplate ? (
-                <div className="flex flex-col items-center justify-center py-12 text-training-text">
-                  <Loader2 className="w-8 h-8 animate-spin mb-2" />
-                  <p className="text-sm font-medium">Loading Routine...</p>
-                </div>
-              ) : templates.length === 0 ? (
-                <div className="text-center py-8 text-faint">
-                  <Folder className="w-12 h-12 mx-auto mb-2 opacity-20" />
-                  <p>No saved templates yet.</p>
-                </div>
-              ) : (
-                templates.map(temp => (
-                  <div key={temp.id} className="bg-muted p-4 rounded-xl flex items-center justify-between group">
-                    <div>
-                      <h4 className="font-bold text-foreground">{temp.name}</h4>
-                      <p className="text-xs text-faint">{temp.exercises.length} Exercises</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleLoadTemplate(temp)}
-                        className="p-2 bg-training-soft-border text-training-text rounded-lg hover:bg-training-soft-border/80 transition-colors"
-                        title="Load Routine"
-                      >
-                        <Play className="w-4 h-4 fill-current" />
-                      </button>
-                      <button
-                        onClick={() => deleteTemplate(temp.id)}
-                        className="p-2 text-faint hover:text-destructive-text"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Sticky Active Session header (sticks to the page <main> scroll container).
           -mx / px cancel the WorkoutView root padding (p-6 / md:p-8) so the bar is
           edge-to-edge with no horizontal scrollbar; inner content stays aligned to
@@ -1004,29 +956,16 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
           {/* Today's List */}
           <div className="flex-1 overflow-y-auto space-y-4 pb-4 no-scrollbar md:max-w-xl w-full md:mx-auto">
              {workoutLogs.length === 0 ? (
-               <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6 bg-muted rounded-2xl border-2 border-dashed border-border">
-                 <div className="w-16 h-16 bg-card rounded-full flex items-center justify-center mb-4">
-                   <Dumbbell className="w-8 h-8 text-training-text/50" />
-                 </div>
-                 <h3 className="text-lg font-bold text-foreground mb-1">Start your Workout</h3>
-                 <p className="text-faint text-sm mb-6">Add exercises to build your daily plan.</p>
-                 <div className="flex flex-col gap-3 w-full">
-                   <button
-                     onClick={() => setShowPicker(true)}
-                     className="w-full px-4 py-3 bg-training text-white rounded-xl font-bold hover:bg-training/90 transition-all active:scale-95 flex items-center justify-center gap-2"
-                   >
-                     <Plus className="w-5 h-5" />
-                     Add Exercise
-                   </button>
-                   <button
-                     onClick={() => setShowLoadTemplate(true)}
-                     className="w-full px-4 py-3 bg-card border border-training-soft-border text-training-text rounded-xl font-bold hover:bg-training-soft transition-all flex items-center justify-center gap-2"
-                   >
-                     <Download className="w-5 h-5" />
-                     Load Template
-                   </button>
-                 </div>
-               </div>
+               <StartLaunchpad
+                 templates={templates}
+                 lastSession={lastSession}
+                 weightUnit={weightUnit}
+                 isLoading={isLoadingTemplate}
+                 onRepeatLast={handleRepeatLast}
+                 onStartTemplate={handleLoadTemplate}
+                 onDeleteTemplate={deleteTemplate}
+                 onAddExercise={() => setShowPicker(true)}
+               />
              ) : (
                <>
                  {workoutLogs.map(log => (
