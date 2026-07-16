@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Plus, Calendar, LogOut, Settings, Dumbbell, BarChart3 } from 'lucide-react';
+import { Home, Plus, Calendar, Settings, Dumbbell, BarChart3 } from 'lucide-react';
 import Logo from './ui/Logo';
 
 // R3: pathname-based nav. The sidebar no longer receives tab-key props; it
@@ -15,7 +15,7 @@ const NAV_ITEMS = [
   { href: '/history', icon: Calendar, label: 'History' },
 ];
 
-export default function Sidebar({ onLogout, onOpenLog }) {
+export default function Sidebar({ onOpenLog }) {
   const pathname = usePathname();
   const settingsActive = pathname === '/settings';
 
@@ -67,13 +67,6 @@ export default function Sidebar({ onLogout, onOpenLog }) {
           <span>Settings</span>
         </Link>
 
-        <button
-          onClick={onLogout}
-          className="flex items-center gap-3 text-muted-foreground hover:text-destructive-text p-3 rounded-xl hover:bg-destructive/10 transition-colors w-full"
-        >
-          <LogOut className="w-5 h-5" />
-          <span className="font-medium">Sign Out</span>
-        </button>
       </div>
     </div>
   );

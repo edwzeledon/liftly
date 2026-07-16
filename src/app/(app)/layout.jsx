@@ -62,7 +62,7 @@ function AppShell({ children }) {
     <div className="flex h-screen bg-background font-sans text-foreground overflow-hidden">
 
       {/* Desktop Sidebar */}
-      <Sidebar onLogout={app.handleLogout} onOpenLog={() => app.setShowActionSheet(true)} />
+      <Sidebar onOpenLog={() => app.setShowActionSheet(true)} />
 
       {/* Main Content Container */}
       <div className="flex-1 flex flex-col h-full relative overflow-hidden">
