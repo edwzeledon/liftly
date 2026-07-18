@@ -12,8 +12,6 @@ export default function TodayPage() {
       caloriesToday={app.caloriesToday}
       dailyGoal={app.dailyGoal}
       macroGoals={app.macroGoals}
-      percentComplete={app.percentComplete}
-      weeklyData={app.weeklyData}
       todaysLogs={app.todaysLogs}
       user={app.user}
       streak={app.streak}
@@ -28,7 +26,6 @@ export default function TodayPage() {
       trainingOffset={app.trainingOffset}
       offsetSkipped={app.offsetSkipped}
       onToggleBumpSkip={app.handleToggleBumpSkip}
-      waterGoal={app.waterGoal}
     />
   );
 }
