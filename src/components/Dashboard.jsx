@@ -7,9 +7,10 @@ import MealFeed from './dashboard/MealFeed';
 import QuickProtein from './dashboard/QuickProtein';
 import TrainingCard from './dashboard/TrainingCard';
 import WeeklyReviewCard from './dashboard/WeeklyReviewCard';
+import DashboardSkeleton from './dashboard/DashboardSkeleton';
 import { useToast } from '@/hooks/useToast';
 
-export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, todaysLogs, user, onLogDeleted, onUpdateGoal, onEditLog, onLogAdded, onAddMeal, streak, streakStatus, trainingDay = false, calorieOffset = 0, trainingOffset = 250, offsetSkipped = false, onToggleBumpSkip }) {
+export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, todaysLogs, user, onLogDeleted, onUpdateGoal, onEditLog, onLogAdded, onAddMeal, streak, streakStatus, trainingDay = false, calorieOffset = 0, trainingOffset = 250, offsetSkipped = false, onToggleBumpSkip, loading = false }) {
   // Optimistically-hidden meal rows: hidden immediately, the real deleteLog runs
   // on the toast's onCommit (undo unhides before commit fires).
   const [hiddenLogIds, setHiddenLogIds] = useState(new Set());
@@ -52,6 +53,23 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, todays
       },
     });
   };
+
+  // Data window (initial load / post-sign-in, cache miss): the layout shell is
+  // up but app data hasn't landed — mirror the grid so content swaps in with
+  // zero reflow. Background refetches never re-raise `loading`.
+  if (loading) {
+    return (
+      <div className="pt-6 md:pt-0 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20 md:pb-0">
+        <div className="hidden md:flex items-baseline justify-between mb-6">
+          <h2 className="font-display text-2xl font-bold text-foreground">Today</h2>
+          <p className="text-sm text-muted-foreground">
+            {new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
+          </p>
+        </div>
+        <DashboardSkeleton />
+      </div>
+    );
+  }
 
   return (
     <div className="pt-6 md:pt-0 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20 md:pb-0">

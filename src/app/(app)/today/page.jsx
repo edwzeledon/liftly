@@ -14,6 +14,7 @@ export default function TodayPage() {
       macroGoals={app.macroGoals}
       todaysLogs={app.todaysLogs}
       user={app.user}
+      loading={app.loading}
       streak={app.streak}
       streakStatus={app.streakStatus}
       onLogDeleted={app.fetchData}
