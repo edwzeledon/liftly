@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Flame, Sparkles, Brain } from 'lucide-react';
+import { Flame } from 'lucide-react';
 import CountUp from './CountUp';
 import { useModalBehavior } from '@/hooks/useModalBehavior';
 
@@ -59,7 +59,7 @@ const MacroBar = ({ label, value, max, barClass, onClick }) => (
   </button>
 );
 
-export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, todaysLogs, onUpdateGoal, onSuggestMeal, onAnalyzeDay, suggestionCount = 0, overviewCount = 0, streak = 0, streakStatus = 'broken', trainingDay = false, calorieOffset = 0, trainingOffset = 250, offsetSkipped = false, onToggleBumpSkip }) {
+export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, todaysLogs, onUpdateGoal, streak = 0, streakStatus = 'broken', trainingDay = false, calorieOffset = 0, trainingOffset = 250, offsetSkipped = false, onToggleBumpSkip }) {
   const [editingGoal, setEditingGoal] = useState(null);
   const [tempGoalValue, setTempGoalValue] = useState('');
   const [showBumpPopover, setShowBumpPopover] = useState(false);
@@ -95,9 +95,6 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
     };
   }, [showBumpPopover]);
 
-  const suggestionDisabled = suggestionCount >= 1;
-  const overviewDisabled = overviewCount >= 1;
-
   // Calculate Macros
   const macros = todaysLogs.reduce((acc, log) => ({
     protein: acc.protein + (parseInt(log.protein) || 0),
@@ -115,7 +112,6 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
 
   // Rest-day offset is intentionally not applied here; if a rest-offset UI is ever added, apply calorieOffset unconditionally to match the budget math in page.jsx/Dashboard.jsx.
   const effectiveCalorieGoal = currentGoals.calories + (trainingDay ? calorieOffset : 0);
-  const remaining = effectiveCalorieGoal - caloriesToday;
 
   const handleStartEdit = (type, value) => {
     setEditingGoal(type);
@@ -255,34 +251,6 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
             </div>
         </div>
       )}
-
-      {/* AI Suggestion Buttons */}
-      <div className="mt-2 pt-4 border-t border-border flex gap-3">
-        <button
-          onClick={onSuggestMeal}
-          disabled={suggestionDisabled}
-          className={`flex-1 flex items-center justify-center gap-2 text-sm font-semibold transition-colors px-4 py-2 rounded-xl active:scale-95 ${
-            suggestionDisabled
-              ? 'bg-muted text-faint cursor-not-allowed'
-              : 'text-training-text hover:text-training-text/80 bg-training-soft hover:bg-training-soft-border'
-          }`}
-        >
-          <Sparkles className="w-4 h-4" />
-          {remaining > 0 ? "Chef's Suggestion" : "Diet Rescue"} ({suggestionDisabled ? 0 : 1} of 1 left)
-        </button>
-        <button
-          onClick={onAnalyzeDay}
-          disabled={overviewDisabled}
-          className={`flex-1 flex items-center justify-center gap-2 text-sm font-semibold transition-colors px-4 py-2 rounded-xl active:scale-95 ${
-            overviewDisabled
-              ? 'bg-muted text-faint cursor-not-allowed'
-              : 'text-ai hover:text-ai/80 bg-ai-soft hover:bg-ai-soft-border'
-          }`}
-        >
-          <Brain className="w-4 h-4" />
-          Daily Overview ({overviewDisabled ? 0 : 1} of 1 left)
-        </button>
-      </div>
     </div>
   );
 }
