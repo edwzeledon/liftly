@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Toast from '@/components/ui/Toast';
 import React from 'react';
 
@@ -46,8 +46,10 @@ export function useToast() {
   // Unmount flush: a pending delete must not be lost.
   useEffect(() => () => settle(true), [settle]);
 
+  // Memoized so hosts (e.g. AppProvider's context value) don't see a fresh
+  // element identity on renders where the toast state didn't change.
   // eslint-disable-next-line react-hooks/refs -- false positive: Toast receives the `toast` state value and a stable callback; no ref .current is read during render here.
-  const toastEl = React.createElement(Toast, { toast, onDismiss: dismissToast });
+  const toastEl = useMemo(() => React.createElement(Toast, { toast, onDismiss: dismissToast }), [toast, dismissToast]);
 
   return { toast, toastEl, showToast, dismissToast };
 }

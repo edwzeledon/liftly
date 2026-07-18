@@ -4,7 +4,7 @@
 // Holds all auth/data state, effects, handlers, and derived values that the SPA's
 // tab blocks and chrome consume. Exposes them via useApp(). Copy semantics this
 // task: page.jsx keeps its own copy until R3 deletes it.
-import React, { createContext, useContext, useState, useEffect, useMemo, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import { getLogs, getUserSettings, updateUserSettings, updateLog, getDailyStats, updateDailyStats, getWorkoutLogs, getActiveWorkoutLogs } from '@/lib/api';
@@ -41,6 +41,18 @@ export default function AppProvider({ children }) {
   const [showActionSheet, setShowActionSheet] = useState(false);
   const [bumpSkipped, setBumpSkipped] = useState(false);
   const [staleData, setStaleData] = useState(false); // fetchData failed → showing cached data
+  // Training/rest-day calorie offsets. Seeded ONCE from the settings cache via
+  // lazy initializer (the old per-render localStorage JSON.parse is gone) and
+  // kept fresh by applySettings — localStorage itself is not reactive. The
+  // try/catch also covers SSR, where localStorage is undefined.
+  const [calorieOffsets, setCalorieOffsets] = useState(() => {
+    try {
+      const s = JSON.parse(localStorage.getItem('snapcal_settings') || '{}');
+      return { training: s.training_day_calorie_offset ?? 250, rest: s.rest_day_calorie_offset ?? 0 };
+    } catch {
+      return { training: 250, rest: 0 };
+    }
+  });
   // Logout coordination: signOut() notifies onAuthStateChange subscribers (user →
   // null) BEFORE handleLogout's own replace('/') line runs, so the app layout's
   // auth gate would race in a `/?auth=1&next=...` redirect. The gate skips its
@@ -78,15 +90,20 @@ export default function AppProvider({ children }) {
   }, []);
 
   // Applies a fresh settings row to provider state: onboarding flag, goals,
-  // unit, water goal, timezone sync, streak. Shared by fetchData and the
-  // slice refreshers below so streak/goal semantics cannot drift between paths.
-  const applySettings = (settings) => {
+  // unit, water goal, calorie offsets, timezone sync, streak. Shared by
+  // fetchData and the slice refreshers below so streak/goal semantics cannot
+  // drift between paths.
+  const applySettings = useCallback((settings) => {
     if (settings.is_new_user) {
       setShowOnboarding(true);
     }
     if (settings.daily_goal) setDailyGoal(settings.daily_goal);
     setWeightUnit(settings.weight_unit === 'kg' ? 'kg' : 'lb');
     setWaterGoal(settings.water_goal || 8);
+    setCalorieOffsets({
+      training: settings.training_day_calorie_offset ?? 250,
+      rest: settings.rest_day_calorie_offset ?? 0,
+    });
 
     // Sync Timezone
     const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -127,9 +144,9 @@ export default function AppProvider({ children }) {
       carbs: settings.carbs_goal || Math.round((settings.daily_goal * 0.4) / 4),
       fats: settings.fats_goal || Math.round((settings.daily_goal * 0.3) / 9)
     });
-  };
+  }, [user]);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!user) return;
     try {
       const [fetchedLogs, fetchedWorkoutLogs, fetchedActiveWorkoutLogs, settings, dailyStats] = await Promise.all([
@@ -160,13 +177,13 @@ export default function AppProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, applySettings]);
 
   // Slice refreshers: mutations refetch only the data they can change instead
   // of all five datasets. Settings rides along in both because the server owns
   // streak state (last_log_date/current_streak update on food logs AND workout
   // finish). fetchData remains the initial-load and full-recovery path.
-  const refreshLogs = async () => {
+  const refreshLogs = useCallback(async () => {
     if (!user) return;
     try {
       const [fetchedLogs, settings, dailyStats] = await Promise.all([
@@ -184,9 +201,9 @@ export default function AppProvider({ children }) {
       console.error("Error refreshing logs:", error);
       setStaleData(true);
     }
-  };
+  }, [user, applySettings]);
 
-  const refreshWorkouts = async () => {
+  const refreshWorkouts = useCallback(async () => {
     if (!user) return;
     try {
       const [fetchedWorkoutLogs, fetchedActiveWorkoutLogs, settings] = await Promise.all([
@@ -204,7 +221,7 @@ export default function AppProvider({ children }) {
       console.error("Error refreshing workouts:", error);
       setStaleData(true);
     }
-  };
+  }, [user, applySettings]);
 
   useEffect(() => {
     if (user) {
@@ -241,7 +258,7 @@ export default function AppProvider({ children }) {
       setLogs([]);
       setScanCount(0);
     }
-  }, [user]);
+  }, [user, fetchData]);
 
   useEffect(() => {
     if (user && activeWorkoutLogs !== null) {
@@ -254,14 +271,14 @@ export default function AppProvider({ children }) {
     setBumpSkipped(localStorage.getItem('snapcal_skip_bump_' + todayStr) === '1');
   }, [todayStr]);
 
-  const handleToggleBumpSkip = () => {
+  const handleToggleBumpSkip = useCallback(() => {
     const next = !bumpSkipped;
     setBumpSkipped(next);
     if (next) localStorage.setItem('snapcal_skip_bump_' + todayStr, '1');
     else localStorage.removeItem('snapcal_skip_bump_' + todayStr);
-  };
+  }, [bumpSkipped, todayStr]);
 
-  const handleUpdateGoal = async (updates) => {
+  const handleUpdateGoal = useCallback(async (updates) => {
     if (!user) return;
 
     // Training/rest-day offset updates: no optimistic dailyGoal change; save then
@@ -298,9 +315,9 @@ export default function AppProvider({ children }) {
     } catch (e) {
       console.error("Error saving goal", e);
     }
-  };
+  }, [user, fetchData]);
 
-  const handleUpdatePreferences = async (updates) => {
+  const handleUpdatePreferences = useCallback(async (updates) => {
     if (!user) return false;
     try {
       await updateUserSettings(user.id, updates);
@@ -310,9 +327,9 @@ export default function AppProvider({ children }) {
       console.error('Error saving preference', e);
       return false;
     }
-  };
+  }, [user, fetchData]);
 
-  const handleUpdateLog = async (logId, data) => {
+  const handleUpdateLog = useCallback(async (logId, data) => {
     if (!user) return;
     try {
       await updateLog(logId, user.id, data);
@@ -321,9 +338,9 @@ export default function AppProvider({ children }) {
       console.error("Error updating log", e);
       showToast({ message: "Couldn't update log", variant: 'error' });
     }
-  };
+  }, [user, fetchData, showToast]);
 
-  const handleOnboardingComplete = async (data) => {
+  const handleOnboardingComplete = useCallback(async (data) => {
     // 1. Send profile data to settings API to calculate and save goals
     await handleUpdateGoal(data);
 
@@ -340,9 +357,9 @@ export default function AppProvider({ children }) {
     }
 
     setShowOnboarding(false);
-  };
+  }, [handleUpdateGoal]);
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     try { sessionStorage.removeItem('snapcal_addfood_draft'); } catch { /* ignore */ }
     loggingOutRef.current = true; // set BEFORE signOut — its auth event nulls `user` ahead of the replace below
     try {
@@ -352,29 +369,36 @@ export default function AppProvider({ children }) {
       // so send the signed-out user back to the public landing route.
       router.replace('/');
     }
-  };
+  }, [router]);
 
   // --- Derived State ---
-  const today = new Date();
+  // Memoized: these O(N) scans previously re-ran on every provider render.
+  // Freshness is unchanged — renders only ever happen on state changes, so
+  // recompute-on-dep-change is exactly when they recomputed before.
+  const todaysLogs = useMemo(() => {
+    const today = new Date();
+    return logs.filter(log => {
+      const logDate = new Date(log.date);
+      return logDate.toDateString() === today.toDateString();
+    });
+  }, [logs]);
 
-  const todaysLogs = logs.filter(log => {
-    const logDate = new Date(log.date);
-    return logDate.toDateString() === today.toDateString();
-  });
-
-  const caloriesToday = todaysLogs.reduce((acc, log) => acc + (parseInt(log.calories) || 0), 0);
+  const caloriesToday = useMemo(
+    () => todaysLogs.reduce((acc, log) => acc + (parseInt(log.calories) || 0), 0),
+    [todaysLogs]
+  );
 
   // --- Training-day-aware calorie target ---
-  const trainedToday = (activeWorkoutLogs?.length > 0) || workoutLogs.some((l) => {
-    const d = new Date(l.date);
-    return d.toDateString() === today.toDateString();
-  });
+  const trainedToday = useMemo(() => {
+    const today = new Date();
+    return (activeWorkoutLogs?.length > 0) || workoutLogs.some((l) => {
+      const d = new Date(l.date);
+      return d.toDateString() === today.toDateString();
+    });
+  }, [activeWorkoutLogs, workoutLogs]);
 
-  const settingsCache = (() => {
-    try { return JSON.parse(localStorage.getItem('snapcal_settings') || '{}'); } catch { return {}; }
-  })();
-  const trainingOffset = settingsCache.training_day_calorie_offset ?? 250;
-  const restOffset = settingsCache.rest_day_calorie_offset ?? 0;
+  const trainingOffset = calorieOffsets.training;
+  const restOffset = calorieOffsets.rest;
   const isTrainingDay = trainedToday && !bumpSkipped;
   const offsetSkipped = trainedToday && bumpSkipped;
   const calorieOffset = isTrainingDay ? trainingOffset : restOffset;
@@ -408,7 +432,7 @@ export default function AppProvider({ children }) {
   }, [logs, dailyGoal, workoutLogs]);
 
   // Enumerated context interface — everything page.jsx's tab blocks and chrome consume.
-  const value = {
+  const value = useMemo(() => ({
     // Raw state
     user,
     loading,
@@ -456,7 +480,7 @@ export default function AppProvider({ children }) {
     calorieOffset,
     trainingOffset,
     offsetSkipped,
-  };
+  }), [user, loading, logs, workoutLogs, activeWorkoutLogs, dailyGoal, macroGoals, weightUnit, waterGoal, editingLog, scanCount, streak, streakStatus, showOnboarding, isRetakingAssessment, showActionSheet, bumpSkipped, staleData, showToast, toastEl, fetchData, refreshLogs, refreshWorkouts, handleToggleBumpSkip, handleUpdateGoal, handleUpdatePreferences, handleUpdateLog, handleOnboardingComplete, handleLogout, todaysLogs, caloriesToday, percentComplete, effectiveGoal, weeklyData, trainedToday, isTrainingDay, calorieOffset, trainingOffset, offsetSkipped]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
