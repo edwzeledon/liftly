@@ -12,7 +12,7 @@ export default function HistoryPage() {
       logs={app.logs}
       workoutLogs={app.workoutLogs}
       user={app.user}
-      onLogDeleted={app.fetchData}
+      onLogDeleted={app.refreshLogs}
       onEditLog={app.setEditingLog}
       weightUnit={app.weightUnit}
       loading={app.loading}

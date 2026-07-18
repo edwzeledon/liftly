@@ -17,10 +17,10 @@ export default function TodayPage() {
       loading={app.loading}
       streak={app.streak}
       streakStatus={app.streakStatus}
-      onLogDeleted={app.fetchData}
+      onLogDeleted={app.refreshLogs}
       onUpdateGoal={app.handleUpdateGoal}
       onEditLog={app.setEditingLog}
-      onLogAdded={app.fetchData}
+      onLogAdded={app.refreshLogs}
       onAddMeal={() => router.push('/add')}
       trainingDay={app.isTrainingDay}
       calorieOffset={app.calorieOffset}

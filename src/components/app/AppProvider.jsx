@@ -77,6 +77,58 @@ export default function AppProvider({ children }) {
     initAuth();
   }, []);
 
+  // Applies a fresh settings row to provider state: onboarding flag, goals,
+  // unit, water goal, timezone sync, streak. Shared by fetchData and the
+  // slice refreshers below so streak/goal semantics cannot drift between paths.
+  const applySettings = (settings) => {
+    if (settings.is_new_user) {
+      setShowOnboarding(true);
+    }
+    if (settings.daily_goal) setDailyGoal(settings.daily_goal);
+    setWeightUnit(settings.weight_unit === 'kg' ? 'kg' : 'lb');
+    setWaterGoal(settings.water_goal || 8);
+
+    // Sync Timezone
+    const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (settings.timezone !== browserTimezone) {
+      updateUserSettings(user.id, { timezone: browserTimezone });
+    }
+
+    // Streak Calculation
+    const today = new Date().toLocaleDateString('en-CA');
+    const lastLog = settings.last_log_date;
+    let currentStreak = settings.current_streak || 0;
+    let status = 'broken';
+
+    if (lastLog === today) {
+      status = 'safe';
+    } else if (lastLog) {
+      const lastLogDate = new Date(lastLog);
+      const todayDate = new Date(today);
+      const diffTime = todayDate - lastLogDate;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays === 1) {
+        status = 'at_risk';
+      } else {
+        currentStreak = 0;
+        status = 'broken';
+      }
+    } else {
+      currentStreak = 0;
+      status = 'broken';
+    }
+
+    setStreak(currentStreak);
+    setStreakStatus(status);
+
+    setMacroGoals({
+      protein: settings.protein_goal || Math.round((settings.daily_goal * 0.3) / 4),
+      carbs: settings.carbs_goal || Math.round((settings.daily_goal * 0.4) / 4),
+      fats: settings.fats_goal || Math.round((settings.daily_goal * 0.3) / 9)
+    });
+  };
+
   const fetchData = async () => {
     if (!user) return;
     try {
@@ -97,54 +149,7 @@ export default function AppProvider({ children }) {
       setWorkoutLogs(fetchedWorkoutLogs);
       setActiveWorkoutLogs(fetchedActiveWorkoutLogs);
       setStaleData(false); // fresh data landed — clear any stale banner
-      if (settings) {
-        if (settings.is_new_user) {
-          setShowOnboarding(true);
-        }
-        if (settings.daily_goal) setDailyGoal(settings.daily_goal);
-        setWeightUnit(settings.weight_unit === 'kg' ? 'kg' : 'lb');
-        setWaterGoal(settings.water_goal || 8);
-
-        // Sync Timezone
-        const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        if (settings.timezone !== browserTimezone) {
-             updateUserSettings(user.id, { timezone: browserTimezone });
-        }
-
-        // Streak Calculation
-        const today = new Date().toLocaleDateString('en-CA');
-        const lastLog = settings.last_log_date;
-        let currentStreak = settings.current_streak || 0;
-        let status = 'broken';
-
-        if (lastLog === today) {
-            status = 'safe';
-        } else if (lastLog) {
-            const lastLogDate = new Date(lastLog);
-            const todayDate = new Date(today);
-            const diffTime = todayDate - lastLogDate;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-            if (diffDays === 1) {
-                status = 'at_risk';
-            } else {
-                currentStreak = 0;
-                status = 'broken';
-            }
-        } else {
-            currentStreak = 0;
-            status = 'broken';
-        }
-
-        setStreak(currentStreak);
-        setStreakStatus(status);
-
-        setMacroGoals({
-          protein: settings.protein_goal || Math.round((settings.daily_goal * 0.3) / 4),
-          carbs: settings.carbs_goal || Math.round((settings.daily_goal * 0.4) / 4),
-          fats: settings.fats_goal || Math.round((settings.daily_goal * 0.3) / 9)
-        });
-      }
+      if (settings) applySettings(settings);
       if (dailyStats) {
         setScanCount(dailyStats.scan_count || 0);
       }
@@ -154,6 +159,50 @@ export default function AppProvider({ children }) {
       setStaleData(true);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Slice refreshers: mutations refetch only the data they can change instead
+  // of all five datasets. Settings rides along in both because the server owns
+  // streak state (last_log_date/current_streak update on food logs AND workout
+  // finish). fetchData remains the initial-load and full-recovery path.
+  const refreshLogs = async () => {
+    if (!user) return;
+    try {
+      const [fetchedLogs, settings, dailyStats] = await Promise.all([
+        getLogs(user.id),
+        getUserSettings(user.id),
+        getDailyStats(new Date().toLocaleDateString('en-CA'))
+      ]);
+      localStorage.setItem('snapcal_logs', JSON.stringify(fetchedLogs));
+      if (settings) localStorage.setItem('snapcal_settings', JSON.stringify(settings));
+      setLogs(fetchedLogs);
+      setStaleData(false);
+      if (settings) applySettings(settings);
+      if (dailyStats) setScanCount(dailyStats.scan_count || 0);
+    } catch (error) {
+      console.error("Error refreshing logs:", error);
+      setStaleData(true);
+    }
+  };
+
+  const refreshWorkouts = async () => {
+    if (!user) return;
+    try {
+      const [fetchedWorkoutLogs, fetchedActiveWorkoutLogs, settings] = await Promise.all([
+        getWorkoutLogs(),
+        getActiveWorkoutLogs(),
+        getUserSettings(user.id)
+      ]);
+      localStorage.setItem('snapcal_activeWorkoutLogs', JSON.stringify(fetchedActiveWorkoutLogs));
+      if (settings) localStorage.setItem('snapcal_settings', JSON.stringify(settings));
+      setWorkoutLogs(fetchedWorkoutLogs);
+      setActiveWorkoutLogs(fetchedActiveWorkoutLogs);
+      setStaleData(false);
+      if (settings) applySettings(settings);
+    } catch (error) {
+      console.error("Error refreshing workouts:", error);
+      setStaleData(true);
     }
   };
 
@@ -388,6 +437,8 @@ export default function AppProvider({ children }) {
     toastEl,
     // Handlers
     fetchData,
+    refreshLogs,
+    refreshWorkouts,
     handleToggleBumpSkip,
     handleUpdateGoal,
     handleUpdatePreferences,

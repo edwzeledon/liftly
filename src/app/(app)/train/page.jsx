@@ -8,7 +8,7 @@ export default function TrainPage() {
   return (
     <WorkoutView
       user={app.user}
-      onWorkoutComplete={app.fetchData}
+      onWorkoutComplete={app.refreshWorkouts}
       initialLogs={app.activeWorkoutLogs || []}
       onUpdateLogs={app.setActiveWorkoutLogs}
       weightUnit={app.weightUnit}
