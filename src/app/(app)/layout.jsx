@@ -46,7 +46,10 @@ function AppShell({ children }) {
     }
   }, [app.loading, app.user, app.loggingOutRef, pathname, router]);
 
-  if (app.loading) {
+  // Spinner only while auth is unresolved (no user yet — nothing can render
+  // safely). Once the user is known, the shell renders and each page owns its
+  // loading UI for the data window (Today/History skeletons).
+  if (app.loading && !app.user) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <Loader2 className="w-8 h-8 text-training-text animate-spin" />
