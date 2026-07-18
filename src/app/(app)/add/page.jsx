@@ -12,7 +12,7 @@ export default function AddPage() {
       user={app.user}
       initialScanCount={app.scanCount}
       onSuccess={() => {
-        app.fetchData();
+        app.refreshLogs();
         router.push('/today');
       }}
       onCancel={() => router.push('/today')}

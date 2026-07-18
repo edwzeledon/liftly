@@ -13,10 +13,12 @@ import { useModalBehavior } from '@/hooks/useModalBehavior';
 
 function HistorySkeleton() {
   return (
-    <div className="space-y-6">
+    <div role="status">
+      <span className="sr-only">Loading history</span>
+      <div aria-hidden="true" className="space-y-6">
       {[0, 1].map((i) => (
         <div key={i} className="bg-card rounded-2xl p-6 border border-border">
-          <div className="animate-pulse">
+          <div className="animate-pulse motion-reduce:animate-none">
             <div className="h-5 bg-muted rounded w-1/3" />
             <div className="mt-3 flex gap-8">
               <div className="space-y-1.5">
@@ -36,6 +38,7 @@ function HistorySkeleton() {
           </div>
         </div>
       ))}
+      </div>
     </div>
   );
 }
@@ -331,7 +334,7 @@ function HistoryEmpty({ onCta }) {
   );
 }
 
-export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDeleted, onEditLog, weightUnit = 'lb', loading = false, staleData = false, onRetry, onLogCta }) {
+export default function HistoryView({ logs = [], workoutLogs = [], user, onMealDeleted, onWorkoutDeleted, onEditLog, weightUnit = 'lb', loading = false, staleData = false, onRetry, onLogCta }) {
   const [visibleDays, setVisibleDays] = useState(60); // rendered day-group slice
   const [editingDay, setEditingDay] = useState(null); // { label, logs, type: 'workouts' | 'meals' }
 
@@ -340,7 +343,10 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
   const dialogRef = useRef(null);
   const closeEditingDay = () => {
     setEditingDay(null);
-    if (onLogDeleted) onLogDeleted(); // Refresh parent data
+    // Refresh the slice matching the modal's type (editingDay still holds the
+    // pre-close value in this closure).
+    const refresh = editingDay?.type === 'workouts' ? onWorkoutDeleted : onMealDeleted;
+    if (refresh) refresh();
   };
   // Mirrors ConfirmModal's Escape/focus pattern: Escape closes the topmost
   // overlay and focus moves to (then restores from) the close button.
@@ -399,7 +405,7 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
         onCommit: () => {
           deleteLog(logId, user.id)
             .then(async () => {
-              if (onLogDeleted) await onLogDeleted();
+              if (onMealDeleted) await onMealDeleted();
               // Prune the id once the refetch has landed — the row is gone from
               // props by now, so this can't flash it back.
               unhideLog(logId);
@@ -434,7 +440,7 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
           if (exerciseName) {
             localStorage.removeItem(`snapcal_pr_${exerciseName}`);
           }
-          if (onLogDeleted) onLogDeleted();
+          if (onWorkoutDeleted) onWorkoutDeleted();
         } catch (e) {
           console.error("Error deleting", e);
           // Revert optimistic update on error
@@ -479,7 +485,7 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
              }
           });
 
-          if (onLogDeleted) onLogDeleted();
+          if (onWorkoutDeleted) onWorkoutDeleted();
         } catch (e) {
           console.error("Error deleting session", e);
           // Revert optimistic update
@@ -515,7 +521,7 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onLogDe
         try {
           const promises = dayLogs.map(log => deleteLog(log.id, user.id));
           await Promise.all(promises);
-          if (onLogDeleted) onLogDeleted();
+          if (onMealDeleted) onMealDeleted();
         } catch (e) {
           console.error("Error deleting day meals", e);
           // Revert optimistic update

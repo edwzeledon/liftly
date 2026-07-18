@@ -25,6 +25,45 @@ export function recordRoutineUse(id) {
   }
 }
 
+// Loading mirror of the launchpad, shown while the workout-history fetch is
+// in flight (workoutsReady false): repeat-last card, "My routines" header,
+// and a 2-col routine grid — so the real launchpad swaps in without reflow
+// and "Repeat last" never pops in late.
+export function LaunchpadSkeleton() {
+  return (
+    <div role="status">
+      <span className="sr-only">Loading training</span>
+      {/* Layout classes live on the aria-hidden wrapper (house idiom) — a
+          display:contents wrapper would break the parent's space-y child
+          selector. */}
+      <div aria-hidden="true" className="space-y-6">
+        <div className="bg-card rounded-2xl p-5 border border-border animate-pulse motion-reduce:animate-none">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0 flex-1 space-y-2">
+              <div className="h-3 w-32 bg-muted rounded" />
+              <div className="h-4 w-full max-w-56 bg-muted rounded" />
+              <div className="h-3 w-40 bg-muted rounded" />
+            </div>
+            <div className="w-10 h-10 shrink-0 rounded-full bg-muted" />
+          </div>
+        </div>
+        <div className="animate-pulse motion-reduce:animate-none">
+          <div className="h-3 w-24 bg-muted rounded mb-3" />
+          <div className="grid grid-cols-2 gap-3">
+            {[0, 1].map((i) => (
+              <div key={i} className="bg-card rounded-2xl p-4 border border-border">
+                <div className="h-4 w-3/4 bg-muted rounded mb-2" />
+                <div className="h-3 w-16 bg-muted rounded" />
+                <div className="mt-3 ml-auto w-7 h-7 rounded-full bg-muted" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Pre-session launchpad: repeat-last card + tappable routine cards (capped
 // at 4, recency-ordered) + start-from-scratch. Cards are whole-tap targets:
 // an absolute overlay button starts the routine (no nested buttons), the

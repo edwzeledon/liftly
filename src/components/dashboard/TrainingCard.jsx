@@ -1,11 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { Dumbbell, ChevronRight, Check } from 'lucide-react';
+import { Dumbbell, ChevronRight, Check, Star } from 'lucide-react';
 import { useApp } from '@/components/app/AppProvider';
 import { todayWorkoutSummary } from '@/lib/daySummary';
-import { toDisplayVolume } from '@/lib/units';
+import { prsToday, lastWorkoutSession } from '@/lib/workoutStats';
+import { toDisplayVolume, formatWeight } from '@/lib/units';
 
 // Sunday-start week strip: 7 dots, trained days filled, today ringed.
 function WeekStrip({ workoutLogs }) {
@@ -41,15 +42,36 @@ function WeekStrip({ workoutLogs }) {
   );
 }
 
-// Today's training tile for the desktop command center (also renders on
-// mobile below the hero). Three states: session in progress → resume;
-// trained today → stats; otherwise → start CTA.
+// PR callout: today's sets that beat the lifter's prior best (prsToday).
+function PrLine({ prs, unit }) {
+  if (prs.length === 0) return null;
+  const [first] = prs;
+  return (
+    <p className="flex items-center gap-1.5 text-sm font-bold text-streak mb-3">
+      <Star className="w-4 h-4 fill-streak" aria-hidden="true" />
+      <span>
+        PR — {first.exercise} {formatWeight(first.weight, unit)} × {first.reps}
+        {prs.length > 1 && (
+          <span className="text-muted-foreground font-medium"> · +{prs.length - 1} more</span>
+        )}
+      </span>
+    </p>
+  );
+}
+
+// Today's training hero (6-col on desktop, below the fuel ring on mobile).
+// Three states: session in progress → resume; trained today → stats + PRs;
+// otherwise → start CTA with last-session context.
 export default function TrainingCard() {
   const app = useApp();
   const router = useRouter();
-  const summary = todayWorkoutSummary(app.workoutLogs);
+  // These scan the FULL workout history — memoized so re-renders from
+  // unrelated context changes don't re-walk it.
+  const summary = useMemo(() => todayWorkoutSummary(app.workoutLogs), [app.workoutLogs]);
   const inProgress = (app.activeWorkoutLogs?.length || 0) > 0;
   const unit = app.weightUnit === 'kg' ? 'kg' : 'lb';
+  const prs = useMemo(() => prsToday(app.workoutLogs), [app.workoutLogs]);
+  const last = useMemo(() => lastWorkoutSession(app.workoutLogs), [app.workoutLogs]);
 
   return (
     <div className="bg-card rounded-2xl p-6 border border-border h-full flex flex-col">
@@ -65,6 +87,7 @@ export default function TrainingCard() {
               <span className="w-2 h-2 rounded-full bg-training animate-pulse" aria-hidden="true" />
               <p className="font-display text-lg font-bold text-foreground">Session in progress</p>
             </div>
+            <PrLine prs={prs} unit={unit} />
             <p className="text-sm text-muted-foreground mb-4">Pick up where you left off.</p>
             <button
               onClick={() => router.push('/train')}
@@ -84,10 +107,11 @@ export default function TrainingCard() {
               </span>
               <p className="font-display text-lg font-bold text-foreground">Trained today</p>
             </div>
-            <div className="flex flex-wrap items-baseline gap-x-5 gap-y-2 mb-2">
+            <PrLine prs={prs} unit={unit} />
+            <div className="flex flex-wrap items-baseline gap-x-6 gap-y-2 mb-2">
               {summary.volumeLb > 0 && (
                 <div>
-                  <p className="font-display text-2xl font-bold tabular-nums text-foreground">
+                  <p className="font-display text-3xl font-bold tabular-nums text-foreground">
                     {toDisplayVolume(summary.volumeLb, unit).toLocaleString()}
                     <span className="text-sm font-medium text-muted-foreground"> {unit}</span>
                   </p>
@@ -95,14 +119,14 @@ export default function TrainingCard() {
                 </div>
               )}
               <div>
-                <p className="font-display text-2xl font-bold tabular-nums text-foreground">{summary.exerciseCount}</p>
+                <p className="font-display text-3xl font-bold tabular-nums text-foreground">{summary.exerciseCount}</p>
                 <p className="text-xs text-muted-foreground">
                   {summary.exerciseCount === 1 ? 'exercise' : 'exercises'}
                 </p>
               </div>
               {summary.durationSec > 0 && (
                 <div>
-                  <p className="font-display text-2xl font-bold tabular-nums text-foreground">
+                  <p className="font-display text-3xl font-bold tabular-nums text-foreground">
                     {Math.round(summary.durationSec / 60)}
                     <span className="text-sm font-medium text-muted-foreground"> min</span>
                   </p>
@@ -120,7 +144,13 @@ export default function TrainingCard() {
         ) : (
           <>
             <p className="font-display text-lg font-bold text-foreground mb-1">No session yet</p>
-            <p className="text-sm text-muted-foreground mb-4">Rest day, or time to lift?</p>
+            {last ? (
+              <p className="text-sm text-muted-foreground mb-4">
+                Last: {last.exerciseCount} {last.exerciseCount === 1 ? 'exercise' : 'exercises'} · {last.dateLabel}
+              </p>
+            ) : (
+              <p className="text-sm text-muted-foreground mb-4">Rest day, or time to lift?</p>
+            )}
             <button
               onClick={() => router.push('/train')}
               className="w-full py-3 bg-training text-white font-bold rounded-xl hover:bg-training/90 active:scale-95 transition-all"

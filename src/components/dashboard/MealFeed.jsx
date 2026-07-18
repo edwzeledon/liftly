@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Edit2, Trash2, Brain, Plus, MoreVertical, Utensils } from 'lucide-react';
+import { Edit2, Trash2, Plus, MoreVertical, Utensils } from 'lucide-react';
 
 // Helper to convert food name to title case
 const toTitleCase = (str) => {
   return str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
 };
 
-export default function MealFeed({ logs, onEditLog, onDeleteLog, onAnalyzeDay, onAddMeal }) {
+function MealFeed({ logs, onEditLog, onDeleteLog, onAddMeal }) {
   const [openMenuId, setOpenMenuId] = useState(null);
 
   return (
@@ -14,15 +14,6 @@ export default function MealFeed({ logs, onEditLog, onDeleteLog, onAnalyzeDay, o
       <div className="flex items-center justify-between mb-6">
         <h3 className="font-bold text-foreground text-lg">Today&apos;s Meals</h3>
         <div className="flex gap-2">
-            {logs.length > 0 && (
-            <button
-                onClick={onAnalyzeDay}
-                className="text-xs font-medium bg-ai-soft-border text-ai px-3 py-1.5 rounded-full flex items-center gap-1.5 hover:bg-ai/20 transition-colors active:scale-95"
-            >
-                <Brain className="w-3 h-3" />
-                Analyze
-            </button>
-            )}
             <button
                 onClick={onAddMeal}
                 className="text-xs font-medium bg-training-soft text-training-text px-3 py-1.5 rounded-full flex items-center gap-1.5 hover:bg-training-soft-border transition-colors active:scale-95"
@@ -137,3 +128,7 @@ export default function MealFeed({ logs, onEditLog, onDeleteLog, onAnalyzeDay, o
     </div>
   );
 }
+
+// Memoized: props are identity-stable (context handlers + memoized todaysLogs),
+// so unrelated Dashboard state (action sheet, toasts) no longer re-renders the feed.
+export default React.memo(MealFeed);
