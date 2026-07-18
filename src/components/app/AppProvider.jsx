@@ -383,13 +383,11 @@ export default function AppProvider({ children }) {
   // Memoized: these O(N) scans previously re-ran on every provider render.
   // Freshness is unchanged — renders only ever happen on state changes, so
   // recompute-on-dep-change is exactly when they recomputed before.
+  // Keyed on todayStr so the window rolls over at midnight on the next
+  // render (same-calendar-day equality; en-CA string == toDateString match).
   const todaysLogs = useMemo(() => {
-    const today = new Date();
-    return logs.filter(log => {
-      const logDate = new Date(log.date);
-      return logDate.toDateString() === today.toDateString();
-    });
-  }, [logs]);
+    return logs.filter(log => new Date(log.date).toLocaleDateString('en-CA') === todayStr);
+  }, [logs, todayStr]);
 
   const caloriesToday = useMemo(
     () => todaysLogs.reduce((acc, log) => acc + (parseInt(log.calories) || 0), 0),
@@ -398,12 +396,10 @@ export default function AppProvider({ children }) {
 
   // --- Training-day-aware calorie target ---
   const trainedToday = useMemo(() => {
-    const today = new Date();
-    return (activeWorkoutLogs?.length > 0) || workoutLogs.some((l) => {
-      const d = new Date(l.date);
-      return d.toDateString() === today.toDateString();
-    });
-  }, [activeWorkoutLogs, workoutLogs]);
+    return (activeWorkoutLogs?.length > 0) || workoutLogs.some(
+      (l) => new Date(l.date).toLocaleDateString('en-CA') === todayStr
+    );
+  }, [activeWorkoutLogs, workoutLogs, todayStr]);
 
   const trainingOffset = calorieOffsets.training;
   const restOffset = calorieOffsets.rest;
@@ -412,32 +408,6 @@ export default function AppProvider({ children }) {
   const calorieOffset = isTrainingDay ? trainingOffset : restOffset;
 
   const effectiveGoal = dailyGoal + calorieOffset;
-  const percentComplete = Math.min(100, Math.round((caloriesToday / effectiveGoal) * 100));
-
-  // Weekly Data Calculation
-  const weeklyData = useMemo(() => {
-    const days = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-
-      const dayLogs = logs.filter(log => {
-        const logDate = new Date(log.date);
-        return logDate.toDateString() === d.toDateString();
-      });
-
-      const total = dayLogs.reduce((acc, log) => acc + (parseInt(log.calories) || 0), 0);
-      const trained = workoutLogs.some((l) => new Date(l.date).toDateString() === d.toDateString());
-      days.push({
-        dayName: d.toLocaleDateString('en-US', { weekday: 'short' }),
-        date: d,
-        calories: total,
-        height: (total / dailyGoal) * 100,
-        trained
-      });
-    }
-    return days;
-  }, [logs, dailyGoal, workoutLogs]);
 
   // Enumerated context interface — everything page.jsx's tab blocks and chrome consume.
   const value = useMemo(() => ({
@@ -481,15 +451,13 @@ export default function AppProvider({ children }) {
     // Derived
     todaysLogs,
     caloriesToday,
-    percentComplete,
     effectiveGoal,
-    weeklyData,
     trainedToday,
     isTrainingDay,
     calorieOffset,
     trainingOffset,
     offsetSkipped,
-  }), [user, loading, logs, workoutLogs, activeWorkoutLogs, dailyGoal, macroGoals, weightUnit, waterGoal, editingLog, scanCount, streak, streakStatus, showOnboarding, isRetakingAssessment, showActionSheet, bumpSkipped, staleData, workoutsReady, showToast, toastEl, fetchData, refreshLogs, refreshWorkouts, handleToggleBumpSkip, handleUpdateGoal, handleUpdatePreferences, handleUpdateLog, handleOnboardingComplete, handleLogout, todaysLogs, caloriesToday, percentComplete, effectiveGoal, weeklyData, trainedToday, isTrainingDay, calorieOffset, trainingOffset, offsetSkipped]);
+  }), [user, loading, logs, workoutLogs, activeWorkoutLogs, dailyGoal, macroGoals, weightUnit, waterGoal, editingLog, scanCount, streak, streakStatus, showOnboarding, isRetakingAssessment, showActionSheet, bumpSkipped, staleData, workoutsReady, showToast, toastEl, fetchData, refreshLogs, refreshWorkouts, handleToggleBumpSkip, handleUpdateGoal, handleUpdatePreferences, handleUpdateLog, handleOnboardingComplete, handleLogout, todaysLogs, caloriesToday, effectiveGoal, trainedToday, isTrainingDay, calorieOffset, trainingOffset, offsetSkipped]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
