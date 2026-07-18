@@ -120,3 +120,37 @@ export function recentExercises(workoutLogs, limit = 8) {
   }
   return out;
 }
+
+// Sets logged today that beat the lifter's best prior set for that exercise.
+// Returns the single best beating set per exercise (canonical-lb numbers);
+// a first-ever exercise counts as a PR (beatsBest treats null best as beaten).
+export function prsToday(workoutLogs, now = new Date()) {
+  const todayKey = now.toDateString();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const logs = (workoutLogs || []).filter((l) => l && l.date && Array.isArray(l.sets));
+  const prior = logs.filter((l) => new Date(l.date) < startOfToday);
+  const todays = logs.filter((l) => new Date(l.date).toDateString() === todayKey);
+
+  const byExercise = new Map();
+  todays.forEach((log) => {
+    const name = log.exercise || log.exercise_name;
+    if (!name) return;
+    if (!byExercise.has(name)) byExercise.set(name, []);
+    byExercise.get(name).push(log);
+  });
+
+  const prs = [];
+  byExercise.forEach((exLogs, name) => {
+    const best = bestSet(prior.filter((p) => (p.exercise || p.exercise_name) === name));
+    let top = null;
+    exLogs.forEach((log) =>
+      log.sets.forEach((set) => {
+        if (beatsBest(set, best) && beatsBest(set, top)) {
+          top = { weight: parseFloat(set.weight) || 0, reps: parseFloat(set.reps) || 0 };
+        }
+      })
+    );
+    if (top) prs.push({ exercise: name, weight: top.weight, reps: top.reps });
+  });
+  return prs;
+}

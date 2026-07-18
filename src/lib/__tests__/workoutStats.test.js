@@ -1,4 +1,4 @@
-import { setVolume, logsVolume, bestSet, beatsBest, startOfWeek, lastWorkoutSession, recentExercises } from '../workoutStats';
+import { setVolume, logsVolume, bestSet, beatsBest, startOfWeek, lastWorkoutSession, recentExercises, prsToday } from '../workoutStats';
 
 describe('setVolume', () => {
   it('multiplies weight by reps', () => {
@@ -131,5 +131,39 @@ describe('recentExercises', () => {
     }));
     expect(recentExercises(logs, 5)).toHaveLength(5);
     expect(recentExercises(logs, 5)[0].name).toBe('Ex11');
+  });
+});
+
+describe('prsToday', () => {
+  const NOW = new Date('2026-07-17T18:00:00');
+  const today = '2026-07-17T15:00:00';
+  const past = '2026-07-10T15:00:00';
+
+  test('first-ever log for an exercise counts as a PR', () => {
+    const logs = [{ exercise: 'Bench Press', date: today, sets: [{ weight: 135, reps: 5 }] }];
+    expect(prsToday(logs, NOW)).toEqual([{ exercise: 'Bench Press', weight: 135, reps: 5 }]);
+  });
+
+  test('reports the best beating set when today beats a prior best', () => {
+    const logs = [
+      { exercise: 'Squat', date: past, sets: [{ weight: 225, reps: 5 }] },
+      { exercise: 'Squat', date: today, sets: [{ weight: 230, reps: 3 }, { weight: 245, reps: 2 }] },
+    ];
+    expect(prsToday(logs, NOW)).toEqual([{ exercise: 'Squat', weight: 245, reps: 2 }]);
+  });
+
+  test('empty when today does not beat the prior best', () => {
+    const logs = [
+      { exercise: 'Deadlift', date: past, sets: [{ weight: 315, reps: 5 }] },
+      { exercise: 'Deadlift', date: today, sets: [{ weight: 275, reps: 8 }] },
+    ];
+    expect(prsToday(logs, NOW)).toEqual([]);
+  });
+
+  test('ignores non-today logs, empty and null input', () => {
+    const logs = [{ exercise: 'Row', date: past, sets: [{ weight: 185, reps: 8 }] }];
+    expect(prsToday(logs, NOW)).toEqual([]);
+    expect(prsToday([], NOW)).toEqual([]);
+    expect(prsToday(null, NOW)).toEqual([]);
   });
 });
