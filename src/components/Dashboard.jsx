@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { deleteLog } from '@/lib/api';
 import DailyProgress from './dashboard/DailyProgress';
 import MealFeed from './dashboard/MealFeed';
@@ -16,7 +16,12 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, todays
   const [hiddenLogIds, setHiddenLogIds] = useState(new Set());
   const { toastEl, showToast } = useToast();
 
-  const visibleTodaysLogs = todaysLogs.filter(log => !hiddenLogIds.has(log.id));
+  // Memoized: a bare .filter() here would mint a new array every render and
+  // defeat MealFeed's React.memo.
+  const visibleTodaysLogs = useMemo(
+    () => todaysLogs.filter(log => !hiddenLogIds.has(log.id)),
+    [todaysLogs, hiddenLogIds]
+  );
 
   const unhideLog = useCallback((logId) => {
     setHiddenLogIds(prev => {
