@@ -7,7 +7,7 @@
 import React, { Suspense, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Loader2, Utensils, Home, Plus, Calendar, Settings, Dumbbell, BarChart3 } from 'lucide-react';
+import { Utensils, Home, Plus, Calendar, Settings, Dumbbell, BarChart3 } from 'lucide-react';
 import AppProvider, { useApp } from '@/components/app/AppProvider';
 import Sidebar from '@/components/Sidebar';
 import EditFoodModal from '@/components/EditFoodModal';
@@ -46,13 +46,34 @@ function AppShell({ children }) {
     }
   }, [app.loading, app.user, app.loggingOutRef, pathname, router]);
 
-  // Spinner only while auth is unresolved (no user yet — nothing can render
-  // safely). Once the user is known, the shell renders and each page owns its
-  // loading UI for the data window (Today/History skeletons).
+  // Shell skeleton while auth is unresolved (no user yet — the route's real
+  // content can't render). The rail placeholder sits exactly where SidebarRail
+  // lands (4rem resting width) so the real shell replaces it without a jump;
+  // content blocks are generic since the route is unknown pre-auth.
   if (app.loading && !app.user) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <Loader2 className="w-8 h-8 text-training-text animate-spin" />
+      <div className="flex h-screen bg-background overflow-hidden" role="status">
+        <span className="sr-only">Loading</span>
+        <div aria-hidden="true" className="flex flex-1">
+          <div className="hidden md:flex w-16 flex-col shrink-0 bg-card border-r border-border px-2 py-4">
+            <div className="w-8 h-8 rounded-xl bg-muted mx-auto mb-10 animate-pulse motion-reduce:animate-none" />
+            <div className="space-y-2 animate-pulse motion-reduce:animate-none">
+              {Array.from({ length: 4 }, (_, i) => (
+                <div key={i} className="w-11 h-11 rounded-xl bg-muted mx-auto" />
+              ))}
+            </div>
+          </div>
+          <div className="flex-1 flex flex-col">
+            <div className="md:hidden bg-card border-b border-border px-6 py-4">
+              <div className="h-9 w-28 bg-muted rounded animate-pulse motion-reduce:animate-none" />
+            </div>
+            <div className="flex-1 w-full max-w-5xl mx-auto p-6 md:p-8 space-y-6 animate-pulse motion-reduce:animate-none">
+              <div className="h-8 w-40 bg-muted rounded" />
+              <div className="h-48 bg-card border border-border rounded-2xl" />
+              <div className="h-32 bg-card border border-border rounded-2xl" />
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
