@@ -12,8 +12,8 @@ export default function HistoryPage() {
       logs={app.logs}
       workoutLogs={app.workoutLogs}
       user={app.user}
-      // fetchData, not refreshLogs: HistoryView fires this for workout deletes too
-      onLogDeleted={app.fetchData}
+      onMealDeleted={app.refreshLogs}
+      onWorkoutDeleted={app.refreshWorkouts}
       onEditLog={app.setEditingLog}
       weightUnit={app.weightUnit}
       loading={app.loading}
