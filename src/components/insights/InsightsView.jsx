@@ -107,11 +107,37 @@ export default function InsightsView({ user, onGoLogProtein, weightUnit = 'lb' }
 
   useEffect(() => {
     let cancelled = false;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: show the skeleton while a range/refresh change refetches.
-    setState('loading');
+    // Session cache per user+range: revisits render instantly from cache and
+    // revalidate silently in the background instead of blocking on a skeleton.
+    // sessionStorage dies with the tab; the user id in the key means no
+    // logout-clearing wiring is needed.
+    const cacheKey = `snapcal_insights_${user?.id}_${range}`;
+    // refreshKey > 0 = explicit refresh (error retry, weight save): skip the
+    // cache read so the fetch is authoritative; the cache is rewritten below.
+    let cached = null;
+    if (refreshKey === 0) {
+      try { cached = JSON.parse(sessionStorage.getItem(cacheKey) || 'null'); } catch { cached = null; }
+    }
+    if (cached) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: seed from the session cache so revisits skip the skeleton.
+      setData(cached);
+      setState('ready');
+    } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: show the skeleton while a range/refresh change refetches.
+      setState('loading');
+    }
     getInsights(range)
-      .then((d) => { if (!cancelled) { setData(d); setState('ready'); } })
-      .catch(() => { if (!cancelled) setState('error'); });
+      .then((d) => {
+        if (cancelled) return;
+        try { sessionStorage.setItem(cacheKey, JSON.stringify(d)); } catch { /* private mode / quota — cache is best-effort */ }
+        setData(d);
+        setState('ready');
+      })
+      .catch(() => {
+        // Background revalidate failed while cached data is on screen: keep
+        // showing the cache, no error flash. Only a cold miss surfaces errors.
+        if (!cancelled && !cached) setState('error');
+      });
     return () => { cancelled = true; };
   }, [range, user?.id, refreshKey]);
 
