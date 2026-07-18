@@ -13,10 +13,12 @@ import { useModalBehavior } from '@/hooks/useModalBehavior';
 
 function HistorySkeleton() {
   return (
-    <div className="space-y-6">
+    <div role="status">
+      <span className="sr-only">Loading history</span>
+      <div aria-hidden="true" className="space-y-6">
       {[0, 1].map((i) => (
         <div key={i} className="bg-card rounded-2xl p-6 border border-border">
-          <div className="animate-pulse">
+          <div className="animate-pulse motion-reduce:animate-none">
             <div className="h-5 bg-muted rounded w-1/3" />
             <div className="mt-3 flex gap-8">
               <div className="space-y-1.5">
@@ -36,6 +38,7 @@ function HistorySkeleton() {
           </div>
         </div>
       ))}
+      </div>
     </div>
   );
 }

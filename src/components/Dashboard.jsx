@@ -31,6 +31,17 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, todays
     });
   }, []);
 
+  // Shared by the skeleton and loaded returns — keep the header identical so
+  // the loading→loaded swap never moves it.
+  const desktopHeader = (
+    <div className="hidden md:flex items-baseline justify-between mb-6">
+      <h2 className="font-display text-2xl font-bold text-foreground">Today</h2>
+      <p className="text-sm text-muted-foreground">
+        {new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
+      </p>
+    </div>
+  );
+
   const handleDeleteLog = useCallback((logId) => {
     if(!user) return;
     // Optimistically hide the row; the REAL delete is the toast's onCommit.
@@ -65,12 +76,7 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, todays
   if (loading) {
     return (
       <div className="pt-6 md:pt-0 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20 md:pb-0">
-        <div className="hidden md:flex items-baseline justify-between mb-6">
-          <h2 className="font-display text-2xl font-bold text-foreground">Today</h2>
-          <p className="text-sm text-muted-foreground">
-            {new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
-          </p>
-        </div>
+        {desktopHeader}
         <DashboardSkeleton />
       </div>
     );
@@ -80,12 +86,7 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, todays
     <div className="pt-6 md:pt-0 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20 md:pb-0">
 
       {/* Desktop-only header row (mobile keeps the app header) */}
-      <div className="hidden md:flex items-baseline justify-between mb-6">
-        <h2 className="font-display text-2xl font-bold text-foreground">Today</h2>
-        <p className="text-sm text-muted-foreground">
-          {new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
-        </p>
-      </div>
+      {desktopHeader}
 
       {/* Twin-heroes grid: DOM order = desktop placement (6/6, 12, 8/4);
           order-* utilities keep the mobile stack: hero, training, chips,

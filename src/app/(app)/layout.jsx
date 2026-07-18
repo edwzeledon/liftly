@@ -55,7 +55,7 @@ function AppShell({ children }) {
       <div className="flex h-screen bg-background overflow-hidden" role="status">
         <span className="sr-only">Loading</span>
         <div aria-hidden="true" className="flex flex-1">
-          <div className="hidden md:flex w-16 flex-col shrink-0 bg-card border-r border-border px-2 py-4">
+          <div className="hidden md:flex w-16 flex-col h-full overflow-hidden shrink-0 bg-card border-r border-border px-2 py-4">
             <div className="w-8 h-8 rounded-xl bg-muted mx-auto mb-10 animate-pulse motion-reduce:animate-none" />
             <div className="space-y-2 animate-pulse motion-reduce:animate-none">
               {Array.from({ length: 4 }, (_, i) => (
@@ -67,7 +67,7 @@ function AppShell({ children }) {
             <div className="md:hidden bg-card border-b border-border px-6 py-4">
               <div className="h-9 w-28 bg-muted rounded animate-pulse motion-reduce:animate-none" />
             </div>
-            <div className="flex-1 w-full max-w-5xl mx-auto p-6 md:p-8 space-y-6 animate-pulse motion-reduce:animate-none">
+            <div className={`flex-1 w-full ${pathname === '/today' ? 'max-w-7xl' : 'max-w-5xl'} mx-auto p-6 md:p-8 space-y-6 animate-pulse motion-reduce:animate-none`}>
               <div className="h-8 w-40 bg-muted rounded" />
               <div className="h-48 bg-card border border-border rounded-2xl" />
               <div className="h-32 bg-card border border-border rounded-2xl" />
