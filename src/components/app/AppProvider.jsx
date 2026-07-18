@@ -41,6 +41,11 @@ export default function AppProvider({ children }) {
   const [showActionSheet, setShowActionSheet] = useState(false);
   const [bumpSkipped, setBumpSkipped] = useState(false);
   const [staleData, setStaleData] = useState(false); // fetchData failed → showing cached data
+  // True once the initial workout-history fetch has SETTLED (success or
+  // failure). `loading` can't cover this: it clears on cache seed, but
+  // completed workoutLogs are never cached — Train's launchpad needs to know
+  // the difference between "no history" and "history not here yet".
+  const [workoutsReady, setWorkoutsReady] = useState(false);
   // Training/rest-day calorie offsets. Seeded ONCE from the settings cache via
   // lazy initializer (the old per-render localStorage JSON.parse is gone) and
   // kept fresh by applySettings — localStorage itself is not reactive. The
@@ -176,6 +181,7 @@ export default function AppProvider({ children }) {
       setStaleData(true);
     } finally {
       setLoading(false);
+      setWorkoutsReady(true); // settled either way; failure shows the staleData banner, not an eternal skeleton
     }
   }, [user, applySettings]);
 
@@ -215,6 +221,7 @@ export default function AppProvider({ children }) {
       if (settings) localStorage.setItem('snapcal_settings', JSON.stringify(settings));
       setWorkoutLogs(fetchedWorkoutLogs);
       setActiveWorkoutLogs(fetchedActiveWorkoutLogs);
+      setWorkoutsReady(true);
       setStaleData(false);
       if (settings) applySettings(settings);
     } catch (error) {
@@ -257,6 +264,7 @@ export default function AppProvider({ children }) {
     } else {
       setLogs([]);
       setScanCount(0);
+      setWorkoutsReady(false);
     }
   }, [user, fetchData]);
 
@@ -456,6 +464,7 @@ export default function AppProvider({ children }) {
     setShowActionSheet,
     bumpSkipped,
     staleData,
+    workoutsReady,
     loggingOutRef,
     showToast,
     toastEl,
@@ -480,7 +489,7 @@ export default function AppProvider({ children }) {
     calorieOffset,
     trainingOffset,
     offsetSkipped,
-  }), [user, loading, logs, workoutLogs, activeWorkoutLogs, dailyGoal, macroGoals, weightUnit, waterGoal, editingLog, scanCount, streak, streakStatus, showOnboarding, isRetakingAssessment, showActionSheet, bumpSkipped, staleData, showToast, toastEl, fetchData, refreshLogs, refreshWorkouts, handleToggleBumpSkip, handleUpdateGoal, handleUpdatePreferences, handleUpdateLog, handleOnboardingComplete, handleLogout, todaysLogs, caloriesToday, percentComplete, effectiveGoal, weeklyData, trainedToday, isTrainingDay, calorieOffset, trainingOffset, offsetSkipped]);
+  }), [user, loading, logs, workoutLogs, activeWorkoutLogs, dailyGoal, macroGoals, weightUnit, waterGoal, editingLog, scanCount, streak, streakStatus, showOnboarding, isRetakingAssessment, showActionSheet, bumpSkipped, staleData, workoutsReady, showToast, toastEl, fetchData, refreshLogs, refreshWorkouts, handleToggleBumpSkip, handleUpdateGoal, handleUpdatePreferences, handleUpdateLog, handleOnboardingComplete, handleLogout, todaysLogs, caloriesToday, percentComplete, effectiveGoal, weeklyData, trainedToday, isTrainingDay, calorieOffset, trainingOffset, offsetSkipped]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }

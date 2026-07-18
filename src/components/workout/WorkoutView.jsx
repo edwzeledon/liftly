@@ -3,7 +3,7 @@ import { Dumbbell, Plus, Save, Ban, Check, Trophy, Loader2 } from 'lucide-react'
 import confetti from 'canvas-confetti';
 import WorkoutCard from './WorkoutCard';
 import PickerView from './PickerView';
-import StartLaunchpad, { recordRoutineUse } from './StartLaunchpad';
+import StartLaunchpad, { recordRoutineUse, LaunchpadSkeleton } from './StartLaunchpad';
 import SessionTimer from './SessionTimer';
 import ConfirmModal from '../ConfirmModal';
 
@@ -13,7 +13,7 @@ import { toDisplayVolume } from '@/lib/units';
 import { useToast } from '@/hooks/useToast';
 import { useModalBehavior } from '@/hooks/useModalBehavior';
 
-export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [], onUpdateLogs, weightUnit = 'lb', historyLogs = [] }) {
+export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [], onUpdateLogs, weightUnit = 'lb', historyLogs = [], workoutsReady = true }) {
   // Use props for logs if available, otherwise fallback to local state (though props should always be there now)
   const [localLogs, setLocalLogs] = useState([]);
   const workoutLogs = onUpdateLogs ? initialLogs : localLogs;
@@ -970,6 +970,9 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
           {/* Today's List */}
           <div className="flex-1 overflow-y-auto space-y-4 pb-4 no-scrollbar md:max-w-xl w-full md:mx-auto">
              {workoutLogs.length === 0 ? (
+               !workoutsReady ? (
+                 <LaunchpadSkeleton />
+               ) : (
                <StartLaunchpad
                  templates={templates}
                  lastSession={lastSession}
@@ -980,6 +983,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
                  onDeleteTemplate={deleteTemplate}
                  onAddExercise={() => setShowPicker(true)}
                />
+               )
              ) : (
                <>
                  {workoutLogs.map(log => (
