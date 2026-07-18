@@ -59,7 +59,7 @@ const MacroBar = ({ label, value, max, barClass, onClick }) => (
   </button>
 );
 
-export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, todaysLogs, onUpdateGoal, streak = 0, streakStatus = 'broken', trainingDay = false, calorieOffset = 0, trainingOffset = 250, offsetSkipped = false, onToggleBumpSkip }) {
+function DailyProgress({ caloriesToday, dailyGoal, macroGoals, todaysLogs, onUpdateGoal, streak = 0, streakStatus = 'broken', trainingDay = false, calorieOffset = 0, trainingOffset = 250, offsetSkipped = false, onToggleBumpSkip }) {
   const [editingGoal, setEditingGoal] = useState(null);
   const [tempGoalValue, setTempGoalValue] = useState('');
   const [showBumpPopover, setShowBumpPopover] = useState(false);
@@ -254,3 +254,7 @@ export default function DailyProgress({ caloriesToday, dailyGoal, macroGoals, to
     </div>
   );
 }
+
+// Memoized: the ring is the heaviest static subtree on Today; stable props
+// mean action-sheet/toast state changes no longer re-render it.
+export default React.memo(DailyProgress);

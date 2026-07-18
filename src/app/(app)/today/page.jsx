@@ -1,5 +1,6 @@
 'use client';
 
+import { useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Dashboard from '@/components/Dashboard';
 import { useApp } from '@/components/app/AppProvider';
@@ -7,6 +8,8 @@ import { useApp } from '@/components/app/AppProvider';
 export default function TodayPage() {
   const app = useApp();
   const router = useRouter();
+  // Stable identity — an inline arrow here would defeat MealFeed's React.memo.
+  const onAddMeal = useCallback(() => router.push('/add'), [router]);
   return (
     <Dashboard
       caloriesToday={app.caloriesToday}
@@ -21,7 +24,7 @@ export default function TodayPage() {
       onUpdateGoal={app.handleUpdateGoal}
       onEditLog={app.setEditingLog}
       onLogAdded={app.refreshLogs}
-      onAddMeal={() => router.push('/add')}
+      onAddMeal={onAddMeal}
       trainingDay={app.isTrainingDay}
       calorieOffset={app.calorieOffset}
       trainingOffset={app.trainingOffset}

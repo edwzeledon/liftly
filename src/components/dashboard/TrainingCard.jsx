@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Dumbbell, ChevronRight, Check, Star } from 'lucide-react';
 import { useApp } from '@/components/app/AppProvider';
@@ -65,11 +65,13 @@ function PrLine({ prs, unit }) {
 export default function TrainingCard() {
   const app = useApp();
   const router = useRouter();
-  const summary = todayWorkoutSummary(app.workoutLogs);
+  // These scan the FULL workout history — memoized so re-renders from
+  // unrelated context changes don't re-walk it.
+  const summary = useMemo(() => todayWorkoutSummary(app.workoutLogs), [app.workoutLogs]);
   const inProgress = (app.activeWorkoutLogs?.length || 0) > 0;
   const unit = app.weightUnit === 'kg' ? 'kg' : 'lb';
-  const prs = prsToday(app.workoutLogs);
-  const last = lastWorkoutSession(app.workoutLogs);
+  const prs = useMemo(() => prsToday(app.workoutLogs), [app.workoutLogs]);
+  const last = useMemo(() => lastWorkoutSession(app.workoutLogs), [app.workoutLogs]);
 
   return (
     <div className="bg-card rounded-2xl p-6 border border-border h-full flex flex-col">

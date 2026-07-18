@@ -6,7 +6,7 @@ const toTitleCase = (str) => {
   return str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
 };
 
-export default function MealFeed({ logs, onEditLog, onDeleteLog, onAddMeal }) {
+function MealFeed({ logs, onEditLog, onDeleteLog, onAddMeal }) {
   const [openMenuId, setOpenMenuId] = useState(null);
 
   return (
@@ -128,3 +128,7 @@ export default function MealFeed({ logs, onEditLog, onDeleteLog, onAddMeal }) {
     </div>
   );
 }
+
+// Memoized: props are identity-stable (context handlers + memoized todaysLogs),
+// so unrelated Dashboard state (action sheet, toasts) no longer re-renders the feed.
+export default React.memo(MealFeed);

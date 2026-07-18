@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { deleteLog } from '@/lib/api';
 import DailyProgress from './dashboard/DailyProgress';
 import MealFeed from './dashboard/MealFeed';
@@ -18,15 +18,15 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, todays
 
   const visibleTodaysLogs = todaysLogs.filter(log => !hiddenLogIds.has(log.id));
 
-  const unhideLog = (logId) => {
+  const unhideLog = useCallback((logId) => {
     setHiddenLogIds(prev => {
       const next = new Set(prev);
       next.delete(logId);
       return next;
     });
-  };
+  }, []);
 
-  const handleDeleteLog = (logId) => {
+  const handleDeleteLog = useCallback((logId) => {
     if(!user) return;
     // Optimistically hide the row; the REAL delete is the toast's onCommit.
     setHiddenLogIds(prev => new Set(prev).add(logId));
@@ -52,7 +52,7 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, todays
           });
       },
     });
-  };
+  }, [user, showToast, onLogDeleted, unhideLog]);
 
   // Data window (initial load / post-sign-in, cache miss): the layout shell is
   // up but app data hasn't landed — mirror the grid so content swaps in with
