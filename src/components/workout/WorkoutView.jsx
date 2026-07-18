@@ -13,6 +13,9 @@ import { toDisplayVolume } from '@/lib/units';
 import { useToast } from '@/hooks/useToast';
 import { useModalBehavior } from '@/hooks/useModalBehavior';
 
+// Monotonic suffix: two quick-adds in the same millisecond must not collide.
+let tempSeq = 0;
+
 export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [], onUpdateLogs, weightUnit = 'lb', historyLogs = [], workoutsReady = true }) {
   // Use props for logs if available, otherwise fallback to local state (though props should always be there now)
   const [localLogs, setLocalLogs] = useState([]);
@@ -181,7 +184,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
     if (!user) return;
     
     // 1. Immediate UI Update: add temp card (picker stays open for multi-add)
-    const tempId = `temp-${Date.now()}`;
+    const tempId = `temp-${Date.now()}-${++tempSeq}`;
     const tempLog = {
       id: tempId,
       exercise_name: exercise.name,

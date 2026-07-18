@@ -35,7 +35,7 @@ export default function Sections({ onCtaClick }) {
         {FEATURES.map(({ icon: Icon, tile, iconClass, stat, title, description }, i) => (
           <m.div key={title} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.4 }} variants={v.container}
             className={`flex flex-col gap-6 py-12 md:py-16 md:items-center md:gap-16 border-t border-border ${i % 2 === 1 ? 'md:flex-row-reverse' : 'md:flex-row'}`}>
-            <m.p variants={v.item} className="font-display font-bold text-8xl md:text-9xl text-foreground/10 tabular-nums leading-none shrink-0">
+            <m.p aria-hidden="true" variants={v.item} className="font-display font-bold text-8xl md:text-9xl text-foreground/10 tabular-nums leading-none shrink-0">
               {String(i + 1).padStart(2, '0')}
             </m.p>
             <div className="flex-1">

@@ -4,7 +4,8 @@
 // divider (aria-hidden). Two identical halves translate -50% for a seamless
 // loop; renders static under reduced motion. LazyMotion strict: import `m`,
 // never `motion`.
-import { m, useReducedMotion } from 'framer-motion';
+import { useRef } from 'react';
+import { m, useReducedMotion, useInView } from 'framer-motion';
 
 const WORDS = ['Train', 'Fuel', 'PR'];
 const REPEATS = 4;
@@ -26,11 +27,16 @@ function Half() {
 
 export default function Marquee() {
   const reduce = useReducedMotion();
+  const stripRef = useRef(null);
+  // Pause the infinite tween while scrolled out of view — the restart-from-0%
+  // on re-entry is invisible (both halves are identical and it happens
+  // off-screen).
+  const inView = useInView(stripRef);
   return (
-    <div aria-hidden="true" className="border-y border-border py-5 overflow-hidden select-none">
+    <div ref={stripRef} aria-hidden="true" className="border-y border-border py-5 overflow-hidden select-none">
       <m.div
         className="flex w-max whitespace-nowrap font-display font-bold uppercase text-4xl md:text-5xl"
-        animate={reduce ? undefined : { x: ['0%', '-50%'] }}
+        animate={reduce || !inView ? undefined : { x: ['0%', '-50%'] }}
         transition={{ repeat: Infinity, ease: 'linear', duration: 24 }}
       >
         <Half />

@@ -50,10 +50,12 @@ export function SidebarRail({ children, className }) {
 // the rail's overflow-hidden clips it while closed.
 export function SidebarRailLabel({ children, className }) {
   const { open } = useSidebarRail();
+  const reduceMotion = useReducedMotion();
   return (
     <motion.span
       initial={false}
       animate={{ opacity: open ? 1 : 0 }}
+      transition={reduceMotion ? { duration: 0 } : undefined}
       aria-hidden={!open}
       className={cn('whitespace-nowrap', className)}
     >
