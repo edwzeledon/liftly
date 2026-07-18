@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import LandingPage from '@/components/landing-page/LandingPage';
-import { Loader2 } from 'lucide-react';
+import Logo from '@/components/ui/Logo';
 
 export default function RootPage() {
   const router = useRouter();
@@ -27,8 +27,11 @@ export default function RootPage() {
 
   if (checking) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <Loader2 className="w-8 h-8 text-training-text animate-spin" />
+      <div className="flex items-center justify-center min-h-screen bg-background" role="status">
+        <span className="sr-only">Loading</span>
+        <div aria-hidden="true" className="animate-pulse motion-reduce:animate-none">
+          <Logo size={48} />
+        </div>
       </div>
     );
   }
