@@ -79,7 +79,7 @@ function RestingDone({ startedAt, bandSec, disabled, onTap, ariaLabel }) {
         onPointerUp={endHold}
         onPointerLeave={endHold}
         disabled={disabled}
-        aria-label={ariaLabel}
+        aria-label={`${ready ? 'Rest complete' : 'Resting'} — ${ariaLabel}`}
         aria-pressed={false}
         className={`relative w-12 h-12 rounded-full transition-colors flex items-center justify-center ${ready
           ? 'bg-training-soft text-training'
