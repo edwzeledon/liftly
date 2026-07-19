@@ -35,7 +35,7 @@ export default function Sidebar({ onOpenLog }) {
         : 'text-muted-foreground hover:bg-muted hover:text-foreground'
     }`;
 
-  const labelClass = 'font-display font-bold uppercase tracking-wide text-lg';
+  const labelClass = 'font-medium text-base';
 
   return (
     <SidebarRail>
@@ -59,19 +59,6 @@ export default function Sidebar({ onOpenLog }) {
             >
               <Icon className="w-5 h-5 shrink-0" />
               <SidebarRailLabel className={labelClass}>{label}</SidebarRailLabel>
-              {/* Ghost route numeral — permanently decorative, so the plain
-                  outer span owns aria-hidden and the flex push-right; ml-auto
-                  resolves to zero margin at the 4rem resting width, keeping
-                  icons anchored. */}
-              <span aria-hidden="true" className="ml-auto pl-3">
-                <SidebarRailLabel
-                  className={`font-display font-bold text-lg tabular-nums leading-none ${
-                    active ? 'text-background/25' : 'text-foreground/15'
-                  }`}
-                >
-                  {String(i + 1).padStart(2, '0')}
-                </SidebarRailLabel>
-              </span>
             </Link>
           );
         })}
