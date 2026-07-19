@@ -170,7 +170,8 @@ export function lastSetFor(exerciseName, workoutLogs) {
   });
   const dayLogs = mine
     .filter((l) => new Date(l.date).toDateString() === latest.toDateString())
-    .filter((l) => l.sets.some((s) => s.completed));
+    .map((l) => ({ ...l, sets: l.sets.filter((s) => s.completed) }))
+    .filter((l) => l.sets.length > 0);
   const best = bestSet(dayLogs);
   if (!best) return null;
   return { weight: parseFloat(best.weight) || 0, reps: parseFloat(best.reps) || 0 };
