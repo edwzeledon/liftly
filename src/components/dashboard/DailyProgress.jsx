@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Flame } from 'lucide-react';
-import CountUp from './CountUp';
 import { useModalBehavior } from '@/hooks/useModalBehavior';
 
 const DualRing = ({ protein, proteinGoal, calories, calorieGoal, baseCalorieGoal, onEditProtein }) => {
@@ -24,11 +23,11 @@ const DualRing = ({ protein, proteinGoal, calories, calorieGoal, baseCalorieGoal
         <circle cx="50" cy="50" r={outer.r} fill="none" strokeWidth={outer.w} className="stroke-muted" stroke="currentColor" />
         <circle cx="50" cy="50" r={outer.r} fill="none" strokeWidth={outer.w} strokeLinecap="round"
           stroke="var(--color-protein)" strokeDasharray={ring(outer.r)} strokeDashoffset={offset(outer.r, protein, proteinGoal)}
-          className="transition-all duration-700 ease-out motion-reduce:transition-none" />
+          className="transition-all duration-300 ease-out motion-reduce:transition-none" />
         <circle cx="50" cy="50" r={inner.r} fill="none" strokeWidth={inner.w} className="stroke-muted" stroke="currentColor" />
         <circle cx="50" cy="50" r={inner.r} fill="none" strokeWidth={inner.w} strokeLinecap="round"
           stroke="var(--color-ring-calorie)" strokeDasharray={ring(inner.r)} strokeDashoffset={offset(inner.r, calories, calorieGoal)}
-          className="transition-all duration-700 ease-out motion-reduce:transition-none" />
+          className="transition-all duration-300 ease-out motion-reduce:transition-none" />
         {baseCalorieGoal !== calorieGoal && (
           /* Invariant: notch must sit at the base-goal fraction along the calorie arc; the arc starts at 12 o'clock (svg -rotate-90), and this line is drawn at svg-top, so it needs rotate(notchAngle + 180). */
           <line x1="50" y1={50 - inner.r - inner.w / 2} x2="50" y2={50 - inner.r + inner.w / 2}
@@ -38,7 +37,7 @@ const DualRing = ({ protein, proteinGoal, calories, calorieGoal, baseCalorieGoal
       <button onClick={onEditProtein}
         className="absolute inset-0 flex flex-col items-center justify-center rounded-full focus-visible:ring-2 focus-visible:ring-protein"
         aria-label={`Protein ${protein} of ${proteinGoal} grams. Edit goal.`}>
-        <CountUp value={protein} className="font-display text-6xl md:text-7xl font-black text-foreground tabular-nums leading-none" />
+        <span className="font-display text-6xl md:text-7xl font-black text-foreground tabular-nums leading-none">{Math.round(protein)}</span>
         <span className="text-sm font-semibold text-protein-text tabular-nums">/ {proteinGoal} g protein</span>
         <span className="text-sm text-muted-foreground tabular-nums mt-1">{calories} / {calorieGoal} kcal · {Math.max(0, calorieGoal - calories)} left</span>
       </button>
@@ -53,7 +52,7 @@ const MacroBar = ({ label, value, max, barClass, onClick }) => (
       <span className="text-faint tabular-nums">{value} / {max} g</span>
     </div>
     <div className="h-2 rounded-full bg-muted overflow-hidden">
-      <div className={`h-full rounded-full ${barClass} transition-all duration-700 motion-reduce:transition-none`}
+      <div className={`h-full rounded-full ${barClass} transition-all duration-300 motion-reduce:transition-none`}
         style={{ width: `${Math.min(100, (value / (max || 1)) * 100)}%` }} />
     </div>
   </button>

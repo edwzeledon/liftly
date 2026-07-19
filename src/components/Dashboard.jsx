@@ -75,7 +75,7 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, todays
   // zero reflow. Background refetches never re-raise `loading`.
   if (loading) {
     return (
-      <div className="pt-6 md:pt-0 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20 md:pb-0">
+      <div className="pt-6 md:pt-0 pb-20 md:pb-0">
         {desktopHeader}
         <DashboardSkeleton />
       </div>
@@ -83,7 +83,7 @@ export default function Dashboard({ caloriesToday, dailyGoal, macroGoals, todays
   }
 
   return (
-    <div className="pt-6 md:pt-0 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20 md:pb-0">
+    <div className="pt-6 md:pt-0 pb-20 md:pb-0">
 
       {/* Desktop-only header row (mobile keeps the app header) */}
       {desktopHeader}

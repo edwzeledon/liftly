@@ -78,7 +78,7 @@ export default function SettingsView({ onRetakeAssessment }) {
   if (loading) return <SettingsSkeleton />;
 
   return (
-    <div className="p-6 md:p-8 max-w-2xl mx-auto space-y-8 pb-24 md:pb-8 animate-in fade-in duration-300">
+    <div className="p-6 md:p-8 max-w-2xl mx-auto space-y-8 pb-24 md:pb-8">
       <h2 className="font-display text-2xl font-bold text-foreground">Settings</h2>
 
       <Section title="Profile & Goals">

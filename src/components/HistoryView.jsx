@@ -582,7 +582,7 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onMealD
   const renderedGroups = dayGroups.slice(0, visibleDays);
 
   return (
-    <div className="p-6 md:p-0 space-y-6 max-w-3xl mx-auto min-h-full pb-20 md:pb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="p-6 md:p-0 space-y-6 max-w-3xl mx-auto min-h-full pb-20 md:pb-8">
       <h2 className="font-display text-2xl font-bold text-foreground">History</h2>
 
       {/* Edit Workout Modal */}
