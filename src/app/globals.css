@@ -5,9 +5,9 @@
   --color-protein: #10b981;
   --color-protein-text: #34D399;
   --color-protein-soft: #0E2A22;
-  --color-training: #F97316;
-  --color-training-soft: #301B0D;
-  --color-training-soft-border: #4A2A14;
+  --color-training: #A78BFA;
+  --color-training-soft: #241E33;
+  --color-training-soft-border: #392C52;
   --color-ai: #D4D4D8;
   --color-ai-soft: #1C1C24;
   --color-ai-soft-border: #2D2D35;
@@ -48,7 +48,7 @@
   --destructive: #DC2626;
   --border: #26262E;
   --input: #26262E;
-  --ring: #FB923C;
+  --ring: #A78BFA;
   color-scheme: dark;
 }
 
@@ -91,9 +91,9 @@
   --color-protein: #10b981;
   --color-protein-text: #059669;
   --color-protein-soft: #ecfdf5;
-  --color-training: #ea580c;
-  --color-training-soft: #fff7ed;
-  --color-training-soft-border: #ffedd5;
+  --color-training: #7C3AED;
+  --color-training-soft: #F5F3FF;
+  --color-training-soft-border: #EDE9FE;
   --color-ai: #52525b;
   --color-ai-soft: #f4f4f5;
   --color-ai-soft-border: #e4e4e7;

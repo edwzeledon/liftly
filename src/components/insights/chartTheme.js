@@ -8,7 +8,7 @@ export const SERIES = {
   weeklyBarsEmpty: '#26262E',
   volumeBars: '#3F3F46',
   proteinLine: 'var(--color-protein)',
-  weightLine: '#F97316',        // mirrors --ring / ember training accent
+  weightLine: '#A78BFA',        // mirrors --ring / violet training accent
   deficit: '#60A5FA',
   surplus: '#FB923C',
   balanceOpacity: 0.85,          // 0.6 drops below 3:1 on dark
