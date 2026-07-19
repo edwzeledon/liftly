@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Dumbbell, Plus, Save, Ban, Check, Trophy, Loader2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import WorkoutCard from './WorkoutCard';
@@ -8,7 +8,8 @@ import SessionTimer from './SessionTimer';
 import ConfirmModal from '../ConfirmModal';
 
 import { getExercises } from '@/lib/api';
-import { logsVolume, lastWorkoutSession, recentExercises } from '@/lib/workoutStats';
+import { logsVolume, lastWorkoutSession, recentExercises, lastSetFor } from '@/lib/workoutStats';
+import { restBandSec } from '@/lib/restTimer';
 import { toDisplayVolume } from '@/lib/units';
 import { useToast } from '@/hooks/useToast';
 import { useModalBehavior } from '@/hooks/useModalBehavior';
@@ -41,6 +42,33 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
   const [allExercises, setAllExercises] = useState([]);
   const [exercisesLoading, setExercisesLoading] = useState(true);
   const [exercisesError, setExercisesError] = useState(null);
+
+  // One rest at a time, session-wide: the latest completed set owns it.
+  // nextIdx null = the exercise had no remaining incomplete set (ring Add Set).
+  const [activeRest, setActiveRest] = useState(null); // { logId, triggerIdx, nextIdx, startedAt, bandSec }
+
+  const handleRestStart = useCallback((logId, triggerIdx, nextIdx, category) => {
+    setActiveRest({ logId, triggerIdx, nextIdx, startedAt: Date.now(), bandSec: restBandSec(category) });
+  }, []);
+
+  // triggerIdx null = clear any rest belonging to this log (structural changes).
+  const handleRestClear = useCallback((logId, triggerIdx) => {
+    setActiveRest((cur) => {
+      if (!cur || cur.logId !== logId) return cur;
+      if (triggerIdx !== null && cur.triggerIdx !== triggerIdx) return cur;
+      return null;
+    });
+  }, []);
+
+  // Last-session reference per exercise in the active session.
+  const lastByExercise = useMemo(() => {
+    const m = new Map();
+    workoutLogs.forEach((l) => {
+      const name = l.exercise_name || l.exercise;
+      if (name && !m.has(name)) m.set(name, lastSetFor(name, historyLogs));
+    });
+    return m;
+  }, [workoutLogs, historyLogs]);
 
   // Session start timestamp for the sticky-header timer. A ref, not state:
   // SessionTimer now owns its own 1s tick internally (see SessionTimer.jsx), so
@@ -469,8 +497,9 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
   );
 
   const deleteWorkout = async (id) => {
+    setActiveRest((cur) => (cur && cur.logId === id ? null : cur));
     if (!user) return;
-    
+
     setConfirmModal({
       isOpen: true,
       title: 'Remove Exercise',
@@ -996,6 +1025,10 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
                       onDelete={deleteWorkout}
                       onUpdate={handleUpdateLog}
                       weightUnit={weightUnit}
+                      activeRest={activeRest && activeRest.logId === log.id ? activeRest : null}
+                      onRestStart={handleRestStart}
+                      onRestClear={handleRestClear}
+                      lastRef={lastByExercise.get(log.exercise_name || log.exercise) || null}
                    />
                  ))}
 

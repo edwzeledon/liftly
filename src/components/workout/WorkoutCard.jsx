@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { CheckCircle, Trash2, Check, X, Plus, Trophy, Calculator } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import PlateCalculator from './PlateCalculator';
-import { toDisplay, toLb } from '@/lib/units';
+import { toDisplay, toLb, formatWeight } from '@/lib/units';
+import { restProgress } from '@/lib/restTimer';
 
 // Controlled lb-state input that edits in the user's display unit. While
 // focused, the raw draft string is shown so typing "102.5" isn't fought by
@@ -29,7 +30,74 @@ function WeightInput({ valueLb, unit, onCommit, onFocus, onBlur, className }) {
   );
 }
 
-export default function WorkoutCard({ log, onDelete, onUpdate, weightUnit = 'lb' }) {
+// "Ready" charging ring: the NEXT set's Done control fills clockwise as
+// recovery accumulates (restProgress). Owns its own 1s tick (SessionTimer
+// pattern) so rows don't re-render per second. Discrete steps — no CSS
+// transition on the arc, so it's reduced-motion safe by construction.
+// Long-press (500ms) reveals remaining m:ss; that release never completes
+// the set. Tapping early always works — the ring is advice, not a gate.
+function RestingDone({ startedAt, bandSec, disabled, onTap, ariaLabel }) {
+  const [, force] = useState(0);
+  const [holding, setHolding] = useState(false);
+  const longPressRef = useRef({ timer: null, fired: false });
+  // eslint-disable-next-line react-hooks/purity -- live clock display, interval-driven like SessionTimer
+  const { fraction, ready, remainingSec } = restProgress(startedAt, bandSec, Date.now());
+
+  useEffect(() => {
+    if (ready && !holding) return undefined;
+    const id = setInterval(() => force((n) => n + 1), 1000);
+    return () => clearInterval(id);
+  }, [ready, holding]);
+
+  const beginHold = () => {
+    longPressRef.current.timer = setTimeout(() => {
+      longPressRef.current.fired = true;
+      setHolding(true);
+    }, 500);
+  };
+  const endHold = () => {
+    clearTimeout(longPressRef.current.timer);
+    setHolding(false);
+  };
+
+  const C = 2 * Math.PI * 21;
+  const label = holding
+    ? `${Math.floor(remainingSec / 60)}:${String(remainingSec % 60).padStart(2, '0')}`
+    : ready ? 'Ready' : 'Rest';
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => {
+          if (longPressRef.current.fired) { longPressRef.current.fired = false; return; }
+          onTap();
+        }}
+        onPointerDown={beginHold}
+        onPointerUp={endHold}
+        onPointerLeave={endHold}
+        disabled={disabled}
+        aria-label={ariaLabel}
+        aria-pressed={false}
+        className={`relative w-12 h-12 rounded-full transition-colors flex items-center justify-center ${ready
+          ? 'bg-training-soft text-training'
+          : disabled ? 'bg-muted text-faint cursor-not-allowed opacity-40' : 'bg-input text-muted-foreground'
+        }`}
+      >
+        <svg viewBox="0 0 48 48" className="absolute inset-0 -rotate-90" aria-hidden="true">
+          <circle cx="24" cy="24" r="21" fill="none" strokeWidth="3" stroke="var(--color-muted)" />
+          <circle cx="24" cy="24" r="21" fill="none" strokeWidth="3" strokeLinecap="round"
+            stroke="var(--color-training)" strokeDasharray={C} strokeDashoffset={C * (1 - fraction)} />
+        </svg>
+        <Check className={`w-6 h-6 ${ready ? '' : 'opacity-40'}`} />
+      </button>
+      <span aria-hidden="true" className={`absolute -bottom-4 inset-x-0 text-center text-[9px] font-bold uppercase tracking-wider pointer-events-none tabular-nums ${ready ? 'text-training' : 'text-faint'}`}>
+        {label}
+      </span>
+    </div>
+  );
+}
+
+export default function WorkoutCard({ log, onDelete, onUpdate, weightUnit = 'lb', activeRest = null, onRestStart, onRestClear, lastRef = null }) {
   const [sets, setSets] = useState(log.sets || []);
   const [bestSet, setBestSet] = useState(null);
   const [showCalculator, setShowCalculator] = useState(false);
@@ -258,6 +326,13 @@ export default function WorkoutCard({ log, onDelete, onUpdate, weightUnit = 'lb'
     setSets(newSets);
     updateParent(newSets);
     saveSets(newSets, true); // immediate = true
+
+    if (newSets[index].completed) {
+      const nextIdx = newSets.findIndex((s, i) => i > index && !s.completed);
+      if (onRestStart) onRestStart(log.id, index, nextIdx === -1 ? null : nextIdx, log.category);
+    } else if (onRestClear) {
+      onRestClear(log.id, index);
+    }
   };
 
   const quickFinish = () => {
@@ -279,6 +354,12 @@ export default function WorkoutCard({ log, onDelete, onUpdate, weightUnit = 'lb'
     setSets(newSets);
     updateParent(newSets);
     saveSets(newSets, true); // immediate = true
+
+    if (targetState) {
+      if (onRestStart && newSets.some((s) => s.completed)) onRestStart(log.id, newSets.length - 1, null, log.category);
+    } else if (onRestClear) {
+      onRestClear(log.id, null);
+    }
   };
 
   const removeSet = (index) => {
@@ -286,6 +367,8 @@ export default function WorkoutCard({ log, onDelete, onUpdate, weightUnit = 'lb'
     setSets(newSets);
     updateParent(newSets);
     saveSets(newSets, true); // immediate = true
+
+    if (onRestClear) onRestClear(log.id, null);
   };
 
   const allSetsCompleted = sets.length > 0 && sets.every(s => s.completed);
@@ -369,8 +452,15 @@ export default function WorkoutCard({ log, onDelete, onUpdate, weightUnit = 'lb'
         </div>
         <div>
           <h3 className="font-bold text-foreground">{log.exercise_name || log.exercise}</h3>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{log.category}</span>
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider shrink-0">{log.category}</span>
+            {(lastRef || bestSet) && (
+              <span className="text-xs text-muted-foreground tabular-nums truncate">
+                {lastRef && <>Last: {formatWeight(lastRef.weight, weightUnit)} × {lastRef.reps}</>}
+                {lastRef && bestSet && ' · '}
+                {bestSet && <>Best: {formatWeight(parseFloat(bestSet.weight) || 0, weightUnit)} × {bestSet.reps}</>}
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -405,7 +495,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate, weightUnit = 'lb'
     </div>
 
     {/* Inline Sets Editor */}
-    <div className="space-y-3">
+    <div className="space-y-4">
       <div className="grid grid-cols-10 gap-2 px-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider text-center">
         <div className="col-span-1">Set</div>
         <div className="col-span-3">{weightUnit === 'kg' ? 'Kg' : 'Lb'}</div>
@@ -424,7 +514,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate, weightUnit = 'lb'
             className={`grid grid-cols-10 gap-2 items-center transition-all ${set.completed && !isPR ? 'bg-protein-soft rounded-lg' : ''}`}
           >
             <div className="col-span-1 flex justify-center">
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${isPR ? 'bg-streak-soft text-streak' : 'bg-muted text-muted-foreground'}`}>
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${isPR ? 'bg-streak-soft text-streak' : 'bg-muted text-muted-foreground'}`}>
                 {idx + 1}
               </div>
             </div>
@@ -435,7 +525,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate, weightUnit = 'lb'
                 onCommit={(lbStr) => updateSet(idx, 'weight', lbStr)}
                 onFocus={handleFocus}
                 onBlur={handleBlur}
-                className={`w-full text-center py-2 border rounded-lg outline-none font-bold text-base sm:text-sm transition-all ${isPR
+                className={`w-full text-center min-h-14 py-2 border rounded-lg outline-none font-bold text-lg transition-all ${isPR
                   ? 'bg-streak-soft border-streak-soft-border focus:border-streak'
                   : set.completed
                     ? 'bg-protein-soft border-protein-soft text-protein-text focus:border-protein-text'
@@ -453,7 +543,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate, weightUnit = 'lb'
                 onFocus={handleFocus}
                 onBlur={handleBlur}
                 placeholder="-"
-                className={`w-full text-center py-2 border rounded-lg outline-none font-bold text-base sm:text-sm transition-all ${isPR
+                className={`w-full text-center min-h-14 py-2 border rounded-lg outline-none font-bold text-lg transition-all ${isPR
                   ? 'bg-streak-soft border-streak-soft-border focus:border-streak'
                   : set.completed
                     ? 'bg-protein-soft border-protein-soft text-protein-text focus:border-protein-text'
@@ -462,20 +552,30 @@ export default function WorkoutCard({ log, onDelete, onUpdate, weightUnit = 'lb'
               />
             </div>
             <div className="col-span-2 flex justify-center">
-              <button
-                onClick={() => toggleSetCompletion(idx)}
-                disabled={!set.weight || !set.reps}
-                aria-label={`Mark set ${idx + 1} ${set.completed ? 'not done' : 'done'}`}
-                aria-pressed={set.completed}
-                className={`relative p-1.5 rounded-lg transition-all flex items-center justify-center before:absolute before:-inset-2 before:content-[''] ${set.completed
-                  ? 'bg-protein-soft text-protein ring-2 ring-protein/30'
-                  : (!set.weight || !set.reps)
-                    ? 'bg-muted text-faint cursor-not-allowed opacity-40'
-                    : 'bg-input text-muted-foreground hover:bg-input/80'
-                  }`}
-              >
-                {set.completed ? <Check className="w-5 h-5" /> : <Check className="w-5 h-5 opacity-0" />}
-              </button>
+              {activeRest && activeRest.nextIdx === idx && !set.completed ? (
+                <RestingDone
+                  startedAt={activeRest.startedAt}
+                  bandSec={activeRest.bandSec}
+                  disabled={!set.weight || !set.reps}
+                  onTap={() => toggleSetCompletion(idx)}
+                  ariaLabel={`Mark set ${idx + 1} done`}
+                />
+              ) : (
+                <button
+                  onClick={() => toggleSetCompletion(idx)}
+                  disabled={!set.weight || !set.reps}
+                  aria-label={`Mark set ${idx + 1} ${set.completed ? 'not done' : 'done'}`}
+                  aria-pressed={set.completed}
+                  className={`w-12 h-12 rounded-full transition-all flex items-center justify-center ${set.completed
+                    ? 'bg-protein-soft text-protein ring-2 ring-protein/30'
+                    : (!set.weight || !set.reps)
+                      ? 'bg-muted text-faint cursor-not-allowed opacity-40'
+                      : 'bg-input text-muted-foreground hover:bg-input/80'
+                    }`}
+                >
+                  <Check className={`w-6 h-6 ${set.completed ? '' : 'opacity-0'}`} />
+                </button>
+              )}
             </div>
             <div
               className="col-span-1 flex justify-center"
@@ -501,7 +601,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate, weightUnit = 'lb'
 
       <button
         onClick={addSet}
-        className="w-full py-3 mt-2 border border-dashed border-training-soft-border rounded-xl text-training font-bold text-sm hover:bg-training-soft transition-all flex items-center justify-center gap-2"
+        className={`w-full py-3 mt-2 border border-dashed border-training-soft-border rounded-xl text-training font-bold text-sm hover:bg-training-soft transition-all flex items-center justify-center gap-2 ${activeRest && activeRest.nextIdx === null ? 'ring-2 ring-training/40' : ''}`}
       >
         <Plus className="w-4 h-4" />
         Add Set
