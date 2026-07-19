@@ -14,7 +14,7 @@ export default function ConfirmModal({ isOpen, title, message, onConfirm, onCanc
     <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in" onClick={() => !isLoading && onCancel()}>
       <div className="bg-card rounded-2xl p-6 w-full max-w-sm animate-in zoom-in-95" onClick={(e) => e.stopPropagation()}>
         <div className="flex flex-col items-center text-center mb-6">
-          <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${isDestructive ? 'bg-destructive/15 text-destructive-text' : 'bg-training-soft-border text-training-text'}`}>
+          <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${isDestructive ? 'bg-destructive/15 text-destructive-text' : 'bg-training-soft-border text-training'}`}>
             <AlertTriangle className="w-6 h-6" />
           </div>
           <h3 className="text-xl font-bold text-foreground mb-2">{title}</h3>
@@ -33,7 +33,11 @@ export default function ConfirmModal({ isOpen, title, message, onConfirm, onCanc
           <button 
             onClick={onConfirm}
             disabled={isLoading}
-            className={`flex-1 py-3 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2 ${isDestructive ? 'bg-destructive hover:bg-destructive/90' : 'bg-training hover:bg-training/90'} disabled:opacity-50 disabled:cursor-not-allowed`}
+            className={`flex-1 py-3 rounded-xl font-medium transition-colors flex items-center justify-center gap-2 ${
+              isDestructive
+                ? 'bg-destructive text-white hover:bg-destructive/90'
+                : 'bg-training text-background hover:bg-training/90'
+            } disabled:opacity-50 disabled:cursor-not-allowed`}
           >
             {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : confirmLabel}
           </button>

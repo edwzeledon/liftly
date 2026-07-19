@@ -16,7 +16,7 @@ function MealFeed({ logs, onEditLog, onDeleteLog, onAddMeal }) {
         <div className="flex gap-2">
             <button
                 onClick={onAddMeal}
-                className="text-xs font-medium bg-training-soft text-training-text px-3 py-1.5 rounded-full flex items-center gap-1.5 hover:bg-training-soft-border transition-colors active:scale-95"
+                className="text-xs font-medium bg-training-soft text-training px-3 py-1.5 rounded-full flex items-center gap-1.5 hover:bg-training-soft-border transition-colors active:scale-95"
             >
                 <Plus className="w-3 h-3" />
                 Add Meal

@@ -22,7 +22,7 @@ const NavButton = ({ href, active, icon: Icon, label }) => (
     href={href}
     aria-current={active ? 'page' : undefined}
     className={`flex flex-col items-center gap-1 p-2 min-w-16 rounded-xl transition-colors ${
-      active ? 'text-training-text' : 'text-faint hover:text-muted-foreground'
+      active ? 'text-training' : 'text-faint hover:text-muted-foreground'
     }`}
   >
     <Icon className="w-6 h-6" />
@@ -95,7 +95,7 @@ function AppShell({ children }) {
         <header className="md:hidden bg-card border-b border-border px-6 py-4 flex items-center justify-between z-10 sticky top-0">
           <div className="flex items-center gap-2">
             <Logo size={36} />
-            <h1 className="text-xl font-bold text-training-text">
+            <h1 className="text-xl font-bold text-training">
               Liftly
             </h1>
           </div>
@@ -104,7 +104,7 @@ function AppShell({ children }) {
               href="/settings"
               aria-label="Settings"
               aria-current={settingsActive ? 'page' : undefined}
-              className={`p-2 rounded-full transition-colors min-h-11 min-w-11 flex items-center justify-center ${settingsActive ? 'text-training-text bg-training-soft' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}
+              className={`p-2 rounded-full transition-colors min-h-11 min-w-11 flex items-center justify-center ${settingsActive ? 'text-training bg-training-soft' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}
               title="Settings"
             >
               <Settings className="w-5 h-5" />
@@ -137,7 +137,7 @@ function AppShell({ children }) {
           <button
             onClick={() => app.setShowActionSheet(true)}
             aria-label="Quick log"
-            className="w-14 h-14 rounded-2xl flex items-center justify-center bg-training text-white active:scale-95 transition-transform"
+            className="w-14 h-14 rounded-2xl flex items-center justify-center bg-training text-background active:scale-95 transition-transform"
           >
             <Plus className="w-7 h-7" />
           </button>
@@ -171,7 +171,7 @@ function AppShell({ children }) {
               }}
               className="flex flex-col items-center gap-3 sm:gap-4 p-6 sm:p-8 rounded-2xl bg-training-soft border-2 border-training-soft-border hover:bg-training-soft-border hover:border-training-soft-border transition-all active:scale-95"
             >
-              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-training flex items-center justify-center text-white">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-training flex items-center justify-center text-background">
                 <Dumbbell className="w-7 h-7 sm:w-8 sm:h-8" />
               </div>
               <span className="font-semibold text-foreground text-base sm:text-lg">Log Workout</span>

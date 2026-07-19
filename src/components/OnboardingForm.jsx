@@ -168,8 +168,8 @@ export default function OnboardingForm({ onComplete, onCancel, isEditing = false
                                         key={g.value}
                                         onClick={() => setFormData({ ...formData, gender: g.value })}
                                         className={`p-4 rounded-2xl border-2 font-bold transition-all ${formData.gender === g.value
-                                                ? 'border-training-text bg-training-soft text-training-text'
-                                                : 'border-border text-muted-foreground hover:border-training-text/20'
+                                                ? 'border-training bg-training-soft text-training'
+                                                : 'border-border text-muted-foreground hover:border-training/20'
                                             }`}
                                     >
                                         {g.label}
@@ -244,14 +244,14 @@ export default function OnboardingForm({ onComplete, onCancel, isEditing = false
                                     key={level.id}
                                     onClick={() => setFormData({ ...formData, activity: level.id })}
                                     className={`w-full p-4 rounded-2xl border-2 text-left transition-all ${formData.activity === level.id
-                                            ? 'border-training-text bg-training-soft'
-                                            : 'border-border hover:border-training-text/20'
+                                            ? 'border-training bg-training-soft'
+                                            : 'border-border hover:border-training/20'
                                         }`}
                                 >
-                                    <div className={`font-bold ${formData.activity === level.id ? 'text-training-text' : 'text-foreground'}`}>
+                                    <div className={`font-bold ${formData.activity === level.id ? 'text-training' : 'text-foreground'}`}>
                                         {level.label}
                                     </div>
-                                    <div className={`text-sm ${formData.activity === level.id ? 'text-training-text' : 'text-muted-foreground'}`}>
+                                    <div className={`text-sm ${formData.activity === level.id ? 'text-training' : 'text-muted-foreground'}`}>
                                         {level.description}
                                     </div>
                                 </button>
@@ -267,14 +267,14 @@ export default function OnboardingForm({ onComplete, onCancel, isEditing = false
                                     key={goal.id}
                                     onClick={() => setFormData({ ...formData, goal: goal.id })}
                                     className={`w-full p-4 rounded-2xl border-2 text-left transition-all ${formData.goal === goal.id
-                                            ? 'border-training-text bg-training-soft'
-                                            : 'border-border hover:border-training-text/20'
+                                            ? 'border-training bg-training-soft'
+                                            : 'border-border hover:border-training/20'
                                         }`}
                                 >
-                                    <div className={`font-bold ${formData.goal === goal.id ? 'text-training-text' : 'text-foreground'}`}>
+                                    <div className={`font-bold ${formData.goal === goal.id ? 'text-training' : 'text-foreground'}`}>
                                         {goal.label}
                                     </div>
-                                    <div className={`text-sm ${formData.goal === goal.id ? 'text-training-text' : 'text-muted-foreground'}`}>
+                                    <div className={`text-sm ${formData.goal === goal.id ? 'text-training' : 'text-muted-foreground'}`}>
                                         {goal.description}
                                     </div>
                                 </button>
@@ -409,7 +409,7 @@ export default function OnboardingForm({ onComplete, onCancel, isEditing = false
                                 )) ||
                                 (step === 4 && (!formData.goalWeight || !formData.targetDate))
                             }
-                            className={`flex-1 py-3.5 rounded-xl font-bold text-white transition-all flex items-center justify-center gap-2 ${(step === 1 && (!formData.age || !formData.weight || !formData.heightFt)) ||
+                            className={`flex-1 py-3.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${(step === 1 && (!formData.age || !formData.weight || !formData.heightFt)) ||
                                     (step === 3 && formData.goal === 'custom' && (
                                         !formData.customCalories || 
                                         !formData.customProteinPercent || 
@@ -420,8 +420,8 @@ export default function OnboardingForm({ onComplete, onCancel, isEditing = false
                                          parseInt(formData.customFatsPercent || 0)) !== 100
                                     )) ||
                                     (step === 4 && (!formData.goalWeight || !formData.targetDate))
-                                    ? 'bg-muted cursor-not-allowed'
-                                    : 'bg-training hover:bg-training/90'
+                                    ? 'bg-muted text-white cursor-not-allowed'
+                                    : 'bg-training text-background hover:bg-training/90'
                                 }`}
                         >
                             {step === 4 || (step === 3 && formData.goal === 'maintain') ? (

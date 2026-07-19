@@ -45,7 +45,7 @@ export default function PickerView({
         <h2 className="text-xl font-bold text-foreground flex-1">Add Exercises</h2>
         <button
           onClick={onDone}
-          className="px-4 py-2 min-h-11 bg-training text-white rounded-xl font-bold text-sm hover:bg-training/90 active:scale-95 transition-all"
+          className="px-4 py-2 min-h-11 bg-training text-background rounded-xl font-bold text-sm hover:bg-training/90 active:scale-95 transition-all"
         >
           Done{addedCount > 0 ? ` · ${addedCount}` : ''}
         </button>
@@ -65,14 +65,14 @@ export default function PickerView({
 
       {loading ? (
         <div className="flex-1 flex items-center justify-center">
-          <Loader2 className="w-8 h-8 text-training-text animate-spin" />
+          <Loader2 className="w-8 h-8 text-training animate-spin" />
         </div>
       ) : error ? (
         <div className="flex-1 flex flex-col items-center justify-center text-center gap-4 p-6">
           <p className="text-muted-foreground text-sm">{error}</p>
           <button
             onClick={onRetry}
-            className="px-5 py-2.5 bg-training text-white rounded-xl font-bold hover:bg-training/90 active:scale-95 transition-all"
+            className="px-5 py-2.5 bg-training text-background rounded-xl font-bold hover:bg-training/90 active:scale-95 transition-all"
           >
             Retry
           </button>
@@ -93,7 +93,7 @@ export default function PickerView({
                       disabled={added}
                       className={`px-3 py-2 min-h-11 rounded-full text-sm font-bold flex items-center gap-1.5 transition-colors ${
                         added
-                          ? 'bg-training-soft text-training-text cursor-default'
+                          ? 'bg-training-soft text-training cursor-default'
                           : 'bg-muted text-muted-foreground hover:bg-muted/80'
                       }`}
                     >
@@ -114,7 +114,7 @@ export default function PickerView({
                 onClick={() => setSelectedCategory(cat)}
                 className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-colors ${
                   selectedCategory === cat
-                    ? 'bg-training text-white'
+                    ? 'bg-training text-background'
                     : 'bg-muted text-muted-foreground hover:bg-muted/80'
                 }`}
               >
@@ -146,11 +146,11 @@ export default function PickerView({
                         <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{ex.category}</span>
                       </div>
                       {added ? (
-                        <div className="w-8 h-8 rounded-full bg-training text-white flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-full bg-training text-background flex items-center justify-center">
                           <Check className="w-5 h-5" aria-hidden="true" />
                         </div>
                       ) : (
-                        <div className="w-8 h-8 rounded-full bg-training-soft text-training-text flex items-center justify-center md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                        <div className="w-8 h-8 rounded-full bg-training-soft text-training flex items-center justify-center md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                           <Plus className="w-5 h-5" aria-hidden="true" />
                         </div>
                       )}

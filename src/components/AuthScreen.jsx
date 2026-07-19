@@ -180,7 +180,7 @@ export default function AuthScreen({ embedded = false, compact = false }) {
         <button
           type="submit"
           disabled={loading}
-          className={`w-full ${compact ? 'py-3.5' : 'py-4'} bg-training text-white font-bold rounded-2xl hover:bg-training/90 active:scale-95 transition-all flex items-center justify-center gap-2`}
+          className={`w-full ${compact ? 'py-3.5' : 'py-4'} bg-training text-background font-bold rounded-2xl hover:bg-training/90 active:scale-95 transition-all flex items-center justify-center gap-2`}
         >
           {loading ? (
             <Loader2 className="w-5 h-5 animate-spin" />
@@ -287,7 +287,7 @@ export default function AuthScreen({ embedded = false, compact = false }) {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full ${compact ? 'py-3.5' : 'py-4'} bg-training text-white font-bold rounded-2xl hover:bg-training/90 active:scale-95 transition-all flex items-center justify-center gap-2`}
+            className={`w-full ${compact ? 'py-3.5' : 'py-4'} bg-training text-background font-bold rounded-2xl hover:bg-training/90 active:scale-95 transition-all flex items-center justify-center gap-2`}
           >
             {loading ? (
               <Loader2 className="w-5 h-5 animate-spin" />

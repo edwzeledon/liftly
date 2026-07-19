@@ -364,7 +364,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate, weightUnit = 'lb'
   <div className={`bg-card p-5 rounded-2xl border border-border hover:border-training-soft-border transition-all ${isTemp ? 'opacity-60' : ''}`}>
     <div className="flex justify-between items-start mb-4">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-training-soft flex items-center justify-center text-training-text font-bold">
+        <div className="w-10 h-10 rounded-xl bg-training-soft flex items-center justify-center text-training font-bold">
           {(log.exercise_name || log.exercise || '?').charAt(0)}
         </div>
         <div>
@@ -378,7 +378,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate, weightUnit = 'lb'
         <button
           onClick={() => setShowCalculator(true)}
           aria-label="Plate calculator"
-          className="p-2 text-faint hover:text-training-text hover:bg-training-soft rounded-full transition-colors min-h-11 min-w-11 flex items-center justify-center"
+          className="p-2 text-faint hover:text-training hover:bg-training-soft rounded-full transition-colors min-h-11 min-w-11 flex items-center justify-center"
           title="Plate Calculator"
         >
           <Calculator className="w-4 h-4" />
@@ -501,7 +501,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate, weightUnit = 'lb'
 
       <button
         onClick={addSet}
-        className="w-full py-3 mt-2 border border-dashed border-training-soft-border rounded-xl text-training-text font-bold text-sm hover:bg-training-soft transition-all flex items-center justify-center gap-2"
+        className="w-full py-3 mt-2 border border-dashed border-training-soft-border rounded-xl text-training font-bold text-sm hover:bg-training-soft transition-all flex items-center justify-center gap-2"
       >
         <Plus className="w-4 h-4" />
         Add Set
