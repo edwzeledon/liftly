@@ -966,7 +966,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
             <button
               onClick={handleCompleteWorkout}
               disabled={!workoutLogs.some(log => log.sets.some(s => s.completed))}
-              className={`rounded-xl font-bold transition-all flex items-center gap-2 px-5 py-2.5 ${
+              className={`rounded-lg font-bold transition-all flex items-center gap-2 px-6 py-3 ${
                 !workoutLogs.some(log => log.sets.some(s => s.completed))
                   ? 'bg-muted text-faint cursor-not-allowed'
                   : 'bg-training text-background active:scale-95'

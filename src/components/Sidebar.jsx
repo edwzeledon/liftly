@@ -29,7 +29,7 @@ export default function Sidebar({ onOpenLog }) {
   const settingsActive = pathname === '/settings';
 
   const itemClass = (active) =>
-    `flex items-center gap-3 p-3 rounded-xl transition-colors min-h-11 ${
+    `flex items-center gap-3 p-3 rounded-lg transition-colors min-h-11 ${
       active
         ? 'bg-training text-background'
         : 'text-muted-foreground hover:bg-muted hover:text-foreground'
@@ -67,7 +67,7 @@ export default function Sidebar({ onOpenLog }) {
       <button
         onClick={onOpenLog}
         aria-label="Quick log"
-        className="w-full flex items-center gap-3 p-3 mb-2 bg-training text-background rounded-xl hover:bg-training/90 active:scale-95 transition-all min-h-11"
+        className="w-full flex items-center gap-3 p-3 mb-2 bg-training text-background rounded-lg hover:bg-training/90 active:scale-95 transition-all min-h-11"
       >
         <Plus className="w-5 h-5 shrink-0" />
         <SidebarRailLabel className={labelClass}>Log</SidebarRailLabel>

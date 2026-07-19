@@ -137,7 +137,7 @@ function AppShell({ children }) {
           <button
             onClick={() => app.setShowActionSheet(true)}
             aria-label="Quick log"
-            className="w-14 h-14 rounded-2xl flex items-center justify-center bg-training text-background active:scale-95 transition-transform"
+            className="w-16 h-16 rounded-lg flex items-center justify-center bg-training text-background active:scale-95 transition-transform"
           >
             <Plus className="w-7 h-7" />
           </button>
