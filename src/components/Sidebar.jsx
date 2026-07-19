@@ -87,7 +87,7 @@ export default function Sidebar({ onOpenLog }) {
         <Link
           href="/settings"
           aria-label="Account settings"
-          className="flex items-center gap-3 p-2 rounded-xl transition-colors text-muted-foreground hover:bg-muted hover:text-foreground min-h-11"
+          className="flex items-center gap-3 p-2 rounded-lg transition-colors text-muted-foreground hover:bg-muted hover:text-foreground min-h-11"
         >
           <span
             aria-hidden="true"
