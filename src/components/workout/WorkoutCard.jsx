@@ -58,6 +58,9 @@ function RestingDone({ startedAt, bandSec, disabled, onTap, ariaLabel }) {
   const endHold = () => {
     clearTimeout(longPressRef.current.timer);
     setHolding(false);
+    // Reset AFTER the gesture's own click (if any) has been dispatched —
+    // a drag-off release produces no click and must not eat the next tap.
+    setTimeout(() => { longPressRef.current.fired = false; }, 0);
   };
 
   const C = 2 * Math.PI * 21;
@@ -97,7 +100,7 @@ function RestingDone({ startedAt, bandSec, disabled, onTap, ariaLabel }) {
   );
 }
 
-export default function WorkoutCard({ log, onDelete, onUpdate, weightUnit = 'lb', activeRest = null, onRestStart, onRestClear, lastRef = null }) {
+export default function WorkoutCard({ log, onDelete, onUpdate, weightUnit = 'lb', activeRest = null, onRestStart, onRestClear, onRestRetarget, lastRef = null }) {
   const [sets, setSets] = useState(log.sets || []);
   const [bestSet, setBestSet] = useState(null);
   const [showCalculator, setShowCalculator] = useState(false);
@@ -274,6 +277,8 @@ export default function WorkoutCard({ log, onDelete, onUpdate, weightUnit = 'lb'
     setSets(newSets);
     updateParent(newSets);
     saveSets(newSets, true); // immediate = true
+
+    if (activeRest && activeRest.nextIdx === null && onRestRetarget) onRestRetarget(log.id, newSets.length - 1);
   };
 
   const updateSet = (index, field, value) => {
@@ -286,6 +291,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate, weightUnit = 'lb'
     // Invariant: completed ⇒ weight and reps non-empty; clearing either field un-completes the set.
     if (newSets[index].completed && (!newSets[index].weight || !newSets[index].reps)) {
       newSets[index].completed = false;
+      if (onRestClear) onRestClear(log.id, index);
     }
 
     setSets(newSets);

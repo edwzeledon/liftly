@@ -60,6 +60,12 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
     });
   }, []);
 
+  // Add-Set was ringed and a new row appeared: the ring moves to it, keeping
+  // the original startedAt (rest began at the completion, not the add).
+  const handleRestRetarget = useCallback((logId, nextIdx) => {
+    setActiveRest((cur) => (cur && cur.logId === logId ? { ...cur, nextIdx } : cur));
+  }, []);
+
   // Last-session reference per exercise in the active session.
   const lastByExercise = useMemo(() => {
     const m = new Map();
@@ -1028,6 +1034,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
                       activeRest={activeRest && activeRest.logId === log.id ? activeRest : null}
                       onRestStart={handleRestStart}
                       onRestClear={handleRestClear}
+                      onRestRetarget={handleRestRetarget}
                       lastRef={lastByExercise.get(log.exercise_name || log.exercise) || null}
                    />
                  ))}
