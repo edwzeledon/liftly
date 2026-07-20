@@ -5,8 +5,8 @@
   --color-protein: #10b981;
   --color-protein-text: #34D399;
   --color-protein-soft: #0E2A22;
-  --color-training: #4f46e5;
-  --color-training-text: #818CF8;
+  --color-training: #4f46e5;       /* FILL only — bg-training + text-white. Fails as text on dark (2.9:1). */
+  --color-training-text: #818CF8;  /* ALL text/icon roles — use text-training-text, never text-training. */
   --color-training-soft: #1E1E38;
   --color-training-soft-border: #2D2D52;
   --color-ai: #D4D4D8;
