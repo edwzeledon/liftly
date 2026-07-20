@@ -77,7 +77,7 @@ export default function TrainingCard() {
     <div className="bg-card rounded-2xl p-6 border border-border h-full flex flex-col">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Training</h3>
-        <Dumbbell className="w-4 h-4 text-training" aria-hidden="true" />
+        <Dumbbell className="w-4 h-4 text-training-text" aria-hidden="true" />
       </div>
 
       <div className="flex-1">
@@ -91,7 +91,7 @@ export default function TrainingCard() {
             <p className="text-sm text-muted-foreground mb-4">Pick up where you left off.</p>
             <button
               onClick={() => router.push('/train')}
-              className="w-full py-3 bg-training text-background font-bold rounded-lg hover:bg-training/90 active:scale-95 transition-all"
+              className="w-full py-3 bg-training text-white font-bold rounded-lg hover:bg-training/90 active:scale-95 transition-all"
             >
               Resume session
             </button>
@@ -100,7 +100,7 @@ export default function TrainingCard() {
           <>
             <div className="flex items-center gap-2 mb-3">
               <span
-                className="w-5 h-5 rounded-full bg-training-soft text-training flex items-center justify-center"
+                className="w-5 h-5 rounded-full bg-training-soft text-training-text flex items-center justify-center"
                 aria-hidden="true"
               >
                 <Check className="w-3.5 h-3.5" />
@@ -136,7 +136,7 @@ export default function TrainingCard() {
             </div>
             <button
               onClick={() => router.push('/train')}
-              className="min-h-11 text-xs font-bold text-training flex items-center gap-1"
+              className="min-h-11 text-xs font-bold text-training-text flex items-center gap-1"
             >
               View session <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />
             </button>
@@ -153,7 +153,7 @@ export default function TrainingCard() {
             )}
             <button
               onClick={() => router.push('/train')}
-              className="w-full py-3 bg-training text-background font-bold rounded-lg hover:bg-training/90 active:scale-95 transition-all"
+              className="w-full py-3 bg-training text-white font-bold rounded-lg hover:bg-training/90 active:scale-95 transition-all"
             >
               Start training
             </button>

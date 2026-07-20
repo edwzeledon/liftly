@@ -168,7 +168,7 @@ export default function OnboardingForm({ onComplete, onCancel, isEditing = false
                                         key={g.value}
                                         onClick={() => setFormData({ ...formData, gender: g.value })}
                                         className={`p-4 rounded-2xl border-2 font-bold transition-all ${formData.gender === g.value
-                                                ? 'border-training bg-training-soft text-training'
+                                                ? 'border-training bg-training-soft text-training-text'
                                                 : 'border-border text-muted-foreground hover:border-training/20'
                                             }`}
                                     >
@@ -248,10 +248,10 @@ export default function OnboardingForm({ onComplete, onCancel, isEditing = false
                                             : 'border-border hover:border-training/20'
                                         }`}
                                 >
-                                    <div className={`font-bold ${formData.activity === level.id ? 'text-training' : 'text-foreground'}`}>
+                                    <div className={`font-bold ${formData.activity === level.id ? 'text-training-text' : 'text-foreground'}`}>
                                         {level.label}
                                     </div>
-                                    <div className={`text-sm ${formData.activity === level.id ? 'text-training' : 'text-muted-foreground'}`}>
+                                    <div className={`text-sm ${formData.activity === level.id ? 'text-training-text' : 'text-muted-foreground'}`}>
                                         {level.description}
                                     </div>
                                 </button>
@@ -271,10 +271,10 @@ export default function OnboardingForm({ onComplete, onCancel, isEditing = false
                                             : 'border-border hover:border-training/20'
                                         }`}
                                 >
-                                    <div className={`font-bold ${formData.goal === goal.id ? 'text-training' : 'text-foreground'}`}>
+                                    <div className={`font-bold ${formData.goal === goal.id ? 'text-training-text' : 'text-foreground'}`}>
                                         {goal.label}
                                     </div>
-                                    <div className={`text-sm ${formData.goal === goal.id ? 'text-training' : 'text-muted-foreground'}`}>
+                                    <div className={`text-sm ${formData.goal === goal.id ? 'text-training-text' : 'text-muted-foreground'}`}>
                                         {goal.description}
                                     </div>
                                 </button>
@@ -421,7 +421,7 @@ export default function OnboardingForm({ onComplete, onCancel, isEditing = false
                                     )) ||
                                     (step === 4 && (!formData.goalWeight || !formData.targetDate))
                                     ? 'bg-muted text-white cursor-not-allowed'
-                                    : 'bg-training text-background hover:bg-training/90'
+                                    : 'bg-training text-white hover:bg-training/90'
                                 }`}
                         >
                             {step === 4 || (step === 3 && formData.goal === 'maintain') ? (

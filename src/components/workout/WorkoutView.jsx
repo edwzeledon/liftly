@@ -931,7 +931,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
               <button 
                 onClick={handleSaveTemplate}
                 disabled={!templateName.trim() || isSavingTemplate}
-                className="flex-1 py-3 bg-training text-background rounded-xl font-medium disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 py-3 bg-training text-white rounded-xl font-medium disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {isSavingTemplate ? (
                   <>
@@ -958,7 +958,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
               <h2 className="font-display text-xl font-bold text-foreground">Active Session</h2>
               <SessionTimer
                 startedAt={sessionStartRef.current ?? Date.now()}
-                className="font-display text-2xl font-bold text-training leading-none"
+                className="font-display text-2xl font-bold text-training-text leading-none"
               />
             </div>
 
@@ -969,7 +969,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
               className={`rounded-lg font-bold transition-all flex items-center gap-2 px-6 py-3 ${
                 !workoutLogs.some(log => log.sets.some(s => s.completed))
                   ? 'bg-muted text-faint cursor-not-allowed'
-                  : 'bg-training text-background active:scale-95'
+                  : 'bg-training text-white active:scale-95'
               }`}
             >
               <Check className="w-4 h-4" />
@@ -983,7 +983,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
         <div className="flex items-center justify-between mb-6 md:max-w-xl w-full md:mx-auto">
           <div className="flex flex-col">
             <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
-              <Dumbbell className="w-6 h-6 text-training" />
+              <Dumbbell className="w-6 h-6 text-training-text" />
               Train
             </h2>
           </div>
@@ -1043,7 +1043,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
                  <div className="flex gap-2">
                    <button
                      onClick={() => setShowPicker(true)}
-                     className="flex-1 py-4 border-2 border-dashed border-training-soft-border rounded-2xl text-training font-bold hover:bg-training-soft hover:border-training/40 transition-all flex items-center justify-center gap-2"
+                     className="flex-1 py-4 border-2 border-dashed border-training-soft-border rounded-2xl text-training-text font-bold hover:bg-training-soft hover:border-training/40 transition-all flex items-center justify-center gap-2"
                    >
                      <Plus className="w-5 h-5" />
                      Add Exercise

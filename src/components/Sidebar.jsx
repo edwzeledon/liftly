@@ -31,7 +31,7 @@ export default function Sidebar({ onOpenLog }) {
   const itemClass = (active) =>
     `flex items-center gap-3 p-3 rounded-lg transition-colors min-h-11 ${
       active
-        ? 'bg-training text-background'
+        ? 'bg-training text-white'
         : 'text-muted-foreground hover:bg-muted hover:text-foreground'
     }`;
 
@@ -41,7 +41,7 @@ export default function Sidebar({ onOpenLog }) {
     <SidebarRail>
       <div className="flex items-center gap-2 mb-10 p-1">
         <Logo size={32} className="rounded-xl shrink-0" />
-        <SidebarRailLabel className="font-display font-bold uppercase tracking-wide text-2xl text-training">
+        <SidebarRailLabel className="font-display font-bold uppercase tracking-wide text-2xl text-training-text">
           Liftly
         </SidebarRailLabel>
       </div>
@@ -67,7 +67,7 @@ export default function Sidebar({ onOpenLog }) {
       <button
         onClick={onOpenLog}
         aria-label="Quick log"
-        className="w-full flex items-center gap-3 p-3 mb-2 bg-training text-background rounded-lg hover:bg-training/90 active:scale-95 transition-all min-h-11"
+        className="w-full flex items-center gap-3 p-3 mb-2 bg-training text-white rounded-lg hover:bg-training/90 active:scale-95 transition-all min-h-11"
       >
         <Plus className="w-5 h-5 shrink-0" />
         <SidebarRailLabel className={labelClass}>Log</SidebarRailLabel>
@@ -91,7 +91,7 @@ export default function Sidebar({ onOpenLog }) {
         >
           <span
             aria-hidden="true"
-            className="w-8 h-8 rounded-full bg-training-soft text-training font-bold text-sm flex items-center justify-center shrink-0"
+            className="w-8 h-8 rounded-full bg-training-soft text-training-text font-bold text-sm flex items-center justify-center shrink-0"
           >
             {initial}
           </span>

@@ -28,7 +28,7 @@ export default function HeroContent({ onCtaClick, onSecondaryClick }) {
         </m.p>
         <m.div variants={v.item} className="mt-8 flex flex-wrap gap-4 md:justify-center">
           <button onClick={onCtaClick}
-            className="bg-training text-background font-bold rounded-xl px-6 py-3 min-h-11 transition-colors hover:bg-training/90 active:scale-95">
+            className="bg-training text-white font-bold rounded-xl px-6 py-3 min-h-11 transition-colors hover:bg-training/90 active:scale-95">
             Start training
           </button>
           <button onClick={onSecondaryClick}

@@ -16,7 +16,7 @@ export default function AuthView({ onBack }) {
         <button onClick={onBack} aria-label="Liftly — back to landing"
           className="flex items-center gap-2 min-h-11 px-2 cursor-pointer hover:bg-muted/50 rounded-xl transition-colors">
           <Logo size={36} />
-          <span className="text-xl font-bold text-training">Liftly</span>
+          <span className="text-xl font-bold text-training-text">Liftly</span>
         </button>
         <button onClick={onBack} aria-label="Close sign in"
           className="flex items-center justify-center min-h-11 min-w-11 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors">

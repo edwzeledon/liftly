@@ -90,7 +90,7 @@ export default function StartLaunchpad({
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[40vh] gap-3 text-training">
+      <div className="flex flex-col items-center justify-center min-h-[40vh] gap-3 text-training-text">
         <Loader2 className="w-8 h-8 animate-spin" />
         <p className="text-sm font-medium">Loading routine…</p>
       </div>
@@ -111,7 +111,7 @@ export default function StartLaunchpad({
         >
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-xs font-bold uppercase tracking-wider text-training flex items-center gap-1.5 mb-1">
+              <p className="text-xs font-bold uppercase tracking-wider text-training-text flex items-center gap-1.5 mb-1">
                 <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
                 Repeat last · {lastSession.dateLabel}
               </p>
@@ -127,7 +127,7 @@ export default function StartLaunchpad({
               </p>
             </div>
             <span
-              className="w-10 h-10 shrink-0 rounded-full bg-training text-background flex items-center justify-center group-hover:scale-105 transition-transform"
+              className="w-10 h-10 shrink-0 rounded-full bg-training text-white flex items-center justify-center group-hover:scale-105 transition-transform"
               aria-hidden="true"
             >
               <Play className="w-5 h-5 fill-current" />
@@ -164,7 +164,7 @@ export default function StartLaunchpad({
                       {temp.exercises.length} {temp.exercises.length === 1 ? 'exercise' : 'exercises'}
                     </p>
                     <span
-                      className="mt-3 ml-auto w-7 h-7 rounded-full bg-training-soft text-training flex items-center justify-center"
+                      className="mt-3 ml-auto w-7 h-7 rounded-full bg-training-soft text-training-text flex items-center justify-center"
                       aria-hidden="true"
                     >
                       <Play className="w-3.5 h-3.5 fill-current" />
@@ -203,7 +203,7 @@ export default function StartLaunchpad({
       {hasAnything ? (
         <button
           onClick={onAddExercise}
-          className="w-full py-3 min-h-11 text-training font-bold text-sm flex items-center justify-center gap-2 rounded-xl hover:bg-training-soft transition-colors"
+          className="w-full py-3 min-h-11 text-training-text font-bold text-sm flex items-center justify-center gap-2 rounded-xl hover:bg-training-soft transition-colors"
         >
           <Plus className="w-4 h-4" aria-hidden="true" />
           Start from scratch
@@ -211,7 +211,7 @@ export default function StartLaunchpad({
       ) : (
         <button
           onClick={onAddExercise}
-          className="w-full px-4 py-3 bg-training text-background rounded-xl font-bold hover:bg-training/90 transition-all active:scale-95 flex items-center justify-center gap-2"
+          className="w-full px-4 py-3 bg-training text-white rounded-xl font-bold hover:bg-training/90 transition-all active:scale-95 flex items-center justify-center gap-2"
         >
           <Plus className="w-5 h-5" aria-hidden="true" />
           Add Exercise

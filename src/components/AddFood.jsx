@@ -292,7 +292,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
       {/* Drag Overlay */}
       {isDragging && (
         <div className="absolute inset-0 z-50 bg-training/10 backdrop-blur-sm border-4 border-training border-dashed md:rounded-2xl flex items-center justify-center pointer-events-none">
-           <p className="text-training font-bold text-xl bg-card px-6 py-3 rounded-xl">Drop image here</p>
+           <p className="text-training-text font-bold text-xl bg-card px-6 py-3 rounded-xl">Drop image here</p>
         </div>
       )}
 
@@ -324,7 +324,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                 disabled={scanCount >= MAX_DAILY_SCANS}
                 className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
                   mode === 'scan'
-                    ? 'bg-card text-training'
+                    ? 'bg-card text-training-text'
                     : scanCount >= MAX_DAILY_SCANS
                       ? 'text-faint cursor-not-allowed'
                       : 'text-muted-foreground hover:text-foreground'
@@ -343,7 +343,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                 disabled={!!preview}
                 className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
                   mode === 'manual'
-                    ? 'bg-card text-training'
+                    ? 'bg-card text-training-text'
                     : preview
                       ? 'text-faint cursor-not-allowed'
                       : 'text-muted-foreground hover:text-foreground'
@@ -405,7 +405,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                       className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-3 transition-colors ${
                         scanCount >= MAX_DAILY_SCANS
                           ? 'bg-muted text-faint cursor-not-allowed'
-                          : 'bg-training text-background hover:bg-training/90'
+                          : 'bg-training text-white hover:bg-training/90'
                       }`}
                     >
                       <Camera className="w-6 h-6" />
@@ -413,7 +413,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                     </button>
                     <div className="relative flex py-1 items-center">
                       <div className="grow border-t border-training-soft-border"></div>
-                      <span className="shrink mx-4 text-training/50 text-xs uppercase font-bold">Or</span>
+                      <span className="shrink mx-4 text-training-text/50 text-xs uppercase font-bold">Or</span>
                       <div className="grow border-t border-training-soft-border"></div>
                     </div>
                     <button
@@ -422,7 +422,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                       className={`w-full py-4 border rounded-2xl font-bold flex items-center justify-center gap-3 transition-colors ${
                         scanCount >= MAX_DAILY_SCANS
                           ? 'bg-muted text-faint border-border cursor-not-allowed'
-                          : 'bg-card text-training border-training-soft-border hover:bg-training-soft'
+                          : 'bg-card text-training-text border-training-soft-border hover:bg-training-soft'
                       }`}
                     >
                       <Upload className="w-6 h-6" />
@@ -458,7 +458,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                     </button>
                     <button 
                       onClick={confirmImage}
-                      className="flex-1 max-w-xs py-3 bg-training text-background font-bold rounded-xl hover:bg-training/90 transition-all flex items-center justify-center gap-2"
+                      className="flex-1 max-w-xs py-3 bg-training text-white font-bold rounded-xl hover:bg-training/90 transition-all flex items-center justify-center gap-2"
                     >
                       <Check className="w-5 h-5" />
                       Analyze
@@ -511,7 +511,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                       onClick={() => setForm({...form, mealType: value})}
                       className={`py-2 rounded-xl text-xs font-bold uppercase transition-all ${
                         form.mealType?.toLowerCase() === value
-                          ? 'bg-training text-background'
+                          ? 'bg-training text-white'
                           : 'bg-muted text-faint hover:bg-muted/80'
                       }`}
                     >
@@ -582,7 +582,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
               <button
                 type="submit"
                 disabled={isSaving}
-                className="w-full py-4 bg-training text-background font-bold rounded-2xl hover:bg-training/90 active:scale-95 transition-all mt-4 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                className="w-full py-4 bg-training text-white font-bold rounded-2xl hover:bg-training/90 active:scale-95 transition-all mt-4 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}
                 {isSaving ? 'Saving...' : 'Save Entry'}

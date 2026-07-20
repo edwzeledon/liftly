@@ -91,7 +91,7 @@ export default function PlateCalculator({ isOpen, onClose, onApply, unit = 'lb' 
                <div className="flex items-center gap-3 bg-card rounded-lg p-1">
                  <button
                    onClick={() => updatePlate(weight, -1)}
-                   className="w-8 h-8 flex items-center justify-center text-faint hover:text-training hover:bg-training-soft rounded-md transition-colors"
+                   className="w-8 h-8 flex items-center justify-center text-faint hover:text-training-text hover:bg-training-soft rounded-md transition-colors"
                    disabled={plates[weight] === 0}
                  >
                    <Minus className="w-4 h-4" />
@@ -99,7 +99,7 @@ export default function PlateCalculator({ isOpen, onClose, onApply, unit = 'lb' 
                  <span className="font-bold text-foreground w-4 text-center">{plates[weight]}</span>
                  <button
                    onClick={() => updatePlate(weight, 1)}
-                   className="w-8 h-8 flex items-center justify-center text-faint hover:text-training hover:bg-training-soft rounded-md transition-colors"
+                   className="w-8 h-8 flex items-center justify-center text-faint hover:text-training-text hover:bg-training-soft rounded-md transition-colors"
                  >
                    <Plus className="w-4 h-4" />
                  </button>
@@ -119,7 +119,7 @@ export default function PlateCalculator({ isOpen, onClose, onApply, unit = 'lb' 
           </button>
           <button 
             onClick={() => onApply(calculateTotal())}
-            className="flex-1 py-4 bg-training text-background rounded-xl font-bold hover:bg-training/90 active:scale-95 transition-all flex items-center justify-center gap-2"
+            className="flex-1 py-4 bg-training text-white rounded-xl font-bold hover:bg-training/90 active:scale-95 transition-all flex items-center justify-center gap-2"
           >
             <Check className="w-5 h-5" />
             Use Weight

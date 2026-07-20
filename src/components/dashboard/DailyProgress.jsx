@@ -146,7 +146,7 @@ function DailyProgress({ caloriesToday, dailyGoal, macroGoals, todaysLogs, onUpd
                 aria-haspopup="dialog"
                 className={`px-3 py-1 rounded-full text-xs font-bold border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                   trainingDay
-                    ? 'bg-training-soft text-training border-training-soft-border'
+                    ? 'bg-training-soft text-training-text border-training-soft-border'
                     : 'bg-muted text-faint border-border'
                 }`}
               >
@@ -166,7 +166,7 @@ function DailyProgress({ caloriesToday, dailyGoal, macroGoals, todaysLogs, onUpd
                     </button>
                     <button
                       onClick={() => { setShowBumpPopover(false); onToggleBumpSkip && onToggleBumpSkip(); }}
-                      className="flex-1 py-2 text-xs font-bold bg-training text-background rounded-xl hover:bg-training/90 transition-colors">
+                      className="flex-1 py-2 text-xs font-bold bg-training text-white rounded-xl hover:bg-training/90 transition-colors">
                       {trainingDay ? 'Skip today' : 'Re-apply'}
                     </button>
                   </div>
@@ -243,7 +243,7 @@ function DailyProgress({ caloriesToday, dailyGoal, macroGoals, todaysLogs, onUpd
                     <button onClick={() => setEditingGoal(null)} className="flex-1 py-3 bg-muted text-muted-foreground font-bold rounded-xl hover:bg-muted/80 transition-colors">
                         Cancel
                     </button>
-                    <button onClick={handleSaveGoal} disabled={Number.isNaN(parseInt(tempGoalValue))} className={`flex-1 py-3 font-bold rounded-xl transition-colors ${Number.isNaN(parseInt(tempGoalValue)) ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-40' : 'bg-training text-background hover:bg-training/90'}`}>
+                    <button onClick={handleSaveGoal} disabled={Number.isNaN(parseInt(tempGoalValue))} className={`flex-1 py-3 font-bold rounded-xl transition-colors ${Number.isNaN(parseInt(tempGoalValue)) ? 'bg-muted text-muted-foreground cursor-not-allowed opacity-40' : 'bg-training text-white hover:bg-training/90'}`}>
                         Save
                     </button>
                 </div>

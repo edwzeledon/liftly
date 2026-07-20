@@ -6,7 +6,7 @@ import { makeVariants } from './motionVariants';
 import Logo from '../ui/Logo';
 
 const FEATURES = [
-  { icon: Trophy, tile: 'bg-training-soft', iconClass: 'text-training', stat: 'every PR',
+  { icon: Trophy, tile: 'bg-training-soft', iconClass: 'text-training-text', stat: 'every PR',
     title: 'PR detection', description: 'Automatically flags new personal records the moment you log a set.' },
   { icon: Beef, tile: 'bg-protein-soft', iconClass: 'text-protein-text', stat: '2 taps',
     title: 'Quick protein', description: 'Log the protein sources you eat most in two taps, no typing required.' },
@@ -51,7 +51,7 @@ export default function Sections({ onCtaClick }) {
             Stop guessing. Start fueling.
           </m.h2>
           <m.button variants={v.item} onClick={onCtaClick}
-            className="bg-training text-background font-bold rounded-xl px-8 py-4 min-h-11 transition-colors hover:bg-training/90 active:scale-95">
+            className="bg-training text-white font-bold rounded-xl px-8 py-4 min-h-11 transition-colors hover:bg-training/90 active:scale-95">
             Start training
           </m.button>
         </m.div>

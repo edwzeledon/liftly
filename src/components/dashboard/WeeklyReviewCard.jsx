@@ -7,7 +7,7 @@ import { startOfWeek } from '@/lib/workoutStats';
 import Sheet from '@/components/ui/Sheet';
 
 const SECTIONS = [
-  { key: 'training', label: 'Training', icon: Dumbbell, tint: 'text-training bg-training-soft' },
+  { key: 'training', label: 'Training', icon: Dumbbell, tint: 'text-training-text bg-training-soft' },
   { key: 'fuel', label: 'Fuel', icon: Beef, tint: 'text-protein-text bg-protein-soft' },
   { key: 'win', label: 'Win of the week', icon: Trophy, tint: 'text-streak bg-streak-soft' },
   { key: 'focus', label: 'Next week\'s focus', icon: Target, tint: 'text-muted-foreground bg-muted' },
@@ -58,7 +58,7 @@ export default function WeeklyReviewCard() {
               <p className="text-xs text-muted-foreground">Training + nutrition, one AI summary per week</p>
             </div>
             <button onClick={openReview}
-              className="px-4 py-2 bg-training text-background text-sm font-bold rounded-xl hover:bg-training/90 active:scale-95 transition-all">
+              className="px-4 py-2 bg-training text-white text-sm font-bold rounded-xl hover:bg-training/90 active:scale-95 transition-all">
               Read review
             </button>
           </div>
@@ -82,7 +82,7 @@ export default function WeeklyReviewCard() {
         {state === 'error' && (
           <div className="text-center">
             <p className="text-sm text-muted-foreground mb-3">Could not generate - try again.</p>
-            <button onClick={openReview} className="px-4 py-2 bg-training text-background text-sm font-bold rounded-xl">Retry</button>
+            <button onClick={openReview} className="px-4 py-2 bg-training text-white text-sm font-bold rounded-xl">Retry</button>
           </div>
         )}
         {state === 'ready' && review && (

@@ -5,7 +5,8 @@
   --color-protein: #10b981;
   --color-protein-text: #34D399;
   --color-protein-soft: #0E2A22;
-  --color-training: #818CF8;
+  --color-training: #4f46e5;
+  --color-training-text: #818CF8;
   --color-training-soft: #1E1E38;
   --color-training-soft-border: #2D2D52;
   --color-ai: #D4D4D8;
@@ -92,6 +93,7 @@
   --color-protein-text: #059669;
   --color-protein-soft: #ecfdf5;
   --color-training: #4f46e5;
+  --color-training-text: #4f46e5;
   --color-training-soft: #eef2ff;
   --color-training-soft-border: #e0e7ff;
   --color-ai: #52525b;

@@ -47,7 +47,7 @@ function HistoryError({ onRetry }) {
   return (
     <div className="bg-card rounded-2xl p-6 border border-border text-center">
       <p className="text-sm text-muted-foreground mb-3">Couldn&apos;t load your history.</p>
-      <button onClick={onRetry} className="px-4 py-2 min-h-11 bg-training text-background text-sm font-bold rounded-xl">
+      <button onClick={onRetry} className="px-4 py-2 min-h-11 bg-training text-white text-sm font-bold rounded-xl">
         Retry
       </button>
     </div>
@@ -111,7 +111,7 @@ function TrainingSection({ dayWorkouts, weightUnit, onEdit, onDelete }) {
           <button
             onClick={onEdit}
             aria-label="Edit workout session"
-            className="p-2 min-h-11 min-w-11 flex items-center justify-center text-faint hover:text-training hover:bg-training-soft rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="p-2 min-h-11 min-w-11 flex items-center justify-center text-faint hover:text-training-text hover:bg-training-soft rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             title="Edit Session"
           >
             <Edit2 className="w-4 h-4" />
@@ -133,7 +133,7 @@ function TrainingSection({ dayWorkouts, weightUnit, onEdit, onDelete }) {
           return (
             <div key={log.id} className="flex items-center justify-between p-3 bg-muted rounded-xl">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-card flex items-center justify-center text-training font-bold text-xs">
+                <div className="w-8 h-8 rounded-lg bg-card flex items-center justify-center text-training-text font-bold text-xs">
                   {(log.exercise || log.exercise_name || '?').charAt(0).toUpperCase()}
                 </div>
                 <div>
@@ -167,7 +167,7 @@ function NutritionSection({ dayMeals, onEdit, onDelete, withDivider }) {
           <button
             onClick={onEdit}
             aria-label="Edit meals"
-            className="p-2 min-h-11 min-w-11 flex items-center justify-center text-faint hover:text-training hover:bg-training-soft rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="p-2 min-h-11 min-w-11 flex items-center justify-center text-faint hover:text-training-text hover:bg-training-soft rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             title="Edit Meals"
           >
             <Edit2 className="w-4 h-4" />
@@ -325,7 +325,7 @@ function HistoryEmpty({ onCta }) {
           <button onClick={() => onCta('meals')} className="min-h-11 px-3 text-xs font-bold text-protein-text">
             Log a meal →
           </button>
-          <button onClick={() => onCta('workouts')} className="min-h-11 px-3 text-xs font-bold text-training">
+          <button onClick={() => onCta('workouts')} className="min-h-11 px-3 text-xs font-bold text-training-text">
             Log a workout →
           </button>
         </div>
@@ -647,7 +647,7 @@ export default function HistoryView({ logs = [], workoutLogs = [], user, onMealD
                         <button
                           onClick={() => onEditLog(log)}
                           aria-label="Edit meal"
-                          className="p-2 min-h-11 min-w-11 flex items-center justify-center text-faint hover:text-training hover:bg-training-soft rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          className="p-2 min-h-11 min-w-11 flex items-center justify-center text-faint hover:text-training-text hover:bg-training-soft rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>

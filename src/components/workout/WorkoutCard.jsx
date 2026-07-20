@@ -82,18 +82,18 @@ function RestingDone({ startedAt, bandSec, disabled, onTap, ariaLabel }) {
         aria-label={`${ready ? 'Rest complete' : 'Resting'} — ${ariaLabel}`}
         aria-pressed={false}
         className={`relative w-12 h-12 rounded-full transition-colors flex items-center justify-center ${ready
-          ? 'bg-training-soft text-training'
+          ? 'bg-training-soft text-training-text'
           : disabled ? 'bg-muted text-faint cursor-not-allowed opacity-40' : 'bg-input text-muted-foreground'
         }`}
       >
         <svg viewBox="0 0 48 48" className="absolute inset-0 -rotate-90" aria-hidden="true">
           <circle cx="24" cy="24" r="21" fill="none" strokeWidth="3" stroke="var(--color-muted)" />
           <circle cx="24" cy="24" r="21" fill="none" strokeWidth="3" strokeLinecap="round"
-            stroke="var(--color-training)" strokeDasharray={C} strokeDashoffset={C * (1 - fraction)} />
+            stroke="var(--color-training-text)" strokeDasharray={C} strokeDashoffset={C * (1 - fraction)} />
         </svg>
         <Check className={`w-6 h-6 ${ready ? '' : 'opacity-40'}`} />
       </button>
-      <span aria-hidden="true" className={`absolute -bottom-4 inset-x-0 text-center text-[9px] font-bold uppercase tracking-wider pointer-events-none tabular-nums ${ready ? 'text-training' : 'text-faint'}`}>
+      <span aria-hidden="true" className={`absolute -bottom-4 inset-x-0 text-center text-[9px] font-bold uppercase tracking-wider pointer-events-none tabular-nums ${ready ? 'text-training-text' : 'text-faint'}`}>
         {label}
       </span>
     </div>
@@ -453,7 +453,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate, weightUnit = 'lb'
   <div className={`bg-card p-5 rounded-2xl border border-border hover:border-training-soft-border transition-all ${isTemp ? 'opacity-60' : ''}`}>
     <div className="flex justify-between items-start mb-4">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-training-soft flex items-center justify-center text-training font-bold">
+        <div className="w-10 h-10 rounded-xl bg-training-soft flex items-center justify-center text-training-text font-bold">
           {(log.exercise_name || log.exercise || '?').charAt(0)}
         </div>
         <div>
@@ -474,7 +474,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate, weightUnit = 'lb'
         <button
           onClick={() => setShowCalculator(true)}
           aria-label="Plate calculator"
-          className="p-2 text-faint hover:text-training hover:bg-training-soft rounded-full transition-colors min-h-11 min-w-11 flex items-center justify-center"
+          className="p-2 text-faint hover:text-training-text hover:bg-training-soft rounded-full transition-colors min-h-11 min-w-11 flex items-center justify-center"
           title="Plate Calculator"
         >
           <Calculator className="w-4 h-4" />
@@ -607,7 +607,7 @@ export default function WorkoutCard({ log, onDelete, onUpdate, weightUnit = 'lb'
 
       <button
         onClick={addSet}
-        className={`w-full py-3 mt-2 border border-dashed border-training-soft-border rounded-xl text-training font-bold text-sm hover:bg-training-soft transition-all flex items-center justify-center gap-2 ${activeRest && activeRest.nextIdx === null ? 'ring-2 ring-training/40' : ''}`}
+        className={`w-full py-3 mt-2 border border-dashed border-training-soft-border rounded-xl text-training-text font-bold text-sm hover:bg-training-soft transition-all flex items-center justify-center gap-2 ${activeRest && activeRest.nextIdx === null ? 'ring-2 ring-training-text/40' : ''}`}
       >
         <Plus className="w-4 h-4" />
         Add Set

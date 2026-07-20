@@ -95,7 +95,7 @@ export default function SettingsView({ onRetakeAssessment }) {
           className="w-full flex items-center justify-between gap-4 px-5 py-4 min-h-11 hover:bg-muted/50 transition-colors rounded-b-2xl text-left"
         >
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-training-soft text-training rounded-lg"><RefreshCw className="w-4 h-4" /></div>
+            <div className="p-2 bg-training-soft text-training-text rounded-lg"><RefreshCw className="w-4 h-4" /></div>
             <div>
               <p className="font-semibold text-foreground text-sm">Retake Assessment</p>
               <p className="text-xs text-muted-foreground">Update goals & measurements</p>

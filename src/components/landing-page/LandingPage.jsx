@@ -101,7 +101,7 @@ export default function LandingPage() {
           <nav className="absolute top-0 left-0 right-0 z-50 p-6 flex justify-between items-center max-w-7xl mx-auto w-full">
             <div className="flex items-center gap-2 cursor-pointer" onClick={() => setShowAuth(false)}>
               <Logo size={36} />
-              <span className="text-xl font-bold text-training">Liftly</span>
+              <span className="text-xl font-bold text-training-text">Liftly</span>
             </div>
             <button
               onClick={() => setShowAuth(true)}
