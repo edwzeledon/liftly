@@ -33,7 +33,11 @@ export default function ConfirmModal({ isOpen, title, message, onConfirm, onCanc
           <button 
             onClick={onConfirm}
             disabled={isLoading}
-            className={`flex-1 py-3 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2 ${isDestructive ? 'bg-destructive hover:bg-destructive/90' : 'bg-training hover:bg-training/90'} disabled:opacity-50 disabled:cursor-not-allowed`}
+            className={`flex-1 py-3 rounded-xl font-medium transition-colors flex items-center justify-center gap-2 ${
+              isDestructive
+                ? 'bg-destructive text-white hover:bg-destructive/90'
+                : 'bg-training text-white hover:bg-training/90'
+            } disabled:opacity-50 disabled:cursor-not-allowed`}
           >
             {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : confirmLabel}
           </button>

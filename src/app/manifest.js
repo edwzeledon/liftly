@@ -5,8 +5,8 @@ export default function manifest() {
     description: 'The lifting app where nutrition serves your training',
     start_url: '/',
     display: 'standalone',
-    background_color: '#3B3042',
-    theme_color: '#3B3042',
+    background_color: '#4f46e5',
+    theme_color: '#4f46e5',
     icons: [
       {
         src: '/icon',

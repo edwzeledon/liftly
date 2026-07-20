@@ -5,13 +5,13 @@
   --color-protein: #10b981;
   --color-protein-text: #34D399;
   --color-protein-soft: #0E2A22;
-  --color-training: #4f46e5;
-  --color-training-text: #818CF8;
+  --color-training: #4f46e5;       /* FILL only — bg-training + text-white. Fails as text on dark (2.9:1). */
+  --color-training-text: #818CF8;  /* ALL text/icon roles — use text-training-text, never text-training. */
   --color-training-soft: #1E1E38;
   --color-training-soft-border: #2D2D52;
-  --color-ai: #C084FC;
-  --color-ai-soft: #2A1D3A;
-  --color-ai-soft-border: #3B2D52;
+  --color-ai: #D4D4D8;
+  --color-ai-soft: #1C1C24;
+  --color-ai-soft-border: #2D2D35;
   --color-streak: #FBBF24;
   --color-streak-soft: #332411;
   --color-streak-soft-border: #4A3418;
@@ -96,12 +96,12 @@
   --color-training-text: #4f46e5;
   --color-training-soft: #eef2ff;
   --color-training-soft-border: #e0e7ff;
-  --color-ai: #9333ea;
-  --color-ai-soft: #faf5ff;
-  --color-ai-soft-border: #f3e8ff;
-  --color-streak: #f97316;
-  --color-streak-soft: #fff7ed;
-  --color-streak-soft-border: #ffedd5;
+  --color-ai: #52525b;
+  --color-ai-soft: #f4f4f5;
+  --color-ai-soft-border: #e4e4e7;
+  --color-streak: #d97706;
+  --color-streak-soft: #fffbeb;
+  --color-streak-soft-border: #fef3c7;
   --color-carb: #f59e0b;
   --color-carb-text: #b45309;
   --color-fat: #f43f5e;

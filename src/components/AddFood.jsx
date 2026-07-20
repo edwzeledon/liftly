@@ -291,7 +291,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
     >
       {/* Drag Overlay */}
       {isDragging && (
-        <div className="absolute inset-0 z-50 bg-training/10 backdrop-blur-sm border-4 border-training-text border-dashed md:rounded-2xl flex items-center justify-center pointer-events-none">
+        <div className="absolute inset-0 z-50 bg-training/10 backdrop-blur-sm border-4 border-training border-dashed md:rounded-2xl flex items-center justify-center pointer-events-none">
            <p className="text-training-text font-bold text-xl bg-card px-6 py-3 rounded-xl">Drop image here</p>
         </div>
       )}
@@ -439,7 +439,7 @@ export default function AddFood({ user, onSuccess, onCancel, initialScanCount = 
                   <div className="absolute bottom-6 left-0 right-0 flex justify-center z-10">
                     <button 
                       onClick={captureImage}
-                      className="w-16 h-16 bg-card rounded-full border-4 border-training-text flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
+                      className="w-16 h-16 bg-card rounded-full border-4 border-training flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
                     >
                       <div className="w-12 h-12 bg-training rounded-full"></div>
                     </button>

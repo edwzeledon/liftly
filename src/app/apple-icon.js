@@ -22,7 +22,7 @@ export default function Icon() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#3B3042', // Deep desaturated purple (Aubergine)
+          background: '#4f46e5', // matches --color-training (globals.css)
         }}
       >
         {/* Snapshot Frame Concept */}
@@ -43,7 +43,7 @@ export default function Icon() {
                H 65 
                C 78 82, 85 75, 85 62 
                V 38"
-            stroke="#EBE9E4" // Bone / Off-white
+            stroke="#FFFFFF" // White — fills carry white (restored identity)
             strokeWidth="8"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -51,19 +51,19 @@ export default function Icon() {
           
           {/* Minimal Internal Mark - Geometric Glyph (Nutrition + Training) */}
           {/* Echo - Temporal Continuity */}
-          <circle 
-            cx="56" 
-            cy="50" 
-            r="14" 
-            fill="#EBE9E4" 
+          <circle
+            cx="56"
+            cy="50"
+            r="14"
+            fill="#FFFFFF"
             style={{ opacity: 0.25 }}
           />
           {/* A balanced circle representing the "whole" or "focus" */}
-          <circle 
-            cx="50" 
-            cy="50" 
-            r="14" 
-            fill="#EBE9E4" 
+          <circle
+            cx="50"
+            cy="50"
+            r="14"
+            fill="#FFFFFF"
           />
         </svg>
       </div>

@@ -22,7 +22,7 @@ export default function Icon() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#3B3042', // Deep desaturated purple
+          background: '#4f46e5', // matches --color-training (globals.css)
           borderRadius: '20%',
         }}
       >
@@ -35,13 +35,13 @@ export default function Icon() {
         >
            <path
             d="M 75 18 H 35 C 22 18, 15 25, 15 38 V 62 C 15 75, 22 82, 35 82 H 65 C 78 82, 85 75, 85 62 V 38"
-            stroke="#EBE9E4"
+            stroke="#FFFFFF"
             strokeWidth="10"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
-          <circle cx="56" cy="50" r="14" fill="#EBE9E4" style={{ opacity: 0.25 }} />
-          <circle cx="50" cy="50" r="14" fill="#EBE9E4" />
+          <circle cx="56" cy="50" r="14" fill="#FFFFFF" style={{ opacity: 0.25 }} />
+          <circle cx="50" cy="50" r="14" fill="#FFFFFF" />
         </svg>
       </div>
     ),

@@ -1,4 +1,4 @@
-import { setVolume, logsVolume, bestSet, beatsBest, startOfWeek, lastWorkoutSession, recentExercises, prsToday } from '../workoutStats';
+import { setVolume, logsVolume, bestSet, beatsBest, startOfWeek, lastWorkoutSession, recentExercises, prsToday, lastSetFor } from '../workoutStats';
 
 describe('setVolume', () => {
   it('multiplies weight by reps', () => {
@@ -165,5 +165,40 @@ describe('prsToday', () => {
     expect(prsToday(logs, NOW)).toEqual([]);
     expect(prsToday([], NOW)).toEqual([]);
     expect(prsToday(null, NOW)).toEqual([]);
+  });
+});
+
+describe('lastSetFor', () => {
+  const logs = [
+    { id: 1, date: '2026-07-10T08:00:00', exercise: 'Squat', category: 'Legs', sets: [{ weight: '225', reps: '5', completed: true }] },
+    { id: 2, date: '2026-07-15T08:00:00', exercise: 'Squat', category: 'Legs', sets: [{ weight: '235', reps: '3', completed: true }, { weight: '245', reps: '1', completed: true }] },
+    { id: 3, date: '2026-07-14T08:00:00', exercise_name: 'Curl', category: 'Arms', sets: [{ weight: '35', reps: '12', completed: true }] },
+  ];
+  it('returns the most recent day\'s best set for the exercise', () => {
+    expect(lastSetFor('Squat', logs)).toEqual({ weight: 245, reps: 1 });
+  });
+  it('matches the exercise_name field variant', () => {
+    expect(lastSetFor('Curl', logs)).toEqual({ weight: 35, reps: 12 });
+  });
+  it('returns null for an exercise with no history', () => {
+    expect(lastSetFor('Deadlift', logs)).toBeNull();
+  });
+  it('returns null for empty inputs', () => {
+    expect(lastSetFor('Squat', [])).toBeNull();
+    expect(lastSetFor('', logs)).toBeNull();
+  });
+  it('ignores logs whose sets have no completed entries', () => {
+    const only = [{ id: 9, date: '2026-07-16T08:00:00', exercise: 'Row', sets: [{ weight: '95', reps: '10', completed: false }] }];
+    expect(lastSetFor('Row', only)).toBeNull();
+  });
+  it('never reports an entered-but-uncompleted set (mixed log)', () => {
+    const mixed = [{
+      id: 7, date: '2026-07-17T08:00:00', exercise: 'Bench Press',
+      sets: [
+        { weight: '135', reps: '8', completed: true },
+        { weight: '225', reps: '1', completed: false },
+      ],
+    }];
+    expect(lastSetFor('Bench Press', mixed)).toEqual({ weight: 135, reps: 8 });
   });
 });

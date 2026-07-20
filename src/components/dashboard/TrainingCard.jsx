@@ -91,7 +91,7 @@ export default function TrainingCard() {
             <p className="text-sm text-muted-foreground mb-4">Pick up where you left off.</p>
             <button
               onClick={() => router.push('/train')}
-              className="w-full py-3 bg-training text-white font-bold rounded-xl hover:bg-training/90 active:scale-95 transition-all"
+              className="w-full py-3 bg-training text-white font-bold rounded-lg hover:bg-training/90 active:scale-95 transition-all"
             >
               Resume session
             </button>
@@ -153,7 +153,7 @@ export default function TrainingCard() {
             )}
             <button
               onClick={() => router.push('/train')}
-              className="w-full py-3 bg-training text-white font-bold rounded-xl hover:bg-training/90 active:scale-95 transition-all"
+              className="w-full py-3 bg-training text-white font-bold rounded-lg hover:bg-training/90 active:scale-95 transition-all"
             >
               Start training
             </button>

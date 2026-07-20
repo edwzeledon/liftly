@@ -144,7 +144,7 @@ export default function InsightsView({ user, onGoLogProtein, weightUnit = 'lb' }
   const locked = state === 'ready' && data.foodDaysLogged < UNLOCK_DAYS;
 
   return (
-    <div className="p-6 md:p-0 space-y-6 max-w-3xl mx-auto pb-20 md:pb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="p-6 md:p-0 space-y-6 max-w-3xl mx-auto pb-20 md:pb-8">
       <div className="flex items-center justify-between">
         <h2 className="font-display text-2xl font-bold text-foreground">Insights</h2>
         <SegmentedControl

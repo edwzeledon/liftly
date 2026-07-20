@@ -38,7 +38,7 @@ export default function WeightBalanceCard({ data, unit = 'lb' }) {
         </ResponsiveContainer>
       </div>
       <div className="flex gap-4 mt-2 text-xs font-semibold text-muted-foreground">
-        <span className="flex items-center gap-1.5"><span className="w-3 h-1 rounded bg-training-text inline-block" />Weight</span>
+        <span className="flex items-center gap-1.5"><span className="w-3 h-1 rounded bg-training inline-block" />Weight</span>
         <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-deficit inline-block" />Deficit</span>
         <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-surplus inline-block" />Surplus</span>
       </div>
