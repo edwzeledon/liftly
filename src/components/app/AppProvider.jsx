@@ -10,6 +10,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { getLogs, getUserSettings, updateUserSettings, updateLog, getDailyStats, updateDailyStats, getWorkoutLogs, getActiveWorkoutLogs } from '@/lib/api';
 import { useToast } from '@/hooks/useToast';
 import { toLb } from '@/lib/units';
+import { applyPendingSets, replayPendingSets } from '@/lib/pendingSets';
 
 const AppContext = createContext(null);
 
@@ -162,19 +163,24 @@ export default function AppProvider({ children }) {
         getDailyStats(new Date().toLocaleDateString('en-CA'))
       ]);
 
+      // Recover edits that never reached the server (crash/close): overlay the
+      // outbox onto the fetch (else the refetch would clobber them) and replay.
+      const { logs: mergedActiveLogs, replays } = applyPendingSets(fetchedActiveWorkoutLogs);
+
       // Cache critical data for faster reload
       localStorage.setItem('snapcal_logs', JSON.stringify(fetchedLogs));
-      localStorage.setItem('snapcal_activeWorkoutLogs', JSON.stringify(fetchedActiveWorkoutLogs));
+      localStorage.setItem('snapcal_activeWorkoutLogs', JSON.stringify(mergedActiveLogs));
       if (settings) localStorage.setItem('snapcal_settings', JSON.stringify(settings));
 
       setLogs(fetchedLogs);
       setWorkoutLogs(fetchedWorkoutLogs);
-      setActiveWorkoutLogs(fetchedActiveWorkoutLogs);
+      setActiveWorkoutLogs(mergedActiveLogs);
       setStaleData(false); // fresh data landed — clear any stale banner
       if (settings) applySettings(settings);
       if (dailyStats) {
         setScanCount(dailyStats.scan_count || 0);
       }
+      replayPendingSets(replays);
     } catch (error) {
       console.error("Error fetching data:", error);
       // Keep whatever cached data is on screen and surface a persistent banner.
@@ -217,10 +223,11 @@ export default function AppProvider({ children }) {
         getActiveWorkoutLogs(),
         getUserSettings(user.id)
       ]);
-      localStorage.setItem('snapcal_activeWorkoutLogs', JSON.stringify(fetchedActiveWorkoutLogs));
+      const { logs: mergedActiveLogs } = applyPendingSets(fetchedActiveWorkoutLogs);
+      localStorage.setItem('snapcal_activeWorkoutLogs', JSON.stringify(mergedActiveLogs));
       if (settings) localStorage.setItem('snapcal_settings', JSON.stringify(settings));
       setWorkoutLogs(fetchedWorkoutLogs);
-      setActiveWorkoutLogs(fetchedActiveWorkoutLogs);
+      setActiveWorkoutLogs(mergedActiveLogs);
       setWorkoutsReady(true);
       setStaleData(false);
       if (settings) applySettings(settings);
