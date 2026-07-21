@@ -1025,6 +1025,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
                       onRestStart={handleRestStart}
                       onRestClear={handleRestClear}
                       onRestRetarget={handleRestRetarget}
+                      finishing={isFinishing}
                    />
                  ))}
 

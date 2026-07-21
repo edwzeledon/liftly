@@ -4,6 +4,7 @@ import confetti from 'canvas-confetti';
 import PlateCalculator from './PlateCalculator';
 import { toDisplay, toLb, formatWeight } from '@/lib/units';
 import { restProgress } from '@/lib/restTimer';
+import { pendingKey } from '@/lib/pendingSets';
 
 // Controlled lb-state input that edits in the user's display unit. While
 // focused, the raw draft string is shown so typing "102.5" isn't fought by
@@ -100,7 +101,7 @@ function RestingDone({ startedAt, bandSec, disabled, onTap, ariaLabel }) {
   );
 }
 
-export default function WorkoutCard({ log, onDelete, onUpdate, weightUnit = 'lb', activeRest = null, onRestStart, onRestClear, onRestRetarget }) {
+export default function WorkoutCard({ log, onDelete, onUpdate, weightUnit = 'lb', activeRest = null, onRestStart, onRestClear, onRestRetarget, finishing = false }) {
   const [sets, setSets] = useState(log.sets || []);
   const [bestSet, setBestSet] = useState(null);
   const [showCalculator, setShowCalculator] = useState(false);
@@ -112,11 +113,36 @@ export default function WorkoutCard({ log, onDelete, onUpdate, weightUnit = 'lb'
   const trophyRefs = useRef({});
   const pendingEditsRef = useRef(null);
   const userEditedSetsRef = useRef(new Set());
+  const setsRef = useRef(log.sets || []);
+  // Last server-confirmed sets (JSON). Seeded null when an outbox entry
+  // survives from a prior visit — those edits never reached the server, and a
+  // non-null seed would wrongly mark them clean and delete the entry.
+  const lastSyncedRef = useRef(
+    typeof window !== 'undefined' && localStorage.getItem(pendingKey(log.id))
+      ? null
+      : JSON.stringify(log.sets || [])
+  );
 
   // Sync state with props if props change (e.g. initial load)
   useEffect(() => {
     setSets(log.sets || []);
   }, [log.sets]);
+
+  useEffect(() => {
+    setsRef.current = sets;
+  }, [sets]);
+
+  // Outbox WAL: every dirty state change lands in localStorage synchronously,
+  // so a crash/close at any point is replayed on next load (lib/pendingSets).
+  // setSets is the single choke point — all mutation paths funnel through it.
+  useEffect(() => {
+    const j = JSON.stringify(sets);
+    if (j !== lastSyncedRef.current) {
+      localStorage.setItem(pendingKey(log.id), JSON.stringify({ sets, ts: Date.now() }));
+    } else {
+      localStorage.removeItem(pendingKey(log.id));
+    }
+  }, [sets, log.id]);
 
 
   const performSave = useCallback(async (newSets) => {
@@ -141,6 +167,10 @@ export default function WorkoutCard({ log, onDelete, onUpdate, weightUnit = 'lb'
         signal: controller.signal
       });
       if (!response.ok) throw new Error('Failed to save sets');
+      lastSyncedRef.current = JSON.stringify(newSets);
+      if (JSON.stringify(setsRef.current) === lastSyncedRef.current) {
+        localStorage.removeItem(pendingKey(log.id));
+      }
     } catch (e) {
       if (e.name !== 'AbortError') {
         console.error("Error saving sets:", e);
@@ -167,6 +197,45 @@ export default function WorkoutCard({ log, onDelete, onUpdate, weightUnit = 'lb'
       }
     };
   }, []);
+
+  // Best-effort fast sync on tab close / app switch. The outbox entry stays
+  // until a CONFIRMED save or next-open replay clears it, so this may fail
+  // freely; a returned-to tab's armed timer is the confirmation path.
+  useEffect(() => {
+    const flushDirty = () => {
+      if (isTemp) return;
+      if (JSON.stringify(setsRef.current) === lastSyncedRef.current) return;
+      fetch(`/api/workouts/logs/${log.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sets: setsRef.current }),
+        keepalive: true,
+      }).catch(() => {});
+    };
+    const onPageHide = () => flushDirty();
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') flushDirty();
+    };
+    window.addEventListener('pagehide', onPageHide);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      window.removeEventListener('pagehide', onPageHide);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, [log.id, isTemp]);
+
+  // Finish's prune (WorkoutView submitWorkout) is the authoritative final
+  // write: cancel any armed sync and drop the outbox entry so no card write
+  // can land after it.
+  useEffect(() => {
+    if (!finishing) return;
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = null;
+    }
+    localStorage.removeItem(pendingKey(log.id));
+    lastSyncedRef.current = JSON.stringify(setsRef.current);
+  }, [finishing, log.id]);
 
   // Fetch Personal Record (Best Set) - uses combined cache
   useEffect(() => {
@@ -257,10 +326,10 @@ export default function WorkoutCard({ log, onDelete, onUpdate, weightUnit = 'lb'
       return;
     }
 
-    // Otherwise, debounce for 2 seconds
+    // Otherwise, debounce for 5 seconds — the outbox holds the edit meanwhile
     saveTimeoutRef.current = setTimeout(() => {
       performSave(newSets);
-    }, 2000);
+    }, 5000);
   }, [performSave]);
 
   const addSet = () => {
