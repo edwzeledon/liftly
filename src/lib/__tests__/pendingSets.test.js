@@ -67,4 +67,17 @@ describe('replayPendingSets', () => {
     await Promise.resolve();
     expect(localStorage.getItem(pendingKey('log-1'))).toBeNull();
   });
+
+  it('does not clear an entry that was re-written while the replay was in flight', async () => {
+    const NEWER = [{ weight: '200', reps: '3', completed: true }];
+    localStorage.setItem(pendingKey('log-1'), JSON.stringify({ sets: EDIT, ts: Date.now() }));
+    global.fetch = jest.fn(() => Promise.resolve({ ok: true }));
+    replayPendingSets([{ id: 'log-1', sets: EDIT }]);
+    // A newer edit lands before the replay's response resolves:
+    localStorage.setItem(pendingKey('log-1'), JSON.stringify({ sets: NEWER, ts: Date.now() }));
+    await Promise.resolve();
+    await Promise.resolve();
+    const survivor = JSON.parse(localStorage.getItem(pendingKey('log-1')));
+    expect(survivor.sets).toEqual(NEWER);
+  });
 });

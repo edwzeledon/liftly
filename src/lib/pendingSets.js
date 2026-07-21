@@ -57,7 +57,17 @@ export function replayPendingSets(replays, storage = localStorage) {
       body: JSON.stringify({ sets }),
     })
       .then((res) => {
-        if (res.ok) storage.removeItem(pendingKey(id));
+        if (!res.ok) return;
+        // Only clear the entry if it still holds exactly what we PUT — a
+        // newer edit may have re-written it while the replay was in flight.
+        try {
+          const cur = JSON.parse(storage.getItem(pendingKey(id)));
+          if (cur && JSON.stringify(cur.sets) === JSON.stringify(sets)) {
+            storage.removeItem(pendingKey(id));
+          }
+        } catch (e) {
+          // Unreadable entry — leave it; the next load's reconcile removes it.
+        }
       })
       .catch(() => {});
   });
