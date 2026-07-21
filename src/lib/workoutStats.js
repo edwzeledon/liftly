@@ -154,25 +154,3 @@ export function prsToday(workoutLogs, now = new Date()) {
   });
   return prs;
 }
-
-// Most recent day's best completed set for one exercise (canonical lb).
-// Feeds the WorkoutCard "Last: W×R" reference line.
-export function lastSetFor(exerciseName, workoutLogs) {
-  if (!exerciseName) return null;
-  const mine = (workoutLogs || []).filter(
-    (l) => l && (l.exercise_name || l.exercise) === exerciseName && Array.isArray(l.sets)
-  );
-  if (mine.length === 0) return null;
-  let latest = null;
-  mine.forEach((l) => {
-    const d = new Date(l.date);
-    if (!latest || d > latest) latest = d;
-  });
-  const dayLogs = mine
-    .filter((l) => new Date(l.date).toDateString() === latest.toDateString())
-    .map((l) => ({ ...l, sets: l.sets.filter((s) => s.completed) }))
-    .filter((l) => l.sets.length > 0);
-  const best = bestSet(dayLogs);
-  if (!best) return null;
-  return { weight: parseFloat(best.weight) || 0, reps: parseFloat(best.reps) || 0 };
-}

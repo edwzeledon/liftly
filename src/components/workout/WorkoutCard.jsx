@@ -100,7 +100,7 @@ function RestingDone({ startedAt, bandSec, disabled, onTap, ariaLabel }) {
   );
 }
 
-export default function WorkoutCard({ log, onDelete, onUpdate, weightUnit = 'lb', activeRest = null, onRestStart, onRestClear, onRestRetarget, lastRef = null }) {
+export default function WorkoutCard({ log, onDelete, onUpdate, weightUnit = 'lb', activeRest = null, onRestStart, onRestClear, onRestRetarget }) {
   const [sets, setSets] = useState(log.sets || []);
   const [bestSet, setBestSet] = useState(null);
   const [showCalculator, setShowCalculator] = useState(false);
@@ -400,6 +400,21 @@ export default function WorkoutCard({ log, onDelete, onUpdate, weightUnit = 'lb'
     return bestIdx;
   }, [sets]);
 
+  // Chip live state: matched-or-beat (celebrates "at your best today").
+  // Intentionally looser than isNewRecord's strict-beat, which stays the
+  // trophy/confetti trigger for a NEW record.
+  const liveRecord = useMemo(() => {
+    if (!bestSet) return false;
+    const bestW = parseFloat(bestSet.weight) || 0;
+    const bestR = parseFloat(bestSet.reps) || 0;
+    return sets.some((s) => {
+      if (!s.completed) return false;
+      const w = parseFloat(s.weight) || 0;
+      const r = parseFloat(s.reps) || 0;
+      return w > bestW || (w === bestW && r >= bestR);
+    });
+  }, [sets, bestSet]);
+
   // Trigger confetti when a new PR is achieved
   useEffect(() => {
     // If we have a valid best set index
@@ -460,11 +475,15 @@ export default function WorkoutCard({ log, onDelete, onUpdate, weightUnit = 'lb'
           <h3 className="font-bold text-foreground">{log.exercise_name || log.exercise}</h3>
           <div className="flex items-center gap-2 min-w-0">
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider shrink-0">{log.category}</span>
-            {(lastRef || bestSet) && (
-              <span className="text-xs text-muted-foreground tabular-nums truncate">
-                {lastRef && <>Last: {formatWeight(lastRef.weight, weightUnit)} × {lastRef.reps}</>}
-                {lastRef && bestSet && ' · '}
-                {bestSet && <>Best: {formatWeight(parseFloat(bestSet.weight) || 0, weightUnit)} × {bestSet.reps}</>}
+            {bestSet && (
+              <span
+                className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium tabular-nums shrink-0 transition-colors ${
+                  liveRecord ? 'bg-protein-soft text-protein-text' : 'bg-training-soft text-training-text'
+                }`}
+              >
+                <Trophy className="w-3 h-3" aria-hidden="true" />
+                <span className="sr-only">All-time best </span>
+                {formatWeight(parseFloat(bestSet.weight) || 0, weightUnit)}×{bestSet.reps}
               </span>
             )}
           </div>
