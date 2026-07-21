@@ -38,29 +38,34 @@ export default function PickerView({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center gap-2 mb-6">
-        <button onClick={onBack} aria-label="Close" className="p-2 -ml-2 text-faint hover:text-muted-foreground rounded-full hover:bg-muted">
-          <ChevronLeft className="w-6 h-6" />
-        </button>
-        <h2 className="text-xl font-bold text-foreground flex-1">Add Exercises</h2>
-        <button
-          onClick={onDone}
-          className="px-4 py-2 min-h-11 bg-training text-white rounded-xl font-bold text-sm hover:bg-training/90 active:scale-95 transition-all"
-        >
-          Done{addedCount > 0 ? ` · ${addedCount}` : ''}
-        </button>
-      </div>
+      {/* Sticky picker header — same idiom as the Active Session bar
+          (WorkoutView): sticks to the page <main> scroll, -mx/px cancel the
+          root padding for an edge-to-edge blur bar. */}
+      <div className="sticky top-0 z-10 -mx-6 md:-mx-8 px-6 md:px-8 py-3 mb-6 bg-background/90 backdrop-blur border-b border-border">
+        <div className="flex items-center gap-2 mb-3">
+          <button onClick={onBack} aria-label="Close" className="p-2 -ml-2 text-faint hover:text-muted-foreground rounded-full hover:bg-muted">
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+          <h2 className="text-xl font-bold text-foreground flex-1">Add Exercises</h2>
+          <button
+            onClick={onDone}
+            className="px-4 py-2 min-h-11 bg-training text-white rounded-xl font-bold text-sm hover:bg-training/90 active:scale-95 transition-all"
+          >
+            Done{addedCount > 0 ? ` · ${addedCount}` : ''}
+          </button>
+        </div>
 
-      {/* Search */}
-      <div className="relative mb-6">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-faint" />
-        <input
-          type="text"
-          placeholder="Search exercises..."
-          value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
-          className="w-full pl-12 pr-4 py-3 bg-muted border border-border rounded-xl focus:border-ring focus:ring-2 focus:ring-ring outline-none font-medium text-foreground"
-        />
+        {/* Search */}
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-faint" />
+          <input
+            type="text"
+            placeholder="Search exercises..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="w-full pl-12 pr-4 py-3 bg-muted border border-border rounded-xl focus:border-ring focus:ring-2 focus:ring-ring outline-none font-medium text-foreground"
+          />
+        </div>
       </div>
 
       {loading ? (

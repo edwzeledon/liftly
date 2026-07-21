@@ -8,7 +8,7 @@ import SessionTimer from './SessionTimer';
 import ConfirmModal from '../ConfirmModal';
 
 import { getExercises } from '@/lib/api';
-import { logsVolume, lastWorkoutSession, recentExercises, lastSetFor } from '@/lib/workoutStats';
+import { logsVolume, lastWorkoutSession, recentExercises } from '@/lib/workoutStats';
 import { restBandSec } from '@/lib/restTimer';
 import { toDisplayVolume } from '@/lib/units';
 import { useToast } from '@/hooks/useToast';
@@ -65,16 +65,6 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
   const handleRestRetarget = useCallback((logId, nextIdx) => {
     setActiveRest((cur) => (cur && cur.logId === logId ? { ...cur, nextIdx } : cur));
   }, []);
-
-  // Last-session reference per exercise in the active session.
-  const lastByExercise = useMemo(() => {
-    const m = new Map();
-    workoutLogs.forEach((l) => {
-      const name = l.exercise_name || l.exercise;
-      if (name && !m.has(name)) m.set(name, lastSetFor(name, historyLogs));
-    });
-    return m;
-  }, [workoutLogs, historyLogs]);
 
   // Session start timestamp for the sticky-header timer. A ref, not state:
   // SessionTimer now owns its own 1s tick internally (see SessionTimer.jsx), so
@@ -1035,7 +1025,7 @@ export default function WorkoutView({ user, onWorkoutComplete, initialLogs = [],
                       onRestStart={handleRestStart}
                       onRestClear={handleRestClear}
                       onRestRetarget={handleRestRetarget}
-                      lastRef={lastByExercise.get(log.exercise_name || log.exercise) || null}
+                      finishing={isFinishing}
                    />
                  ))}
 
